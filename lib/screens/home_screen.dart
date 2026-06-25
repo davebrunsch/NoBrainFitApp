@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:no_brain_fit/utils/brand.dart';
 import 'package:no_brain_fit/widgets/tri_strike_logo.dart';
+import 'package:no_brain_fit/screens/eat/eat_result_screen.dart';
+import 'package:no_brain_fit/screens/train/train_result_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -146,6 +148,18 @@ class _StatCell extends StatelessWidget {
   }
 }
 
+// ── Quick pick ────────────────────────────────────────────────────────────────
+
+class _QuickPick {
+  const _QuickPick({required this.icon, required this.label, required this.sub, required this.destination});
+  final IconData icon;
+  final String label;
+  final String sub;
+  final Widget Function() destination;
+}
+
+// ── Action rows ───────────────────────────────────────────────────────────────
+
 class _ActionRows extends StatelessWidget {
   const _ActionRows();
 
@@ -158,9 +172,29 @@ class _ActionRows extends StatelessWidget {
           icon: Icons.restaurant_outlined,
           kicker: 'Nutrition',
           title: 'Manger',
-          sub: 'Loguer un repas en 2 gestes',
+          sub: '3 repas · Glisse pour personnaliser',
           accent: Brand.lime,
-          onTap: () => context.push('/eat'),
+          advancedRoute: '/eat',
+          quickPicks: [
+            _QuickPick(
+              icon: Icons.wb_sunny_outlined,
+              label: 'Petit-déjeuner',
+              sub: 'Léger · ~350 kcal',
+              destination: () => const EatResultScreen(mealType: 'Petit-déjeuner', mealSize: 'Léger'),
+            ),
+            _QuickPick(
+              icon: Icons.wb_cloudy_outlined,
+              label: 'Déjeuner',
+              sub: 'Normal · ~600 kcal',
+              destination: () => const EatResultScreen(mealType: 'Déjeuner', mealSize: 'Normal'),
+            ),
+            _QuickPick(
+              icon: Icons.nightlight_outlined,
+              label: 'Dîner',
+              sub: 'Normal · ~600 kcal',
+              destination: () => const EatResultScreen(mealType: 'Dîner', mealSize: 'Normal'),
+            ),
+          ],
         ),
         const SizedBox(height: Brand.s12),
         _ActionRow(
@@ -168,9 +202,29 @@ class _ActionRows extends StatelessWidget {
           icon: Icons.fitness_center_outlined,
           kicker: 'Training',
           title: 'S\'entraîner',
-          sub: 'Séance générée pour toi',
+          sub: '3 séances · Glisse pour personnaliser',
           accent: Brand.blue,
-          onTap: () => context.push('/train'),
+          advancedRoute: '/train',
+          quickPicks: [
+            _QuickPick(
+              icon: Icons.bolt_outlined,
+              label: '15 min · Maison',
+              sub: 'Express · Sans matériel',
+              destination: () => const TrainResultScreen(duration: '15 min', location: 'Maison'),
+            ),
+            _QuickPick(
+              icon: Icons.fitness_center_outlined,
+              label: '30 min · Salle',
+              sub: 'Standard · Avec machines',
+              destination: () => const TrainResultScreen(duration: '30 min', location: 'Salle'),
+            ),
+            _QuickPick(
+              icon: Icons.park_outlined,
+              label: '45 min · Dehors',
+              sub: 'Complet · Parc, rue…',
+              destination: () => const TrainResultScreen(duration: '45 min', location: 'Dehors'),
+            ),
+          ],
         ),
         const SizedBox(height: Brand.s12),
         _ActionRow(
@@ -180,7 +234,7 @@ class _ActionRows extends StatelessWidget {
           title: 'Cuisiner',
           sub: '3 recettes + liste de courses',
           accent: Brand.orange,
-          onTap: () => context.push('/cook'),
+          advancedRoute: '/cook',
         ),
       ],
     );
@@ -195,12 +249,13 @@ class _ActionRow extends StatefulWidget {
     required this.title,
     required this.sub,
     required this.accent,
-    required this.onTap,
+    required this.advancedRoute,
+    this.quickPicks,
   });
-  final String index, kicker, title, sub;
+  final String index, kicker, title, sub, advancedRoute;
   final IconData icon;
   final Color accent;
-  final VoidCallback onTap;
+  final List<_QuickPick>? quickPicks;
 
   @override
   State<_ActionRow> createState() => _ActionRowState();
@@ -209,13 +264,40 @@ class _ActionRow extends StatefulWidget {
 class _ActionRowState extends State<_ActionRow> {
   bool _pressed = false;
 
+  void _goAdvanced() => context.push(widget.advancedRoute);
+
+  void _handleTap() {
+    final picks = widget.quickPicks;
+    if (picks != null) {
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: Brand.bgCard,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(Brand.rSheet)),
+        ),
+        builder: (_) => _QuickSheet(
+          title: widget.title,
+          icon: widget.icon,
+          accent: widget.accent,
+          picks: picks,
+          onAdvanced: _goAdvanced,
+        ),
+      );
+    } else {
+      _goAdvanced();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: GestureDetector(
         onTapDown: (_) => setState(() => _pressed = true),
-        onTapUp: (_) { setState(() => _pressed = false); widget.onTap(); },
+        onTapUp: (_) { setState(() => _pressed = false); _handleTap(); },
         onTapCancel: () => setState(() => _pressed = false),
+        onHorizontalDragEnd: (d) {
+          if ((d.primaryVelocity ?? 0).abs() > 200) _goAdvanced();
+        },
         child: AnimatedScale(
           scale: _pressed ? .98 : 1.0,
           duration: const Duration(milliseconds: 100),
@@ -228,7 +310,6 @@ class _ActionRowState extends State<_ActionRow> {
             padding: const EdgeInsets.symmetric(horizontal: Brand.s20),
             child: Row(
               children: [
-                // Icon container
                 Container(
                   width: 46, height: 46,
                   decoration: BoxDecoration(
@@ -260,7 +341,167 @@ class _ActionRowState extends State<_ActionRow> {
                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: .1, color: Brand.grey2),
                 ),
                 const SizedBox(width: Brand.s8),
-                const Icon(Icons.chevron_right_rounded, size: 20, color: Brand.grey2),
+                Icon(
+                  widget.quickPicks != null ? Icons.expand_more_rounded : Icons.chevron_right_rounded,
+                  size: 20,
+                  color: Brand.grey2,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Quick sheet (bottom sheet) ────────────────────────────────────────────────
+
+class _QuickSheet extends StatelessWidget {
+  const _QuickSheet({
+    super.key,
+    required this.title,
+    required this.icon,
+    required this.accent,
+    required this.picks,
+    required this.onAdvanced,
+  });
+  final String title;
+  final IconData icon;
+  final Color accent;
+  final List<_QuickPick> picks;
+  final VoidCallback onAdvanced;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(Brand.s20, Brand.s12, Brand.s20, Brand.s32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Drag handle
+          Container(
+            width: 36, height: 4,
+            decoration: BoxDecoration(
+              color: Brand.grey2,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: Brand.s20),
+          // Header
+          Row(
+            children: [
+              Container(
+                width: 36, height: 36,
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(.10),
+                  borderRadius: BorderRadius.circular(Brand.rCard),
+                  border: Border.all(color: accent.withOpacity(.2)),
+                ),
+                child: Icon(icon, size: 18, color: accent),
+              ),
+              const SizedBox(width: Brand.s12),
+              Text(
+                title,
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, letterSpacing: -.3, color: Brand.white),
+              ),
+            ],
+          ),
+          const SizedBox(height: Brand.s16),
+          // Quick pick rows
+          ...picks.map((p) => _QuickOption(pick: p, accent: accent)),
+          const SizedBox(height: Brand.s4),
+          // Advanced link
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
+              onAdvanced();
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: Brand.s12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Text(
+                    'Configurer',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Brand.grey1, letterSpacing: .1),
+                  ),
+                  SizedBox(width: Brand.s4),
+                  Icon(Icons.arrow_forward_rounded, size: 14, color: Brand.grey1),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickOption extends StatefulWidget {
+  const _QuickOption({super.key, required this.pick, required this.accent});
+  final _QuickPick pick;
+  final Color accent;
+
+  @override
+  State<_QuickOption> createState() => _QuickOptionState();
+}
+
+class _QuickOptionState extends State<_QuickOption> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Brand.s8),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapUp: (_) {
+          setState(() => _pressed = false);
+          final nav = Navigator.of(context);
+          final dest = widget.pick.destination();
+          nav.pop();
+          nav.push(MaterialPageRoute(builder: (_) => dest));
+        },
+        onTapCancel: () => setState(() => _pressed = false),
+        child: AnimatedScale(
+          scale: _pressed ? .98 : 1.0,
+          duration: const Duration(milliseconds: 80),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: Brand.s16, vertical: Brand.s12),
+            decoration: BoxDecoration(
+              color: _pressed ? Brand.bgCardHi : Brand.bgSurface,
+              borderRadius: BorderRadius.circular(Brand.rCard),
+              border: Border.all(color: _pressed ? Brand.border2 : Brand.border),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 36, height: 36,
+                  decoration: BoxDecoration(
+                    color: widget.accent.withOpacity(.08),
+                    borderRadius: BorderRadius.circular(Brand.rButton),
+                  ),
+                  child: Icon(widget.pick.icon, size: 18, color: widget.accent),
+                ),
+                const SizedBox(width: Brand.s12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.pick.label,
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, letterSpacing: -.2, color: Brand.white),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.pick.sub,
+                        style: const TextStyle(fontSize: 12, color: Brand.grey1),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded, size: 18, color: Brand.grey2),
               ],
             ),
           ),
