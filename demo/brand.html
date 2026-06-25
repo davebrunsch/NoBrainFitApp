@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NoBrainFit — Charte Graphique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Core */
+  --bg:       #08080C;
+  --surface:  #111115;
+  --card:     #16161C;
+  --border:   rgba(255,255,255,.07);
+  --border2:  rgba(255,255,255,.14);
+  /* Brand accents */
+  --lime:     #CCFF00;
+  --blue:     #3D8EFF;
+  --orange:   #FF5C2B;
+  /* Neutrals */
+  --white:    #F5F5F7;
+  --grey1:    #9898A8;
+  --grey2:    #56565F;
+  --grey3:    #2A2A32;
+  /* Fonts */
+  --f-head:   'Space Grotesk', sans-serif;
+  --f-mono:   'Space Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--bg); color: var(--white); font-family: var(--f-head); scroll-behavior: smooth; }
+body { max-width: 1080px; margin: 0 auto; padding: 0 40px 120px; }
+
+/* ── LAYOUT ── */
+.section { padding: 80px 0 0; }
+.section + .section { border-top: 1px solid var(--border); margin-top: 80px; }
+.label-section {
+  font-size: 10px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--grey2);
+  display: flex; align-items: center; gap: 14px; margin-bottom: 48px;
+}
+.label-section::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+@media (max-width: 700px) { .row2, .row3 { grid-template-columns: 1fr; } body { padding: 0 20px 80px; } }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 32px; }
+.card-dark  { background: var(--bg); }
+.card-light { background: #F5F5F7; }
+
+/* ── NAV ── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8,8,12,.85); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0; margin: 0 -40px; padding-left: 40px; padding-right: 40px;
+}
+.nav-brand { font-size: 14px; font-weight: 700; letter-spacing: -.2px; }
+.nav-brand b { color: var(--lime); }
+.nav-links { display: flex; gap: 28px; }
+.nav-links a { font-size: 12px; color: var(--grey1); text-decoration: none; font-weight: 500; letter-spacing: .04em; transition: color .15s; }
+.nav-links a:hover { color: var(--white); }
+
+/* ── HERO ── */
+.hero { padding: 100px 0 80px; display: flex; align-items: center; gap: 60px; }
+.hero-text { flex: 1; }
+.hero-kicker { font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--lime); margin-bottom: 16px; }
+.hero-h1 { font-size: clamp(42px, 5vw, 64px); font-weight: 600; line-height: 1.02; letter-spacing: -2px; }
+.hero-h1 .dim { color: var(--grey2); }
+.hero-sub { font-size: 16px; color: var(--grey1); line-height: 1.6; margin-top: 20px; max-width: 400px; }
+.hero-mark { flex-shrink: 0; }
+
+/* ── TYPOGRAPHY ── */
+.type-scale > * + * { margin-top: 28px; }
+.type-row { padding-bottom: 28px; border-bottom: 1px solid var(--border); }
+.type-row:last-child { border-bottom: none; padding-bottom: 0; }
+.type-meta { font-family: var(--f-mono); font-size: 10px; color: var(--grey2); margin-bottom: 10px; }
+.t-d1 { font-size: 48px; font-weight: 700; letter-spacing: -2px; line-height: 1; }
+.t-d2 { font-size: 36px; font-weight: 600; letter-spacing: -1.2px; line-height: 1.05; }
+.t-h1 { font-size: 26px; font-weight: 600; letter-spacing: -.6px; line-height: 1.1; }
+.t-h2 { font-size: 20px; font-weight: 600; letter-spacing: -.4px; }
+.t-h3 { font-size: 16px; font-weight: 600; letter-spacing: -.2px; }
+.t-body { font-size: 15px; font-weight: 400; color: var(--grey1); line-height: 1.65; }
+.t-small { font-size: 12px; font-weight: 500; color: var(--grey2); letter-spacing: .04em; }
+.t-label { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--grey2); }
+.t-mono { font-family: var(--f-mono); font-size: 13px; color: var(--lime); }
+
+/* ── COLORS ── */
+.swatch-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+@media (max-width: 700px) { .swatch-grid { grid-template-columns: 1fr 1fr; } }
+.swatch { border-radius: 14px; overflow: hidden; }
+.swatch-color { height: 90px; }
+.swatch-info { background: var(--card); border: 1px solid var(--border); border-top: none; padding: 14px 16px; }
+.swatch-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.swatch-hex { font-family: var(--f-mono); font-size: 11px; color: var(--grey2); }
+.swatch-role { font-size: 10px; color: var(--grey2); margin-top: 4px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; }
+
+/* ── LOGO VERSIONS ── */
+.logo-versions { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.logo-cell {
+  border-radius: 16px; border: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 36px 20px; position: relative;
+}
+.logo-cell .lbl { font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; position: absolute; bottom: 16px; left: 20px; }
+
+/* ── ICON GRID ── */
+.icon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; }
+@media (max-width: 700px) { .icon-grid { grid-template-columns: repeat(4, 1fr); } }
+.icon-cell { aspect-ratio: 1; border-radius: 12px; background: var(--card); border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.icon-cell svg { display: block; }
+.icon-cell span { font-size: 9px; color: var(--grey2); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+
+/* ── APP ICON MOCKUP ── */
+.app-icons { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; }
+.ai-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.ai-label { font-size: 10px; color: var(--grey2); font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+.app-icon { border-radius: 22.5%; background: var(--bg); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+
+/* ── USAGE RULES ── */
+.rules { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.rule-card { border-radius: 16px; padding: 28px; border: 1px solid var(--border); }
+.rule-ok  { border-color: rgba(204,255,0,.2); }
+.rule-nok { border-color: rgba(255,92,43,.2); }
+.rule-header { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 16px; }
+.rule-ok  .rule-header { color: var(--lime); }
+.rule-nok .rule-header { color: var(--orange); }
+.rule-card ul { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+.rule-card li { font-size: 13px; color: var(--grey1); padding-left: 18px; position: relative; }
+.rule-card li::before { position: absolute; left: 0; font-weight: 700; }
+.rule-ok  li::before { content: '✓'; color: var(--lime); }
+.rule-nok li::before { content: '✗'; color: var(--orange); }
+
+/* ── SPACING ── */
+.spacing-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+.sp { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.sp-box { background: rgba(61,142,255,.18); border: 1px solid var(--blue); border-radius: 4px; width: 40px; }
+.sp-val { font-family: var(--f-mono); font-size: 10px; color: var(--blue); }
+
+/* ── DIVIDER ── */
+hr { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+/* ── COMPONENTS PREVIEW ── */
+.comp-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 13px 22px; border-radius: 12px; font-family: var(--f-head); font-size: 14px; font-weight: 600; cursor: pointer; letter-spacing: -.1px; border: none; }
+.btn-primary { background: var(--lime); color: #0A0A0C; }
+.btn-secondary { background: var(--blue); color: #fff; }
+.btn-ghost { background: transparent; color: var(--white); border: 1px solid var(--border2); }
+.btn-danger { background: var(--orange); color: #fff; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.chip-g { background: rgba(204,255,0,.1); border: 1px solid rgba(204,255,0,.25); color: var(--lime); }
+.chip-b { background: rgba(61,142,255,.1); border: 1px solid rgba(61,142,255,.25); color: var(--blue); }
+.chip-o { background: rgba(255,92,43,.1); border: 1px solid rgba(255,92,43,.25); color: var(--orange); }
+
+/* ── ACTION ROW PREVIEW ── */
+.ar { display: flex; align-items: center; gap: 16px; padding: 18px 20px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; }
+.ar-ic { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ar-k { font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 3px; }
+.ar-t { font-size: 17px; font-weight: 600; letter-spacing: -.3px; }
+.ar-s { font-size: 12px; color: var(--grey2); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">NoBrain<b>Fit</b> — Brand</div>
+  <div class="nav-links">
+    <a href="#logo">Logo</a>
+    <a href="#couleurs">Couleurs</a>
+    <a href="#typo">Typo</a>
+    <a href="#icones">Icônes</a>
+    <a href="#usage">Usage</a>
+    <a href="#composants">Composants</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-text">
+    <div class="hero-kicker">Charte Graphique — v1.0 · 2026</div>
+    <h1 class="hero-h1">NoBrain<span class="dim">Fit</span><br>Brand System</h1>
+    <p class="hero-sub">Un système visuel construit autour d'un principe : le minimalisme radical au service de l'action immédiate. Dark, direct, sans fioritures.</p>
+  </div>
+  <div class="hero-mark">
+    <!-- LOGO MARK — le symbole "Tri-Strike" -->
+    <svg width="120" height="120" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="14" width="52" height="11" rx="5.5" fill="#CCFF00" transform="rotate(-18 32 19.5)"/>
+      <rect x="14" y="33" width="52" height="11" rx="5.5" fill="#3D8EFF" transform="rotate(-18 40 38.5)"/>
+      <rect x="22" y="52" width="52" height="11" rx="5.5" fill="#FF5C2B" transform="rotate(-18 48 57.5)"/>
+    </svg>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LOGO ═══════════════════════════════ -->
+<section class="section" id="logo">
+  <div class="label-section">01 — Système Logo</div>
+
+  <div style="margin-bottom:16px">
+    <h2 class="t-h1" style="margin-bottom:8px">Le Tri-Strike</h2>
+    <p class="t-body" style="max-width:560px">Trois bandes obliques — une par pilier (Nutrition · Training · Cuisine) — formant ensemble un symbole de dynamisme et de mouvement vers l'avant. Inspiré du langage des marques sport premium, sans copier aucune. Le tout en un seul geste visuel.</p>
+  </div>
+
+  <div class="logo-versions" style="margin-top:32px">
+
+    <!-- Dark (default) -->
+    <div class="logo-cell" style="background:#08080C; min-height:200px;">
+      <div class="lbl" style="color:#56565F">Dark · Default</div>
+      <svg width="48" height="48" viewBox="0 0 80 80" fill="none">
+        <rect x="6" y="14" width="52" height="11" rx="5.5" fill="#CCFF00" transform="rotate(-18 32 19.5)"/>
+        <rect x="14" y="33" width="52" height="11" rx="5.5" fill="#3D8EFF" transform="rotate(-18 40 38.5)"/>
+        <rect x="22" y="52" width="52" height="11" rx="5.5" fill="#FF5C2B" transform="rotate(-18 48 57.5)"/>
+      </svg>
+      <div style="display:flex;align-items:center;gap:12px">
+        <svg width="28" height="28" viewBox="0 0 80 80" fill="none">
+          <rect x="6" y="14" width="52" height="11" rx="5.5" fill="#CCFF00" transform="rotate(-18 32 19.5)"/>
+          <rect x="14" y="33" width="52" height="11" rx="5.5" fill="#3D8EFF" transform="rotate(-18 40 38.5)"/>
+          <rect x="22" y="52" width="52" height="11" rx="5.5" fill="#FF5C2B" transform="rotate(-18 48 57.5)"/>
+        </svg>
+        <span style="font-size:22px;font-weight:700;letter-spacing:-0.8px;color:#F5F5F7">NoBrain<span style="color:#CCFF00">Fit</span></span>
+      </div>
+    </div>
+
+    <!-- Light -->
+    <div class="logo-cell card-light" style="min-height:200px;">
+      <div class="lbl" style="color:#AAAAAA">Light · Inversé</div>
+      <svg width="48" height="48" viewBox="0 0 80 80" fill="none">
+        <rect x="6" y="14" width="52" height="11" rx="5.5" fill="#88BB00" transform="rotate(-18 32 19.5)"/>
+        <rect x="14" y="33" width="52" height="11" rx="5.5" fill="#1C6EE0" transform="rotate(-18 40 38.5)"/>
+        <rect x="22" y="52" width="52" height="11" rx="5.5" fill="#E03C14" transform="rotate(-18 48 57.5)"/>
+      </svg>
+      <div style="display:flex;align-items:center;gap:12px">
+        <svg width="28" height="28" viewBox="0 0 80 80" fill="none">
+          <rect x="6" y="14" width="52" height="11" rx="5.5" fill="#88BB00" transform="rotate(-18 32 19.5)"/>
+          <rect x="14" y="33" width="52" height="11" rx="5.5" fill="#1C6EE0" transform="rotate(-18 40 38.5)"/>
+          <rect x="22" y="52" width="52" height="11" rx="5.5" fill="#E03C14" transform="rotate(-18 48 57.5)"/>
+        </svg>
+        <span style="font-size:22px;font-weight:700;letter-spacing:-0.8px;color:#111">NoBrain<span style="color:#1C6EE0">Fit</span></span>
+      </div>
+    </div>
+
+    <!-- Monochrome blanc -->
+    <div class="logo-cell" style="background:#111115; min-height:160px;">
+      <div class="lbl" style="color:#56565F">Monochrome · Blanc</div>
+      <svg width="44" height="44" viewBox="0 0 80 80" fill="none">
+        <rect x="6" y="14" width="52" height="11" rx="5.5" fill="#F5F5F7" transform="rotate(-18 32 19.5)"/>
+        <rect x="14" y="33" width="52" height="11" rx="5.5" fill="#F5F5F7" transform="rotate(-18 40 38.5)" opacity=".7"/>
+        <rect x="22" y="52" width="52" height="11" rx="5.5" fill="#F5F5F7" transform="rotate(-18 48 57.5)" opacity=".4"/>
+      </svg>
+    </div>
+
+    <!-- Monochrome lime -->
+    <div class="logo-cell" style="background:#06060A; min-height:160px;">
+      <div class="lbl" style="color:#56565F">Monochrome · Lime</div>
+      <svg width="44" height="44" viewBox="0 0 80 80" fill="none">
+        <rect x="6" y="14" width="52" height="11" rx="5.5" fill="#CCFF00" transform="rotate(-18 32 19.5)"/>
+        <rect x="14" y="33" width="52" height="11" rx="5.5" fill="#CCFF00" transform="rotate(-18 40 38.5)" opacity=".7"/>
+        <rect x="22" y="52" width="52" height="11" rx="5.5" fill="#CCFF00" transform="rotate(-18 48 57.5)" opacity=".4"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- App Icons -->
+  <div style="margin-top:48px">
+    <h3 class="t-h3" style="margin-bottom:24px">Icône Application</h3>
+    <div class="app-icons">
+      <!-- 1024 -->
+      <div class="ai-wrap">
+        <div class="app-icon" style="width:120px;height:120px;border-radius:27%;">
+          <svg width="72" height="72" viewBox="0 0 80 80" fill="none">
+            <rect x="6" y="14" width="52" height="11" rx="5.5" fill="#CCFF00" transform="rotate(-18 32 19.5)"/>
+            <rect x="14" y="33" width="52" height="11" rx="5.5" fill="#3D8EFF" transform="rotate(-18 40 38.5)"/>
+            <rect x="22" y="52" width="52" height="11" rx="5.5" fill="#FF5C2B" transform="rotate(-18 48 57.5)"/>
+          </svg>
+        </div>
+        <span class="ai-label">1024 px</span>
+      </div>
+      <!-- 60 -->
+      <div class="ai-wrap">
+        <div class="app-icon" style="width:80px;height:80px;border-radius:22%;">
+          <svg width="48" height="48" viewBox="0 0 80 80" fill="none">
+            <rect x="6" y="14" width="52" height="11" rx="5.5" fill="#CCFF00" transform="rotate(-18 32 19.5)"/>
+            <rect x="14" y="33" width="52" height="11" rx="5.5" fill="#3D8EFF" transform="rotate(-18 40 38.5)"/>
+            <rect x="22" y="52" width="52" height="11" rx="5.5" fill="#FF5C2B" transform="rotate(-18 48 57.5)"/>
+          </svg>
+        </div>
+        <span class="ai-label">180 px</span>
+      </div>
+      <!-- 48 -->
+      <div class="ai-wrap">
+        <div class="app-icon" style="width:56px;height:56px;border-radius:20%;">
+          <svg width="34" height="34" viewBox="0 0 80 80" fill="none">
+            <rect x="6" y="14" width="52" height="11" rx="5.5" fill="#CCFF00" transform="rotate(-18 32 19.5)"/>
+            <rect x="14" y="33" width="52" height="11" rx="5.5" fill="#3D8EFF" transform="rotate(-18 40 38.5)"/>
+            <rect x="22" y="52" width="52" height="11" rx="5.5" fill="#FF5C2B" transform="rotate(-18 48 57.5)"/>
+          </svg>
+        </div>
+        <span class="ai-label">96 px</span>
+      </div>
+      <!-- 16 favicon -->
+      <div class="ai-wrap">
+        <div class="app-icon" style="width:32px;height:32px;border-radius:15%;">
+          <svg width="22" height="22" viewBox="0 0 80 80" fill="none">
+            <rect x="6" y="14" width="52" height="11" rx="5.5" fill="#CCFF00" transform="rotate(-18 32 19.5)"/>
+            <rect x="14" y="33" width="52" height="11" rx="5.5" fill="#3D8EFF" transform="rotate(-18 40 38.5)"/>
+            <rect x="22" y="52" width="52" height="11" rx="5.5" fill="#FF5C2B" transform="rotate(-18 48 57.5)"/>
+          </svg>
+        </div>
+        <span class="ai-label">32 px</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clearspace -->
+  <div style="margin-top:48px">
+    <h3 class="t-h3" style="margin-bottom:8px">Zone de protection</h3>
+    <p class="t-body" style="margin-bottom:24px">Laisser autour du logo un espace libre minimum égal à la hauteur d'une bande. Ne jamais placer d'éléments dans cette zone.</p>
+    <div style="display:inline-block;position:relative;padding:32px;border:1px dashed var(--grey3);border-radius:4px;">
+      <div style="position:absolute;top:8px;left:8px;font-family:var(--f-mono);font-size:9px;color:var(--grey3)">× 1 bande</div>
+      <svg width="120" height="40" viewBox="0 0 200 80" fill="none">
+        <rect x="6" y="14" width="52" height="11" rx="5.5" fill="#CCFF00" transform="rotate(-18 32 19.5)"/>
+        <rect x="14" y="33" width="52" height="11" rx="5.5" fill="#3D8EFF" transform="rotate(-18 40 38.5)"/>
+        <rect x="22" y="52" width="52" height="11" rx="5.5" fill="#FF5C2B" transform="rotate(-18 48 57.5)"/>
+        <text x="80" y="50" fill="#F5F5F7" font-family="Space Grotesk,sans-serif" font-size="24" font-weight="700" letter-spacing="-1">NoBrainFit</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ COULEURS ═══════════════════════════════ -->
+<section class="section" id="couleurs">
+  <div class="label-section">02 — Palette Couleurs</div>
+
+  <!-- Accents -->
+  <h3 class="t-h3" style="margin-bottom:20px">Couleurs d'action</h3>
+  <div class="swatch-grid" style="margin-bottom:40px">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#CCFF00"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Lime Strike</div>
+        <div class="swatch-hex">#CCFF00</div>
+        <div class="swatch-role">Nutrition · CTA primaire</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#3D8EFF"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Steel Blue</div>
+        <div class="swatch-hex">#3D8EFF</div>
+        <div class="swatch-role">Training · Action</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#FF5C2B"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Burn Orange</div>
+        <div class="swatch-hex">#FF5C2B</div>
+        <div class="swatch-role">Cuisine · Énergie</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:linear-gradient(135deg,#CCFF00,#3D8EFF,#FF5C2B)"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Tri-Strike</div>
+        <div class="swatch-hex">Gradient</div>
+        <div class="swatch-role">Illustrations · Splash</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Neutrals -->
+  <h3 class="t-h3" style="margin-bottom:20px">Fond & Neutrals</h3>
+  <div class="swatch-grid">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#08080C;border:1px solid var(--border)"></div>
+      <div class="swatch-info"><div class="swatch-name">Void</div><div class="swatch-hex">#08080C</div><div class="swatch-role">Background principal</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#111115;border:1px solid var(--border)"></div>
+      <div class="swatch-info"><div class="swatch-name">Abyss</div><div class="swatch-hex">#111115</div><div class="swatch-role">Surface / Cards</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#9898A8"></div>
+      <div class="swatch-info"><div class="swatch-name">Silver</div><div class="swatch-hex">#9898A8</div><div class="swatch-role">Texte secondaire</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#F5F5F7"></div>
+      <div class="swatch-info"><div class="swatch-name">White Ice</div><div class="swatch-hex">#F5F5F7</div><div class="swatch-role">Texte principal</div></div>
+    </div>
+  </div>
+
+  <!-- Contrast ratios -->
+  <div class="card" style="margin-top:24px">
+    <div style="margin-bottom:16px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--grey2)">Ratios de contraste (WCAG)</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg);border-radius:10px;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:12px"><span style="width:20px;height:20px;border-radius:5px;background:#CCFF00;display:inline-block"></span><span style="font-size:13px">Lime sur #08080C</span></div>
+        <span style="font-family:var(--f-mono);font-size:12px;color:var(--lime)">14.4:1 — AAA ✓</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg);border-radius:10px;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:12px"><span style="width:20px;height:20px;border-radius:5px;background:#F5F5F7;display:inline-block"></span><span style="font-size:13px">White Ice sur #08080C</span></div>
+        <span style="font-family:var(--f-mono);font-size:12px;color:var(--lime)">16.2:1 — AAA ✓</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg);border-radius:10px;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:12px"><span style="width:20px;height:20px;border-radius:5px;background:#3D8EFF;display:inline-block"></span><span style="font-size:13px">Blue sur #08080C</span></div>
+        <span style="font-family:var(--f-mono);font-size:12px;color:var(--lime)">5.1:1 — AA ✓</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ TYPOGRAPHIE ═══════════════════════════════ -->
+<section class="section" id="typo">
+  <div class="label-section">03 — Typographie</div>
+
+  <div class="row2" style="margin-bottom:40px">
+    <div class="card">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--grey2);margin-bottom:16px">Primaire — Display & UI</div>
+      <div style="font-size:42px;font-weight:700;letter-spacing:-1.5px;margin-bottom:8px">Space Grotesk</div>
+      <div style="font-size:15px;color:var(--grey1);margin-bottom:20px">Bold, 700 — Headers, labels, CTA</div>
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.5px;margin-bottom:6px">ABCDEFGHIJKLMN</div>
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.5px;margin-bottom:6px">abcdefghijklmn</div>
+      <div style="font-size:22px;font-weight:600;letter-spacing:-0.5px">0123456789 !?</div>
+    </div>
+    <div class="card">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--grey2);margin-bottom:16px">Secondaire — Data & Code</div>
+      <div style="font-family:var(--f-mono);font-size:36px;font-weight:700;letter-spacing:-1px;margin-bottom:8px">Space Mono</div>
+      <div style="font-size:15px;color:var(--grey1);margin-bottom:20px">Bold, 700 — Valeurs, statistiques, HEX</div>
+      <div style="font-family:var(--f-mono);font-size:18px;margin-bottom:6px">ABCDEFGHIJKLMN</div>
+      <div style="font-family:var(--f-mono);font-size:18px;margin-bottom:6px">abcdefghijklmn</div>
+      <div style="font-family:var(--f-mono);font-size:18px">1240 kcal · J·05</div>
+    </div>
+  </div>
+
+  <div class="card type-scale">
+    <div class="type-row">
+      <div class="type-meta">Display 01 — 48px / 700 / -2px</div>
+      <div class="t-d1">Appuie. C'est tout.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">Display 02 — 36px / 600 / -1.2px</div>
+      <div class="t-d2">Full Body · 45 min</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">Heading 01 — 26px / 600 / -0.6px</div>
+      <div class="t-h1">Bilan du jour</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">Heading 02 — 20px / 600 / -0.4px</div>
+      <div class="t-h2">3 recettes pour ce soir</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">Heading 03 — 16px / 600 / -0.2px</div>
+      <div class="t-h3">Poulet grillé & légumes rôtis</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">Body — 15px / 400 / +0px / lh 1.65</div>
+      <div class="t-body">Il te reste 110 kcal. Un dîner léger — soupe ou yaourt — et tu seras pile sur ton objectif. L'app s'occupe du reste.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">Small — 12px / 500 / +0.04em</div>
+      <div class="t-small">3 séries × 12 reps · 60 s repos</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">Label — 10px / 700 / +0.18em / UPPERCASE</div>
+      <div class="t-label">Nutrition · Training · Cuisine</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">Mono — 13px / Space Mono — données</div>
+      <div class="t-mono">1 240 kcal · 92 g prot · J·05</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ ICÔNES ═══════════════════════════════ -->
+<section class="section" id="icones">
+  <div class="label-section">04 — Système d'icônes</div>
+
+  <div class="row2" style="margin-bottom:32px">
+    <div>
+      <h3 class="t-h3" style="margin-bottom:8px">Principes</h3>
+      <p class="t-body">Trait de 1.6 px, linecap round, linejoin round. Grille 24 × 24 px. Jamais de fill plein — uniquement du stroke. Cohérent avec l'esthétique éditoriale.</p>
+    </div>
+    <div class="card" style="padding:20px">
+      <div style="display:flex;gap:24px;align-items:center;justify-content:center">
+        <!-- do -->
+        <div style="text-align:center">
+          <svg width="40" height="40" fill="none" viewBox="0 0 24 24" style="display:block;margin:0 auto 8px"><path d="M6.5 6.5v11M17.5 6.5v11M4 9v6M20 9v6M6.5 12h11" stroke="#CCFF00" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <div style="font-size:10px;color:var(--lime);font-weight:700">✓ Stroke</div>
+        </div>
+        <div style="width:1px;height:40px;background:var(--border)"></div>
+        <!-- don't -->
+        <div style="text-align:center">
+          <svg width="40" height="40" fill="none" viewBox="0 0 24 24" style="display:block;margin:0 auto 8px"><path d="M6.5 6.5v11M17.5 6.5v11M4 9v6M20 9v6M6.5 12h11" stroke="#FF5C2B" stroke-width="3" stroke-linecap="square"/></svg>
+          <div style="font-size:10px;color:var(--orange);font-weight:700">✗ Trop épais</div>
+        </div>
+        <div style="width:1px;height:40px;background:var(--border)"></div>
+        <div style="text-align:center">
+          <svg width="40" height="40" viewBox="0 0 24 24" style="display:block;margin:0 auto 8px"><rect x="4" y="5.5" width="2" height="13" rx="1" fill="#FF5C2B"/><rect x="9.5" y="5.5" width="2" height="13" rx="1" fill="#FF5C2B"/><rect x="15" y="5.5" width="2" height="13" rx="1" fill="#FF5C2B"/><rect x="20" y="7.5" width="2" height="9" rx="1" fill="#FF5C2B"/><line x1="4" y1="12" x2="21" y2="12" stroke="#FF5C2B" stroke-width="2"/></svg>
+          <div style="font-size:10px;color:var(--orange);font-weight:700">✗ Fill</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="icon-grid">
+    <!-- each icon in its themed color -->
+    <!-- Nutrition icons - lime -->
+    <div class="icon-cell"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M4 3v7a2 2 0 0 0 4 0V3M6 3v18M14 3c-1.5 1-2 3-2 5s.5 4 2 5v8" stroke="#CCFF00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="color:#CCFF00">manger</span></div>
+    <div class="icon-cell"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" stroke="#9898A8" stroke-width="1.6"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.5 5.5l1.4 1.4M17.1 17.1l1.4 1.4M18.5 5.5l-1.4 1.4M6.9 17.1l-1.4 1.4" stroke="#9898A8" stroke-width="1.6" stroke-linecap="round"/></svg><span>matin</span></div>
+    <div class="icon-cell"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 4v3M5 9a7 7 0 0 1 14 0M3 14h18M6 14a6 6 0 0 0 12 0" stroke="#9898A8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>midi</span></div>
+    <div class="icon-cell"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M20 14a8 8 0 1 1-10-10 7 7 0 0 0 10 10z" stroke="#9898A8" stroke-width="1.6" stroke-linejoin="round"/></svg><span>soir</span></div>
+    <!-- Training icons - blue -->
+    <div class="icon-cell"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M4 9v6M20 9v6M6.5 12h11" stroke="#3D8EFF" stroke-width="1.6" stroke-linecap="round"/></svg><span style="color:#3D8EFF">training</span></div>
+    <div class="icon-cell"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M13 3L5 13h6l-1 8 8-10h-6z" stroke="#9898A8" stroke-width="1.6" stroke-linejoin="round"/></svg><span>énergie</span></div>
+    <div class="icon-cell"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><circle cx="6" cy="17" r="3" stroke="#9898A8" stroke-width="1.6"/><circle cx="18" cy="17" r="3" stroke="#9898A8" stroke-width="1.6"/><path d="M6 17l4-7h5l3 7M10 10l-1-3h-2" stroke="#9898A8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>cardio</span></div>
+    <div class="icon-cell"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M13 3L5 13h6l-1 8 8-10h-6z" stroke="#9898A8" stroke-width="1.6" stroke-linejoin="round"/></svg><span>bolt</span></div>
+    <!-- Cook icons - orange -->
+    <div class="icon-cell"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M5 10a7 7 0 0 1 14 0M3 10h18M6 10v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8M12 3v3" stroke="#FF5C2B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="color:#FF5C2B">cuisiner</span></div>
+    <div class="icon-cell"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M4 5h2l2 11h10l2-8H7" stroke="#9898A8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.3" fill="#9898A8"/><circle cx="17" cy="20" r="1.3" fill="#9898A8"/></svg><span>courses</span></div>
+    <div class="icon-cell"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M5 12l5 5L19 7" stroke="#9898A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>check</span></div>
+    <div class="icon-cell"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" stroke="#9898A8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>arrière</span></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ USAGE ═══════════════════════════════ -->
+<section class="section" id="usage">
+  <div class="label-section">05 — Règles d'Usage</div>
+
+  <div class="rules">
+    <div class="rule-card rule-ok">
+      <div class="rule-header">À faire</div>
+      <ul>
+        <li>Utiliser le logo sur fond sombre (#08080C ou proche)</li>
+        <li>Respecter la zone de protection (1× hauteur de bande)</li>
+        <li>Utiliser les 3 couleurs ensemble dans le logo</li>
+        <li>Lime uniquement pour les CTA principaux</li>
+        <li>Blue pour tout ce qui est Training / mouvement</li>
+        <li>Orange pour tout ce qui est Cuisine / énergie</li>
+        <li>Texte principal en #F5F5F7 sur fond sombre</li>
+        <li>Icônes en stroke 1.6px, linecap round</li>
+      </ul>
+    </div>
+    <div class="rule-card rule-nok">
+      <div class="rule-header">À ne pas faire</div>
+      <ul>
+        <li>Ne jamais distordre ou étirer le logo</li>
+        <li>Ne jamais modifier les couleurs des bandes</li>
+        <li>Ne pas utiliser le logo sur fond clair sans version dédiée</li>
+        <li>Ne jamais ajouter d'ombre portée sur le logo</li>
+        <li>Ne pas utiliser les 3 couleurs aléatoirement (chacune a son pilier)</li>
+        <li>Ne pas utiliser de typo serif ou fine</li>
+        <li>Ne jamais placer d'éléments dans la zone de protection</li>
+        <li>Ne pas utiliser le gradient Tri-Strike comme fond de texte</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Spacing system -->
+  <div style="margin-top:48px">
+    <h3 class="t-h3" style="margin-bottom:24px">Système d'espacement — Base 4</h3>
+    <div class="spacing-row">
+      <div class="sp"><div class="sp-box" style="height:4px"></div><span class="sp-val">4</span></div>
+      <div class="sp"><div class="sp-box" style="height:8px"></div><span class="sp-val">8</span></div>
+      <div class="sp"><div class="sp-box" style="height:12px"></div><span class="sp-val">12</span></div>
+      <div class="sp"><div class="sp-box" style="height:16px"></div><span class="sp-val">16</span></div>
+      <div class="sp"><div class="sp-box" style="height:20px"></div><span class="sp-val">20</span></div>
+      <div class="sp"><div class="sp-box" style="height:24px"></div><span class="sp-val">24</span></div>
+      <div class="sp"><div class="sp-box" style="height:32px"></div><span class="sp-val">32</span></div>
+      <div class="sp"><div class="sp-box" style="height:40px"></div><span class="sp-val">40</span></div>
+      <div class="sp"><div class="sp-box" style="height:48px"></div><span class="sp-val">48</span></div>
+      <div class="sp"><div class="sp-box" style="height:64px"></div><span class="sp-val">64</span></div>
+    </div>
+  </div>
+
+  <!-- Border radius -->
+  <div style="margin-top:48px">
+    <h3 class="t-h3" style="margin-bottom:24px">Rayons de bordure</h3>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">
+      <div style="text-align:center"><div style="width:48px;height:48px;background:var(--card);border:1px solid var(--border2);border-radius:4px;margin:0 auto 8px"></div><div style="font-family:var(--f-mono);font-size:10px;color:var(--grey2)">4px<br>Tags</div></div>
+      <div style="text-align:center"><div style="width:48px;height:48px;background:var(--card);border:1px solid var(--border2);border-radius:8px;margin:0 auto 8px"></div><div style="font-family:var(--f-mono);font-size:10px;color:var(--grey2)">8px<br>Chips</div></div>
+      <div style="text-align:center"><div style="width:48px;height:48px;background:var(--card);border:1px solid var(--border2);border-radius:12px;margin:0 auto 8px"></div><div style="font-family:var(--f-mono);font-size:10px;color:var(--grey2)">12px<br>Boutons</div></div>
+      <div style="text-align:center"><div style="width:64px;height:48px;background:var(--card);border:1px solid var(--border2);border-radius:16px;margin:0 auto 8px"></div><div style="font-family:var(--f-mono);font-size:10px;color:var(--grey2)">16px<br>Cards</div></div>
+      <div style="text-align:center"><div style="width:80px;height:48px;background:var(--card);border:1px solid var(--border2);border-radius:20px;margin:0 auto 8px"></div><div style="font-family:var(--f-mono);font-size:10px;color:var(--grey2)">20px<br>Rows</div></div>
+      <div style="text-align:center"><div style="width:80px;height:48px;background:var(--card);border:1px solid var(--border2);border-radius:24px;margin:0 auto 8px"></div><div style="font-family:var(--f-mono);font-size:10px;color:var(--grey2)">24px<br>Sheets</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ COMPOSANTS ═══════════════════════════════ -->
+<section class="section" id="composants">
+  <div class="label-section">06 — Composants</div>
+
+  <!-- Buttons -->
+  <h3 class="t-h3" style="margin-bottom:20px">Boutons</h3>
+  <div class="card" style="margin-bottom:24px">
+    <div class="comp-row">
+      <button class="btn btn-primary">Ajouter un repas</button>
+      <button class="btn btn-secondary">Démarrer la séance</button>
+      <button class="btn btn-danger">Voir la recette</button>
+      <button class="btn btn-ghost">Accueil</button>
+    </div>
+  </div>
+
+  <!-- Chips -->
+  <h3 class="t-h3" style="margin-bottom:20px">Chips & Badges</h3>
+  <div class="card" style="margin-bottom:24px">
+    <div class="comp-row">
+      <div class="chip chip-g">Nutrition</div>
+      <div class="chip chip-b">Training</div>
+      <div class="chip chip-o">Cuisine</div>
+      <div class="chip chip-g">⚡ Jour 5</div>
+      <div class="chip chip-b">1890 / 2000 kcal</div>
+    </div>
+  </div>
+
+  <!-- Action rows -->
+  <h3 class="t-h3" style="margin-bottom:20px">Rows d'action (Home)</h3>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;max-width:480px">
+    <div class="ar">
+      <div class="ar-ic" style="background:rgba(204,255,0,.1);border:1px solid rgba(204,255,0,.2);">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M4 3v7a2 2 0 0 0 4 0V3M6 3v18M14 3c-1.5 1-2 3-2 5s.5 4 2 5v8" stroke="#CCFF00" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div class="ar-k" style="color:#CCFF00">Nutrition</div>
+        <div class="ar-t">Manger</div>
+        <div class="ar-s">Loguer un repas en 2 gestes</div>
+      </div>
+      <svg style="margin-left:auto;color:#56565F" width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="ar">
+      <div class="ar-ic" style="background:rgba(61,142,255,.1);border:1px solid rgba(61,142,255,.2);">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M4 9v6M20 9v6M6.5 12h11" stroke="#3D8EFF" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div class="ar-k" style="color:#3D8EFF">Training</div>
+        <div class="ar-t">S'entraîner</div>
+        <div class="ar-s">Séance générée pour toi</div>
+      </div>
+      <svg style="margin-left:auto;color:#56565F" width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+  </div>
+
+  <!-- Stat strip -->
+  <h3 class="t-h3" style="margin-bottom:20px">Stats Strip</h3>
+  <div style="max-width:480px;border:1px solid var(--border);border-radius:16px;overflow:hidden;display:flex;margin-bottom:24px">
+    <div style="flex:1;padding:14px 16px;border-right:1px solid var(--border)"><div style="font-size:18px;font-weight:600;letter-spacing:-.5px;color:#CCFF00">1 240</div><div style="font-size:10px;color:#56565F;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-top:3px">kcal</div></div>
+    <div style="flex:1;padding:14px 16px;border-right:1px solid var(--border)"><div style="font-size:18px;font-weight:600;letter-spacing:-.5px">Repos</div><div style="font-size:10px;color:#56565F;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-top:3px">Séance</div></div>
+    <div style="flex:1;padding:14px 16px"><div style="font-size:18px;font-weight:600;letter-spacing:-.5px">J·5</div><div style="font-size:10px;color:#56565F;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-top:3px">Streak</div></div>
+  </div>
+
+  <!-- Progress bar -->
+  <h3 class="t-h3" style="margin-bottom:20px">Barre de progression kcal</h3>
+  <div class="card" style="max-width:480px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+      <span style="font-size:13px;font-weight:600">Bilan du jour</span>
+      <span style="font-size:11px;color:#CCFF00;font-weight:700;background:rgba(204,255,0,.1);padding:2px 10px;border-radius:6px">1890 / 2000</span>
+    </div>
+    <div style="height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden">
+      <div style="width:94.5%;height:100%;background:#CCFF00;border-radius:2px"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:#56565F">
+      <span>0</span><span style="color:#CCFF00;font-weight:700">94 %</span><span>2000 kcal</span>
+    </div>
+  </div>
+
+  <!-- Tagline -->
+  <div style="margin-top:80px;padding:60px 40px;border:1px solid var(--border);border-radius:20px;text-align:center;background:radial-gradient(ellipse at 50% 0%, rgba(204,255,0,.05), transparent 60%)">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--grey2);margin-bottom:20px">Tagline officielle</div>
+    <div style="font-size:clamp(28px,4vw,52px);font-weight:600;letter-spacing:-1.5px;line-height:1.1">Appuie.<br><span style="color:var(--lime)">L'app s'occupe du reste.</span></div>
+    <div style="margin-top:24px;font-size:14px;color:var(--grey2)">EN — "Tap. Done."</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<div style="margin-top:80px;padding-top:32px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+  <div style="display:flex;align-items:center;gap:12px">
+    <svg width="28" height="28" viewBox="0 0 80 80" fill="none">
+      <rect x="6" y="14" width="52" height="11" rx="5.5" fill="#CCFF00" transform="rotate(-18 32 19.5)"/>
+      <rect x="14" y="33" width="52" height="11" rx="5.5" fill="#3D8EFF" transform="rotate(-18 40 38.5)"/>
+      <rect x="22" y="52" width="52" height="11" rx="5.5" fill="#FF5C2B" transform="rotate(-18 48 57.5)"/>
+    </svg>
+    <span style="font-size:14px;font-weight:600">NoBrainFit</span>
+  </div>
+  <div style="font-family:var(--f-mono);font-size:11px;color:var(--grey2)">Brand System v1.0 · 2026</div>
+</div>
+
+</body>
+</html>
