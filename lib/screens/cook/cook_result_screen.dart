@@ -1,82 +1,158 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:no_brain_fit/services/ai/ai_provider.dart';
+import 'package:no_brain_fit/services/ai/ai_service.dart';
 import 'package:no_brain_fit/utils/brand.dart';
 import 'package:no_brain_fit/widgets/result_scaffold.dart';
 
-class CookResultScreen extends StatefulWidget {
+class CookResultScreen extends ConsumerStatefulWidget {
   const CookResultScreen({super.key, required this.effort, required this.portions});
   final String effort, portions;
 
   @override
-  State<CookResultScreen> createState() => _CookResultScreenState();
+  ConsumerState<CookResultScreen> createState() => _CookResultScreenState();
 }
 
-class _CookResultScreenState extends State<CookResultScreen> {
-  static const _recipes = [
-    _Recipe('Poulet grillé & légumes rôtis', '25 min', '480 kcal', '38 g prot'),
-    _Recipe('Pâtes au pesto & thon',         '15 min', '520 kcal', '30 g prot'),
-    _Recipe('Omelette aux champignons',       '10 min', '310 kcal', '24 g prot'),
-  ];
-  static const _shop = [
-    'Escalope de poulet · 300 g',
-    'Courgettes',
-    'Poivrons rouges',
-    "Huile d'olive",
-    'Pâtes · 200 g',
-    'Pesto basilic',
-  ];
+class _CookResultScreenState extends ConsumerState<CookResultScreen> {
   final Set<int> _checked = {};
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(recipesProvider.notifier).generate(
+        effort: widget.effort,
+        portions: widget.portions,
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final recipesAsync = ref.watch(recipesProvider);
+
+    return recipesAsync.when(
+      loading: () => _buildShell(
+        sub: widget.portions,
+        child: const _LoadingCard(),
+      ),
+      error: (e, _) => _buildShell(
+        sub: widget.portions,
+        child: _ErrorCard(message: e.toString()),
+      ),
+      data: (suggestions) {
+        if (suggestions == null) {
+          return _buildShell(sub: widget.portions, child: const _LoadingCard());
+        }
+        final avgTime = suggestions.recipes.isEmpty
+            ? 0
+            : suggestions.recipes.map((r) => r.timeMin).reduce((a, b) => a + b) ~/ suggestions.recipes.length;
+        return _buildShell(
+          sub: '~$avgTime min · ${widget.portions}',
+          child: _RecipesContent(
+            suggestions: suggestions,
+            checked: _checked,
+            onToggle: (i) => setState(() {
+              _checked.contains(i) ? _checked.remove(i) : _checked.add(i);
+            }),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildShell({required String sub, required Widget child}) {
     return ResultScaffold(
       accent: Brand.orange,
       kicker: 'Cuisine · Sélection du soir',
       title: '3 recettes.',
-      sub: '~25 min · ${widget.portions}',
+      sub: sub,
       onHome: () => context.go('/'),
       primaryLabel: 'Voir la recette',
       onPrimary: () {},
+      children: [child],
+    );
+  }
+}
+
+// ── Sub-widgets ───────────────────────────────────────────────────────────────
+
+class _LoadingCard extends StatelessWidget {
+  const _LoadingCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(Brand.s24),
+      decoration: BoxDecoration(
+        color: Brand.bgCard,
+        borderRadius: BorderRadius.circular(Brand.rCard),
+        border: Border.all(color: Brand.border),
+      ),
+      child: const Center(
+        child: Column(
+          children: [
+            CircularProgressIndicator(color: Brand.orange, strokeWidth: 2),
+            SizedBox(height: Brand.s16),
+            Text('L\'IA prépare tes recettes…', style: TextStyle(fontSize: 13, color: Brand.grey1)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ErrorCard extends StatelessWidget {
+  const _ErrorCard({required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(Brand.s16),
+      decoration: BoxDecoration(
+        color: Brand.bgCard,
+        borderRadius: BorderRadius.circular(Brand.rCard),
+        border: Border.all(color: Brand.orange.withOpacity(.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(children: [
+            Icon(Icons.warning_amber_rounded, size: 16, color: Brand.orange),
+            SizedBox(width: Brand.s8),
+            Text('Erreur de génération', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.orange)),
+          ]),
+          const SizedBox(height: Brand.s8),
+          Text(message, style: const TextStyle(fontSize: 12, color: Brand.grey1)),
+          const SizedBox(height: Brand.s12),
+          const Text(
+            'Vérifie la config IA dans les Paramètres.',
+            style: TextStyle(fontSize: 12, color: Brand.grey2),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RecipesContent extends StatelessWidget {
+  const _RecipesContent({required this.suggestions, required this.checked, required this.onToggle});
+  final RecipeSuggestions suggestions;
+  final Set<int> checked;
+  final void Function(int) onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
       children: [
-        // Recipes
-        ..._recipes.map((r) => Padding(
+        ...suggestions.recipes.map((r) => Padding(
           padding: const EdgeInsets.only(bottom: Brand.s8),
           child: _RecipeRow(recipe: r),
         )),
         const SizedBox(height: Brand.s4),
-        // Shopping list
-        Container(
-          padding: const EdgeInsets.all(Brand.s16),
-          decoration: BoxDecoration(
-            color: Brand.bgCard,
-            borderRadius: BorderRadius.circular(Brand.rCard),
-            border: Border.all(color: Brand.border),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                const Text('Liste de courses', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.white)),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: Brand.orange.withOpacity(.12),
-                    borderRadius: BorderRadius.circular(Brand.rChip),
-                    border: Border.all(color: Brand.orange.withOpacity(.25)),
-                  ),
-                  child: const Text('Monoprix · 0,3 km', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Brand.orange)),
-                ),
-              ]),
-              const SizedBox(height: Brand.s8),
-              ..._shop.asMap().entries.map((e) => _ShopRow(
-                label: e.value,
-                checked: _checked.contains(e.key),
-                onToggle: () => setState(() { _checked.contains(e.key) ? _checked.remove(e.key) : _checked.add(e.key); }),
-              )),
-            ],
-          ),
-        ),
+        _ShoppingList(items: suggestions.shoppingList, checked: checked, onToggle: onToggle),
       ],
     );
   }
@@ -84,7 +160,7 @@ class _CookResultScreenState extends State<CookResultScreen> {
 
 class _RecipeRow extends StatelessWidget {
   const _RecipeRow({required this.recipe});
-  final _Recipe recipe;
+  final Recipe recipe;
 
   @override
   Widget build(BuildContext context) {
@@ -111,11 +187,11 @@ class _RecipeRow extends StatelessWidget {
             Text(recipe.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, letterSpacing: -.2, color: Brand.white)),
             const SizedBox(height: 5),
             Row(children: [
-              _Tag('⏱ ${recipe.time}'),
+              _Tag('${recipe.timeMin} min'),
               const SizedBox(width: 5),
-              _Tag('🔥 ${recipe.kcal}'),
+              _Tag('${recipe.kcal} kcal'),
               const SizedBox(width: 5),
-              _Tag('💪 ${recipe.prot}'),
+              _Tag('${recipe.protG} g prot'),
             ]),
           ]),
         ),
@@ -138,6 +214,52 @@ class _Tag extends StatelessWidget {
         borderRadius: BorderRadius.circular(Brand.rTag),
       ),
       child: Text(text, style: const TextStyle(fontSize: 10, color: Brand.grey1)),
+    );
+  }
+}
+
+class _ShoppingList extends StatelessWidget {
+  const _ShoppingList({required this.items, required this.checked, required this.onToggle});
+  final List<String> items;
+  final Set<int> checked;
+  final void Function(int) onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(Brand.s16),
+      decoration: BoxDecoration(
+        color: Brand.bgCard,
+        borderRadius: BorderRadius.circular(Brand.rCard),
+        border: Border.all(color: Brand.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            const Text('Liste de courses', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.white)),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: Brand.orange.withOpacity(.12),
+                borderRadius: BorderRadius.circular(Brand.rChip),
+                border: Border.all(color: Brand.orange.withOpacity(.25)),
+              ),
+              child: Text(
+                '${items.length} articles',
+                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Brand.orange),
+              ),
+            ),
+          ]),
+          const SizedBox(height: Brand.s8),
+          ...items.asMap().entries.map((e) => _ShopRow(
+            label: e.value,
+            checked: checked.contains(e.key),
+            onToggle: () => onToggle(e.key),
+          )),
+        ],
+      ),
     );
   }
 }
@@ -180,9 +302,4 @@ class _ShopRow extends StatelessWidget {
       ),
     );
   }
-}
-
-class _Recipe {
-  const _Recipe(this.name, this.time, this.kcal, this.prot);
-  final String name, time, kcal, prot;
 }

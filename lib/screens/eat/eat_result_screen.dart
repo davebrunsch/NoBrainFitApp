@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:no_brain_fit/services/ai/ai_provider.dart';
 import 'package:no_brain_fit/utils/brand.dart';
 import 'package:no_brain_fit/widgets/result_scaffold.dart';
 
-class EatResultScreen extends StatelessWidget {
+class EatResultScreen extends ConsumerStatefulWidget {
   const EatResultScreen({super.key, required this.mealType, required this.mealSize});
   final String mealType, mealSize;
 
-  int get _kcal => switch (mealSize) {
+  @override
+  ConsumerState<EatResultScreen> createState() => _EatResultScreenState();
+}
+
+class _EatResultScreenState extends ConsumerState<EatResultScreen> {
+  int get _kcal => switch (widget.mealSize) {
     'Léger'   => 350,
     'Normal'  => 600,
     'Copieux' => 900,
@@ -15,17 +22,32 @@ class EatResultScreen extends StatelessWidget {
   };
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(nutritionTipProvider.notifier).generate(
+        mealType: widget.mealType,
+        mealSize: widget.mealSize,
+        totalKcal: _kcal,
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final tipAsync = ref.watch(nutritionTipProvider);
+    final totalKcal = _kcal;
+    final filled = (totalKcal / 2000).clamp(0.0, 1.0);
+
     return ResultScaffold(
       accent: Brand.lime,
       kicker: 'Nutrition · Enregistré',
       title: 'Repas loggé.',
-      sub: '$mealType · ~$_kcal kcal',
+      sub: '${widget.mealType} · ~$totalKcal kcal',
       onHome: () => context.go('/'),
       primaryLabel: 'Ajouter un aliment',
       onPrimary: () {},
       children: [
-        // Bilan card
         _BrandCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,16 +55,16 @@ class EatResultScreen extends StatelessWidget {
               Row(children: [
                 const Text('Bilan du jour', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.white)),
                 const Spacer(),
-                _NeonBadge('1890 / 2000 kcal', Brand.lime),
+                _NeonBadge('$totalKcal / 2000 kcal', Brand.lime),
               ]),
               const SizedBox(height: Brand.s16),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: const [
+              const Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
                 _MacroStat(value: '92g', label: 'PROT.', color: Brand.lime),
                 _MacroStat(value: '210g', label: 'GLUC.', color: Brand.blue),
                 _MacroStat(value: '55g', label: 'LIP.', color: Brand.orange),
               ]),
               const SizedBox(height: Brand.s16),
-              _KcalBar(filled: .945),
+              _KcalBar(filled: filled),
             ],
           ),
         ),
@@ -53,9 +75,20 @@ class EatResultScreen extends StatelessWidget {
             children: [
               const Text('Conseil', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.white)),
               const SizedBox(height: Brand.s12),
-              const Text(
-                'Il te reste 110 kcal. Un dîner léger — soupe ou yaourt — et tu seras pile sur ton objectif.',
-                style: TextStyle(fontSize: 13, color: Brand.grey1, height: 1.6),
+              tipAsync.when(
+                loading: () => const Row(children: [
+                  SizedBox(width: 14, height: 14, child: CircularProgressIndicator(color: Brand.lime, strokeWidth: 1.5)),
+                  SizedBox(width: Brand.s8),
+                  Text('Analyse en cours…', style: TextStyle(fontSize: 13, color: Brand.grey2)),
+                ]),
+                error: (e, _) => Text(
+                  'Conseil indisponible. Vérifie la config IA.',
+                  style: const TextStyle(fontSize: 13, color: Brand.grey2, height: 1.6),
+                ),
+                data: (tip) => Text(
+                  tip ?? 'Bien joué ! Continue comme ça.',
+                  style: const TextStyle(fontSize: 13, color: Brand.grey1, height: 1.6),
+                ),
               ),
             ],
           ),

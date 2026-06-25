@@ -49,15 +49,18 @@ class _TopBar extends StatelessWidget {
 class _AvatarButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 34,
-      height: 34,
-      decoration: BoxDecoration(
-        color: Brand.bgCard,
-        shape: BoxShape.circle,
-        border: Border.all(color: Brand.border2),
+    return GestureDetector(
+      onTap: () => context.push('/settings'),
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: Brand.bgCard,
+          shape: BoxShape.circle,
+          border: Border.all(color: Brand.border2),
+        ),
+        child: const Icon(Icons.person_outline_rounded, size: 18, color: Brand.grey1),
       ),
-      child: const Icon(Icons.person_outline_rounded, size: 18, color: Brand.grey1),
     );
   }
 }

@@ -1,82 +1,206 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:no_brain_fit/services/ai/ai_provider.dart';
+import 'package:no_brain_fit/services/ai/ai_service.dart';
 import 'package:no_brain_fit/utils/brand.dart';
 import 'package:no_brain_fit/widgets/result_scaffold.dart';
 
-class TrainResultScreen extends StatefulWidget {
+class TrainResultScreen extends ConsumerStatefulWidget {
   const TrainResultScreen({super.key, required this.duration, required this.location});
   final String duration, location;
 
   @override
-  State<TrainResultScreen> createState() => _TrainResultScreenState();
+  ConsumerState<TrainResultScreen> createState() => _TrainResultScreenState();
 }
 
-class _TrainResultScreenState extends State<TrainResultScreen> {
-  static const _exercises = [
-    _Ex('Pompes',        '3 × 12 reps · 60 s repos'),
-    _Ex('Squats sautés', '3 × 15 reps · 45 s repos'),
-    _Ex('Gainage',       '3 × 40 secondes'),
-    _Ex('Burpees',       '2 × 10 reps · 60 s repos'),
-  ];
+class _TrainResultScreenState extends ConsumerState<TrainResultScreen> {
   final Set<int> _done = {};
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(workoutProvider.notifier).generate(
+        duration: widget.duration,
+        location: widget.location,
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final workoutAsync = ref.watch(workoutProvider);
+
+    return workoutAsync.when(
+      loading: () => _buildShell(
+        title: 'Génération…',
+        sub: '${widget.duration} · ${widget.location}',
+        child: const _LoadingCard(),
+      ),
+      error: (e, _) => _buildShell(
+        title: 'Erreur',
+        sub: '${widget.duration} · ${widget.location}',
+        child: _ErrorCard(message: e.toString()),
+      ),
+      data: (plan) {
+        if (plan == null) {
+          return _buildShell(
+            title: 'Prêt.',
+            sub: '${widget.duration} · ${widget.location}',
+            child: const _LoadingCard(),
+          );
+        }
+        return _buildShell(
+          title: plan.title,
+          sub: '${plan.exercises.length} exercices · ${widget.location}',
+          child: _ExerciseCard(
+            exercises: plan.exercises,
+            done: _done,
+            onToggle: (i) => setState(() {
+              _done.contains(i) ? _done.remove(i) : _done.add(i);
+            }),
+          ),
+          doneCount: _done.length,
+          totalCount: plan.exercises.length,
+        );
+      },
+    );
+  }
+
+  Widget _buildShell({
+    required String title,
+    required String sub,
+    required Widget child,
+    int doneCount = 0,
+    int totalCount = 0,
+  }) {
     return ResultScaffold(
       accent: Brand.blue,
       kicker: 'Training · Généré pour toi',
-      title: 'Full Body · ${widget.duration}',
-      sub: '${_exercises.length} exercices · ${widget.location}',
+      title: title,
+      sub: sub,
       onHome: () => context.go('/'),
       primaryLabel: '▶  Démarrer',
       onPrimary: () {},
-      children: [
-        Container(
-          padding: const EdgeInsets.all(Brand.s16),
-          decoration: BoxDecoration(
-            color: Brand.bgCard,
-            borderRadius: BorderRadius.circular(Brand.rCard),
-            border: Border.all(color: Brand.border),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                const Text('Ta séance', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.white)),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: Brand.blue.withOpacity(.12),
-                    borderRadius: BorderRadius.circular(Brand.rChip),
-                    border: Border.all(color: Brand.blue.withOpacity(.25)),
-                  ),
-                  child: Text(
-                    '${_done.length} / ${_exercises.length}',
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Brand.blue, letterSpacing: .04),
-                  ),
-                ),
-              ]),
-              const SizedBox(height: Brand.s8),
-              ...List.generate(_exercises.length, (i) => _ExerciseRow(
-                index: i + 1,
-                ex: _exercises[i],
-                done: _done.contains(i),
-                onToggle: () => setState(() { _done.contains(i) ? _done.remove(i) : _done.add(i); }),
-              )),
-            ],
-          ),
+      children: [child],
+    );
+  }
+}
+
+// ── Sub-widgets ───────────────────────────────────────────────────────────────
+
+class _LoadingCard extends StatelessWidget {
+  const _LoadingCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(Brand.s24),
+      decoration: BoxDecoration(
+        color: Brand.bgCard,
+        borderRadius: BorderRadius.circular(Brand.rCard),
+        border: Border.all(color: Brand.border),
+      ),
+      child: const Center(
+        child: Column(
+          children: [
+            CircularProgressIndicator(color: Brand.blue, strokeWidth: 2),
+            SizedBox(height: Brand.s16),
+            Text('L\'IA prépare ta séance…', style: TextStyle(fontSize: 13, color: Brand.grey1)),
+          ],
         ),
-      ],
+      ),
+    );
+  }
+}
+
+class _ErrorCard extends StatelessWidget {
+  const _ErrorCard({required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(Brand.s16),
+      decoration: BoxDecoration(
+        color: Brand.bgCard,
+        borderRadius: BorderRadius.circular(Brand.rCard),
+        border: Border.all(color: Brand.orange.withOpacity(.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(children: [
+            Icon(Icons.warning_amber_rounded, size: 16, color: Brand.orange),
+            SizedBox(width: Brand.s8),
+            Text('Erreur de génération', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.orange)),
+          ]),
+          const SizedBox(height: Brand.s8),
+          Text(message, style: const TextStyle(fontSize: 12, color: Brand.grey1)),
+          const SizedBox(height: Brand.s12),
+          const Text(
+            'Vérifie la config IA dans les Paramètres.',
+            style: TextStyle(fontSize: 12, color: Brand.grey2),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ExerciseCard extends StatelessWidget {
+  const _ExerciseCard({required this.exercises, required this.done, required this.onToggle});
+  final List<Exercise> exercises;
+  final Set<int> done;
+  final void Function(int) onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(Brand.s16),
+      decoration: BoxDecoration(
+        color: Brand.bgCard,
+        borderRadius: BorderRadius.circular(Brand.rCard),
+        border: Border.all(color: Brand.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            const Text('Ta séance', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.white)),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+              decoration: BoxDecoration(
+                color: Brand.blue.withOpacity(.12),
+                borderRadius: BorderRadius.circular(Brand.rChip),
+                border: Border.all(color: Brand.blue.withOpacity(.25)),
+              ),
+              child: Text(
+                '${done.length} / ${exercises.length}',
+                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Brand.blue, letterSpacing: .04),
+              ),
+            ),
+          ]),
+          const SizedBox(height: Brand.s8),
+          ...List.generate(exercises.length, (i) => _ExerciseRow(
+            index: i + 1,
+            exercise: exercises[i],
+            isDone: done.contains(i),
+            onToggle: () => onToggle(i),
+          )),
+        ],
+      ),
     );
   }
 }
 
 class _ExerciseRow extends StatelessWidget {
-  const _ExerciseRow({required this.index, required this.ex, required this.done, required this.onToggle});
+  const _ExerciseRow({required this.index, required this.exercise, required this.isDone, required this.onToggle});
   final int index;
-  final _Ex ex;
-  final bool done;
+  final Exercise exercise;
+  final bool isDone;
   final VoidCallback onToggle;
 
   @override
@@ -103,35 +227,30 @@ class _ExerciseRow extends StatelessWidget {
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(
-                ex.name,
+                exercise.name,
                 style: TextStyle(
                   fontSize: 14, fontWeight: FontWeight.w600, letterSpacing: -.2,
-                  color: done ? Brand.grey2 : Brand.white,
-                  decoration: done ? TextDecoration.lineThrough : null,
+                  color: isDone ? Brand.grey2 : Brand.white,
+                  decoration: isDone ? TextDecoration.lineThrough : null,
                   decorationColor: Brand.grey2,
                 ),
               ),
               const SizedBox(height: 2),
-              Text(ex.detail, style: const TextStyle(fontSize: 11, color: Brand.grey2)),
+              Text(exercise.detail, style: const TextStyle(fontSize: 11, color: Brand.grey2)),
             ]),
           ),
           AnimatedContainer(
             duration: const Duration(milliseconds: 140),
             width: 22, height: 22,
             decoration: BoxDecoration(
-              color: done ? Brand.blue : Colors.transparent,
+              color: isDone ? Brand.blue : Colors.transparent,
               borderRadius: BorderRadius.circular(7),
-              border: Border.all(color: done ? Brand.blue : Brand.grey2, width: 1.5),
+              border: Border.all(color: isDone ? Brand.blue : Brand.grey2, width: 1.5),
             ),
-            child: done ? const Icon(Icons.check_rounded, size: 14, color: Brand.bgVoid) : null,
+            child: isDone ? const Icon(Icons.check_rounded, size: 14, color: Brand.bgVoid) : null,
           ),
         ]),
       ),
     );
   }
-}
-
-class _Ex {
-  const _Ex(this.name, this.detail);
-  final String name, detail;
 }
