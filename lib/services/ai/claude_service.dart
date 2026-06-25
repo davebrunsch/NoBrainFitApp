@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'ai_service.dart';
 import 'ai_config.dart';
+import 'ai_parsers.dart';
 
 /// Claude API (Anthropic) backend.
 class ClaudeService implements AiService {
@@ -38,7 +38,7 @@ class ClaudeService implements AiService {
     required String location,
   }) async {
     final raw = await _complete(AiPrompts.workout(duration: duration, location: location));
-    return _parseWorkout(raw);
+    return parseWorkout(raw);
   }
 
   @override
@@ -47,7 +47,7 @@ class ClaudeService implements AiService {
     required String portions,
   }) async {
     final raw = await _complete(AiPrompts.recipes(effort: effort, portions: portions));
-    return _parseRecipes(raw);
+    return parseRecipes(raw);
   }
 
   @override
@@ -62,35 +62,4 @@ class ClaudeService implements AiService {
       totalKcal: totalKcal,
     ));
   }
-}
-
-// ── Parsers (shared with OllamaService) ──────────────────────────────────────
-
-WorkoutPlan _parseWorkout(String raw) {
-  final json = jsonDecode(_extractJson(raw)) as Map<String, dynamic>;
-  final exList = (json['exercises'] as List).map((e) => Exercise(
-    name: e['name'] as String,
-    detail: e['detail'] as String,
-  )).toList();
-  return WorkoutPlan(title: json['title'] as String, exercises: exList);
-}
-
-RecipeSuggestions _parseRecipes(String raw) {
-  final json = jsonDecode(_extractJson(raw)) as Map<String, dynamic>;
-  final recipes = (json['recipes'] as List).map((r) => Recipe(
-    name:    r['name']    as String,
-    timeMin: r['time_min'] as int,
-    kcal:    r['kcal']    as int,
-    protG:   r['prot_g']  as int,
-  )).toList();
-  final shopping = (json['shopping_list'] as List).cast<String>();
-  return RecipeSuggestions(recipes: recipes, shoppingList: shopping);
-}
-
-/// Strip any markdown fences before parsing JSON.
-String _extractJson(String raw) {
-  final s = raw.trim();
-  final fence = RegExp(r'```(?:json)?\s*([\s\S]*?)```');
-  final m = fence.firstMatch(s);
-  return m != null ? m.group(1)!.trim() : s;
 }

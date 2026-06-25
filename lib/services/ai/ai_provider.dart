@@ -10,7 +10,7 @@ class AiConfigNotifier extends AsyncNotifier<AiConfig> {
   @override
   Future<AiConfig> build() => AiConfig.load();
 
-  Future<void> update(AiConfig config) async {
+  Future<void> save(AiConfig config) async {
     await config.save();
     state = AsyncData(config);
   }
