@@ -166,7 +166,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _save(AiConfig config) async {
     setState(() => _saving = true);
-    await ref.read(aiConfigProvider.notifier).update(config);
+    await ref.read(aiConfigProvider.notifier).save(config);
     if (mounted) {
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

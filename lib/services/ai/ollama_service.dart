@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'ai_service.dart';
-import 'claude_service.dart' show _parseWorkout, _parseRecipes, _extractJson;
+import 'ai_parsers.dart';
 
 /// Ollama local backend.
 ///
@@ -15,7 +14,7 @@ class OllamaService implements AiService {
       : _dio = Dio(BaseOptions(
           baseUrl: baseUrl,
           connectTimeout: const Duration(seconds: 10),
-          receiveTimeout: const Duration(seconds: 120), // local models can be slow
+          receiveTimeout: const Duration(seconds: 120),
         ));
 
   final String baseUrl;
@@ -41,7 +40,7 @@ class OllamaService implements AiService {
     required String location,
   }) async {
     final raw = await _complete(AiPrompts.workout(duration: duration, location: location));
-    return _parseWorkout(raw);
+    return parseWorkout(raw);
   }
 
   @override
@@ -50,7 +49,7 @@ class OllamaService implements AiService {
     required String portions,
   }) async {
     final raw = await _complete(AiPrompts.recipes(effort: effort, portions: portions));
-    return _parseRecipes(raw);
+    return parseRecipes(raw);
   }
 
   @override
