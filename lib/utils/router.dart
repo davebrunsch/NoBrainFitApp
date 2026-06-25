@@ -3,6 +3,7 @@ import 'package:no_brain_fit/screens/home_screen.dart';
 import 'package:no_brain_fit/screens/eat/eat_flow.dart';
 import 'package:no_brain_fit/screens/train/train_flow.dart';
 import 'package:no_brain_fit/screens/cook/cook_flow.dart';
+import 'package:no_brain_fit/screens/settings/settings_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -11,5 +12,6 @@ final appRouter = GoRouter(
     GoRoute(path: '/eat', builder: (c, s) => const EatFlow()),
     GoRoute(path: '/train', builder: (c, s) => const TrainFlow()),
     GoRoute(path: '/cook', builder: (c, s) => const CookFlow()),
+    GoRoute(path: '/settings', builder: (c, s) => const SettingsScreen()),
   ],
 );
