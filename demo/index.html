@@ -5,601 +5,444 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NoBrainFit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:      #06060E;
-  --surface: #0D0D1A;
-  --card:    #111120;
-  --border:  rgba(255,255,255,.07);
-  --neon-g:  #00FF88;   /* lime neon — MANGER */
-  --neon-b:  #00C8FF;   /* cyan neon — S'ENTRAÎNER */
-  --neon-o:  #FF4D1C;   /* electric orange — CUISINER */
-  --neon-p:  #BF00FF;   /* violet accent */
-  --muted:   #44445A;
-  --text2:   #6B6B88;
+  --bg:      #0A0A0C;
+  --surface: #111114;
+  --card:    #141418;
+  --card-hi: #1A1A20;
+  --border:  rgba(255,255,255,.06);
+  --border2: rgba(255,255,255,.12);
+  --acc-g:   #C8FF3D;   /* acid lime — restrained accent */
+  --acc-b:   #4D9FFF;   /* steel blue */
+  --acc-o:   #FF6B3D;   /* burnt orange */
+  --txt:     #F5F5F7;
+  --txt2:    #8A8A96;
+  --txt3:    #56565F;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 html, body {
-  background: #030308;
+  background: #050506;
   font-family: 'Space Grotesk', -apple-system, sans-serif;
-  color: #fff;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  overflow: hidden;
+  color: var(--txt);
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 20px; overflow: hidden;
 }
 
-/* Ambient blobs behind phone */
-body::before, body::after {
-  content: ''; position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0;
-}
-body::before { width: 400px; height: 400px; background: rgba(0,200,255,.06); top: -100px; left: -100px; }
-body::after  { width: 500px; height: 500px; background: rgba(0,255,136,.04); bottom: -150px; right: -150px; }
-
-/* Phone */
 .phone {
   width: 390px; max-width: 100%; height: 844px; max-height: 95vh;
-  background: var(--bg);
-  border-radius: 48px; border: 8px solid #111;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,.06),
-    0 40px 100px rgba(0,0,0,.8),
-    inset 0 1px 0 rgba(255,255,255,.05);
-  overflow: hidden; position: relative; z-index: 1; display: flex; flex-direction: column;
+  background: var(--bg); border-radius: 46px; border: 8px solid #0A0A0C;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.05), 0 50px 120px rgba(0,0,0,.85);
+  overflow: hidden; position: relative; display: flex; flex-direction: column;
 }
 .notch {
   position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: 120px; height: 24px; background: #000;
-  border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; z-index: 50;
+  width: 110px; height: 22px; background: #000;
+  border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; z-index: 50;
 }
 
-.screen { flex: 1; display: none; flex-direction: column; padding-top: 40px; overflow: hidden; }
-.screen.active { display: flex; animation: slide .22s cubic-bezier(.22,1,.36,1); }
-@keyframes slide { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: none; } }
+.screen { flex: 1; display: none; flex-direction: column; padding-top: 38px; overflow: hidden; }
+.screen.active { display: flex; animation: in .25s cubic-bezier(.22,1,.36,1); }
+@keyframes in { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
 .scroll { flex:1; overflow-y:auto; padding-bottom:8px; }
 .scroll::-webkit-scrollbar { width:0; }
 
-/* ── TYPOGRAPHY ── */
-.label-xs { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--text2); }
-.label-sm { font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+svg.ic { display: block; }
+.pad { padding: 0 22px; }
 
 /* ── HOME ── */
-.home-pad { padding: 0 20px; }
-.home-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
-.avatar { width: 36px; height: 36px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; }
-.streak-badge {
-  display: flex; align-items: center; gap: 6px; padding: 6px 12px;
-  border-radius: 20px; background: rgba(0,255,136,.08); border: 1px solid rgba(0,255,136,.2);
-  font-size: 12px; font-weight: 700; color: var(--neon-g); letter-spacing: .04em;
-}
-.home-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--text2); margin-bottom: 6px; }
-.home-h1 {
-  font-size: 38px; font-weight: 700; line-height: 1; letter-spacing: -1.5px;
-  background: linear-gradient(135deg, #fff 30%, rgba(255,255,255,.4));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-.home-h1 .accent { -webkit-text-fill-color: var(--neon-g); }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 6px 22px 0; }
+.brand { font-size: 15px; font-weight: 700; letter-spacing: -.3px; }
+.brand b { color: var(--acc-g); }
+.av { width: 34px; height: 34px; border-radius: 50%; background: var(--card); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--txt2); }
 
-/* Stats row */
-.stats { display: flex; gap: 8px; margin: 20px 0; overflow-x: auto; }
-.stats::-webkit-scrollbar { display: none; }
-.stat {
-  flex-shrink: 0; padding: 10px 14px; border-radius: 14px;
-  background: var(--card); border: 1px solid var(--border);
-  display: flex; align-items: center; gap: 8px;
-}
-.stat-dot { width: 6px; height: 6px; border-radius: 50%; }
-.stat-val { font-size: 14px; font-weight: 700; }
-.stat-key { font-size: 11px; color: var(--text2); font-weight: 500; margin-top: 1px; }
+.hero { padding: 30px 22px 0; }
+.eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--txt3); }
+.hero-h1 { font-size: 34px; font-weight: 600; line-height: 1.04; letter-spacing: -1.2px; margin-top: 10px; }
+.hero-h1 .dim { color: var(--txt3); }
 
-/* Big action buttons */
-.actions-list { display: flex; flex-direction: column; gap: 10px; flex: 1; padding-bottom: 20px; }
-.action-btn {
-  flex: 1; border-radius: 20px; position: relative; overflow: hidden;
-  cursor: pointer; transition: transform .12s ease, box-shadow .12s ease;
-  display: flex; align-items: center; padding: 0 24px; min-height: 100px;
-  background: var(--card); border: 1px solid var(--border);
-}
-.action-btn:active { transform: scale(.97); }
-.action-btn::before { /* Neon glow stripe on left */
-  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-  border-radius: 20px 0 0 20px;
-}
-.action-btn .noise { /* Grain texture overlay */
-  position: absolute; inset: 0; opacity: .03; pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 180px;
-}
-.ab-g::before { background: var(--neon-g); box-shadow: 0 0 12px var(--neon-g); }
-.ab-b::before { background: var(--neon-b); box-shadow: 0 0 12px var(--neon-b); }
-.ab-o::before { background: var(--neon-o); box-shadow: 0 0 12px var(--neon-o); }
-.ab-g { box-shadow: 0 4px 40px rgba(0,255,136,.08); }
-.ab-b { box-shadow: 0 4px 40px rgba(0,200,255,.08); }
-.ab-o { box-shadow: 0 4px 40px rgba(255,77,28,.08); }
-.ab-g:hover { box-shadow: 0 4px 40px rgba(0,255,136,.18); }
-.ab-b:hover { box-shadow: 0 4px 40px rgba(0,200,255,.18); }
-.ab-o:hover { box-shadow: 0 4px 40px rgba(255,77,28,.18); }
+/* Stat strip */
+.strip { display: flex; gap: 0; margin: 24px 22px 0; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.strip-cell { flex: 1; padding: 14px 16px; border-right: 1px solid var(--border); }
+.strip-cell:last-child { border-right: none; }
+.strip-val { font-size: 18px; font-weight: 600; letter-spacing: -.5px; }
+.strip-key { font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--txt3); margin-top: 3px; }
 
-.ab-emoji { font-size: 42px; margin-right: 18px; }
-.ab-text {}
-.ab-tag { font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 4px; }
-.ab-label { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: #fff; }
-.ab-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
-.ab-arr { margin-left: auto; font-size: 20px; color: var(--muted); padding-left: 12px; }
+/* Action rows */
+.rows { display: flex; flex-direction: column; gap: 10px; flex: 1; padding: 22px 22px; }
+.row {
+  flex: 1; border-radius: 18px; background: var(--card); border: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px; cursor: pointer; position: relative;
+  transition: background .15s, border-color .15s, transform .1s; overflow: hidden;
+}
+.row:hover { background: var(--card-hi); border-color: var(--border2); }
+.row:active { transform: scale(.985); }
+.row-ic {
+  width: 50px; height: 50px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; margin-right: 16px;
+  border: 1px solid var(--border2);
+}
+.row-txt { flex: 1; }
+.row-kicker { font-size: 10px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 3px; }
+.row-title { font-size: 19px; font-weight: 600; letter-spacing: -.4px; }
+.row-sub { font-size: 12px; color: var(--txt2); margin-top: 1px; }
+.row-arr { color: var(--txt3); flex-shrink: 0; }
+.idx { position: absolute; top: 14px; right: 18px; font-size: 11px; font-weight: 600; color: var(--txt3); letter-spacing: .1em; }
 
 /* ── FLOW ── */
-.flow-bar-wrap { height: 3px; background: rgba(255,255,255,.05); margin: 14px 20px 0; border-radius: 2px; overflow: hidden; }
-.flow-bar { height: 100%; border-radius: 2px; transition: width .3s ease; }
-.flow-head { display: flex; align-items: center; gap: 12px; padding: 4px 20px 0; }
-.back-btn {
-  width: 36px; height: 36px; border-radius: 10px; background: var(--card);
-  border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
-  cursor: pointer; font-size: 20px; color: #fff; flex-shrink: 0; transition: border-color .15s;
+.fhead { display: flex; align-items: center; gap: 14px; padding: 6px 22px 0; }
+.back {
+  width: 38px; height: 38px; border-radius: 12px; background: var(--card); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--txt); flex-shrink: 0;
+  transition: border-color .15s;
 }
-.back-btn:hover { border-color: rgba(255,255,255,.2); }
-.flow-title-wrap {}
-.flow-sup { font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
-.flow-title { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
+.back:hover { border-color: var(--border2); }
+.fsup { font-size: 10px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
+.ftitle { font-size: 19px; font-weight: 600; letter-spacing: -.3px; margin-top: 2px; }
+.steps { display: flex; gap: 6px; padding: 18px 22px 0; }
+.step-seg { flex: 1; height: 3px; border-radius: 2px; background: rgba(255,255,255,.08); transition: background .3s; }
 
-/* Step question */
-.q-label { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text2); padding: 22px 20px 14px; }
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px; }
-.choice {
-  aspect-ratio: 1.05; border-radius: 16px; background: var(--card); border: 1px solid var(--border);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  cursor: pointer; transition: all .14s ease; text-align: center; padding: 10px;
-  position: relative; overflow: hidden;
+.qrow { display: flex; align-items: baseline; justify-content: space-between; padding: 26px 22px 16px; }
+.q { font-size: 22px; font-weight: 600; letter-spacing: -.5px; }
+.qcount { font-size: 11px; color: var(--txt3); font-weight: 600; letter-spacing: .1em; }
+
+.grid { display: flex; flex-direction: column; gap: 9px; padding: 0 22px; }
+.opt {
+  display: flex; align-items: center; padding: 16px 18px; border-radius: 14px;
+  background: var(--card); border: 1px solid var(--border); cursor: pointer;
+  transition: all .14s ease; position: relative;
 }
-.choice::after {
-  content: ''; position: absolute; inset: 0; border-radius: 16px; opacity: 0;
-  transition: opacity .14s; background: radial-gradient(circle at 50% 50%, rgba(255,255,255,.05), transparent 70%);
-}
-.choice:hover::after { opacity: 1; }
-.choice.sel { transform: scale(.97); }
-.ce { font-size: 30px; }
-.cl { font-size: 13px; font-weight: 700; margin-top: 7px; letter-spacing: -.2px; }
-.cs { font-size: 10px; color: var(--text2); margin-top: 2px; }
+.opt:hover { border-color: var(--border2); background: var(--card-hi); }
+.opt-ic { width: 38px; height: 38px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; margin-right: 14px; flex-shrink: 0; color: var(--txt2); }
+.opt-l { font-size: 15px; font-weight: 600; letter-spacing: -.2px; }
+.opt-s { font-size: 11px; color: var(--txt3); margin-top: 1px; }
+.opt-check { margin-left: auto; opacity: 0; transition: opacity .14s; }
+.opt.sel { border-color: currentColor; }
+.opt.sel .opt-check { opacity: 1; }
 
-/* ── RESULT COMMON ── */
-.res-top { padding: 28px 20px 0; }
-.res-big-emoji { font-size: 52px; }
-.res-kicker { font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; margin: 10px 0 4px; }
-.res-title { font-size: 28px; font-weight: 700; letter-spacing: -1px; }
-.res-sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
-.divider { height: 1px; background: var(--border); margin: 20px 20px 0; }
+/* ── RESULTS ── */
+.rtop { padding: 26px 22px 0; }
+.rkick { font-size: 10px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
+.rtitle { font-size: 27px; font-weight: 600; letter-spacing: -.8px; margin-top: 8px; }
+.rsub { font-size: 13px; color: var(--txt2); margin-top: 5px; }
 
-.card {
-  margin: 12px 20px 0; padding: 16px; border-radius: 16px;
-  background: var(--card); border: 1px solid var(--border);
-}
-.card-row { display: flex; align-items: center; }
-.card-title { font-size: 13px; font-weight: 700; letter-spacing: -.1px; }
-.neon-badge {
-  margin-left: auto; padding: 3px 10px; border-radius: 8px;
-  font-size: 10px; font-weight: 700; letter-spacing: .06em;
-}
+.card { margin: 14px 22px 0; padding: 18px; border-radius: 16px; background: var(--card); border: 1px solid var(--border); }
+.crow { display: flex; align-items: center; }
+.ctitle { font-size: 13px; font-weight: 600; letter-spacing: .02em; }
+.tag { margin-left: auto; padding: 4px 10px; border-radius: 7px; font-size: 11px; font-weight: 600; background: var(--surface); border: 1px solid var(--border); }
 
-/* Macros */
-.macros { display: flex; justify-content: space-around; margin-top: 14px; }
-.macro-val { font-size: 22px; font-weight: 700; }
-.macro-key { font-size: 10px; color: var(--text2); text-align: center; margin-top: 2px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
-.progress-bar-wrap { height: 4px; background: rgba(255,255,255,.06); border-radius: 2px; margin-top: 14px; overflow: hidden; }
-.progress-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--neon-g), #00FFAA); }
-.kcal-row { display: flex; justify-content: space-between; margin-top: 8px; }
-.kcal-label { font-size: 11px; color: var(--text2); }
-.advice-text { font-size: 13px; color: rgba(255,255,255,.65); line-height: 1.6; margin-top: 10px; }
+.macros { display: flex; margin-top: 16px; }
+.macro { flex: 1; }
+.mv { font-size: 20px; font-weight: 600; letter-spacing: -.5px; }
+.mk { font-size: 10px; color: var(--txt3); font-weight: 600; letter-spacing: .1em; text-transform: uppercase; margin-top: 3px; }
+.pwrap { height: 3px; background: rgba(255,255,255,.07); border-radius: 2px; margin-top: 16px; overflow: hidden; }
+.pfill { height: 100%; border-radius: 2px; }
+.krow { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--txt3); }
+.advice { font-size: 13px; color: var(--txt2); line-height: 1.6; margin-top: 12px; }
 
-/* Exercise rows */
-.ex-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; cursor: pointer; border-bottom: 1px solid var(--border); }
-.ex-row:last-child { border-bottom: none; }
-.ex-num { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
-.ex-name { font-size: 14px; font-weight: 600; letter-spacing: -.2px; }
-.ex-detail { font-size: 11px; color: var(--text2); margin-top: 2px; }
-.struck { text-decoration: line-through; color: var(--muted); }
-.chk {
-  margin-left: auto; flex-shrink: 0; width: 26px; height: 26px; border-radius: 7px;
-  border: 1.5px solid var(--muted); display: flex; align-items: center; justify-content: center;
-  font-size: 13px; transition: all .14s ease;
-}
+/* Exercise list */
+.ex { display: flex; align-items: center; padding: 13px 0; cursor: pointer; border-bottom: 1px solid var(--border); }
+.ex:last-child { border-bottom: none; }
+.exn { width: 24px; font-size: 12px; font-weight: 600; color: var(--txt3); flex-shrink: 0; }
+.exname { font-size: 14px; font-weight: 600; letter-spacing: -.2px; }
+.exd { font-size: 11px; color: var(--txt3); margin-top: 2px; }
+.struck .exname { text-decoration: line-through; color: var(--txt3); }
+.box { margin-left: auto; width: 22px; height: 22px; border-radius: 7px; border: 1.5px solid var(--txt3);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .14s; }
 
-/* Recipe cards horizontal scroll */
-.recipes-scroll { display: flex; gap: 10px; padding: 12px 20px 0; overflow-x: auto; }
-.recipes-scroll::-webkit-scrollbar { display: none; }
-.rec-card { flex-shrink: 0; width: 160px; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform .12s ease; }
-.rec-card:active { transform: scale(.97); }
-.rec-img { height: 100px; display: flex; align-items: center; justify-content: center; font-size: 48px; }
-.rec-body { padding: 10px 12px 12px; }
-.rec-name { font-size: 12px; font-weight: 700; letter-spacing: -.1px; line-height: 1.3; }
-.rec-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-.rec-tag { padding: 2px 7px; border-radius: 5px; background: rgba(255,255,255,.07); font-size: 9px; color: rgba(255,255,255,.6); }
+/* Recipes */
+.recs { display: flex; flex-direction: column; gap: 10px; margin: 14px 22px 0; }
+.rec { display: flex; align-items: center; padding: 12px; border-radius: 14px; background: var(--card); border: 1px solid var(--border);
+  cursor: pointer; transition: border-color .15s; }
+.rec:hover { border-color: var(--border2); }
+.rec-th { width: 52px; height: 52px; border-radius: 11px; flex-shrink: 0; margin-right: 14px;
+  display: flex; align-items: center; justify-content: center; }
+.rec-n { font-size: 14px; font-weight: 600; letter-spacing: -.2px; }
+.rec-meta { font-size: 11px; color: var(--txt3); margin-top: 3px; }
 
-/* Shopping list */
-.shop-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; cursor: pointer; border-bottom: 1px solid var(--border); }
-.shop-row:last-child { border-bottom: none; }
-.shop-chk { width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--muted); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: all .14s ease; }
-.shop-name { font-size: 13px; font-weight: 500; }
+/* Shopping */
+.sh { display: flex; align-items: center; padding: 11px 0; cursor: pointer; border-bottom: 1px solid var(--border); }
+.sh:last-child { border-bottom: none; }
+.shbox { width: 19px; height: 19px; border-radius: 6px; border: 1.5px solid var(--txt3); margin-right: 13px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; transition: all .14s; }
+.shn { font-size: 13px; font-weight: 500; }
+.struck .shn { text-decoration: line-through; color: var(--txt3); }
 
-/* ── BOTTOM BAR ── */
-.bar { display: flex; gap: 10px; padding: 14px 20px 18px; }
-.btn-ghost {
-  flex: 1; padding: 14px 0; border-radius: 14px; border: 1px solid var(--border);
-  background: transparent; color: rgba(255,255,255,.6); font-size: 13px; font-weight: 600;
-  cursor: pointer; font-family: inherit; transition: border-color .15s;
-}
-.btn-ghost:hover { border-color: rgba(255,255,255,.2); }
-.btn-neon {
-  flex: 2; padding: 14px 0; border-radius: 14px; border: none;
-  color: #000; font-size: 14px; font-weight: 700; cursor: pointer;
-  font-family: inherit; letter-spacing: .02em;
-  box-shadow: 0 0 24px rgba(0,255,136,.3);
-  transition: box-shadow .15s, transform .1s;
-}
-.btn-neon:active { transform: scale(.98); }
-.btn-neon.g { background: var(--neon-g); box-shadow: 0 0 24px rgba(0,255,136,.35); }
-.btn-neon.b { background: var(--neon-b); box-shadow: 0 0 24px rgba(0,200,255,.35); }
-.btn-neon.o { background: var(--neon-o); box-shadow: 0 0 24px rgba(255,77,28,.35); }
-
-/* Home icon */
-.home-icon-btn {
-  width: 36px; height: 36px; border-radius: 10px; background: var(--card); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px;
-}
-
-.pad20 { padding: 0 20px; }
+/* Bottom bar */
+.bar { display: flex; gap: 10px; padding: 14px 22px 20px; }
+.ghost { flex: 1; padding: 15px 0; border-radius: 14px; border: 1px solid var(--border2); background: transparent;
+  color: var(--txt2); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: border-color .15s; }
+.ghost:hover { border-color: var(--txt3); }
+.solid { flex: 2; padding: 15px 0; border-radius: 14px; border: none; color: #0A0A0C; font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: inherit; letter-spacing: -.1px; transition: transform .1s, filter .15s; }
+.solid:active { transform: scale(.985); }
+.solid:hover { filter: brightness(1.08); }
+.hicon { width: 38px; height: 38px; border-radius: 12px; background: var(--card); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--txt2); }
 </style>
 </head>
 <body>
 <div class="phone">
 <div class="notch"></div>
 
-<!-- ════════════ HOME ════════════ -->
+<!-- icon defs -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="i-eat" viewBox="0 0 24 24"><path d="M4 3v7a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V3M6 3v18M14 3c-1.5 1-2 3-2 5s.5 4 2 5v8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-train" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M4 9v6M20 9v6M6.5 12h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-cook" viewBox="0 0 24 24"><path d="M5 10a7 7 0 0 1 14 0M3 10h18M6 10v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8M12 3v3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-arr" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5L19 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7M6 10v9h12v-9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 20a7 7 0 0 1 14 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.5 5.5l1.4 1.4M17.1 17.1l1.4 1.4M18.5 5.5l-1.4 1.4M6.9 17.1l-1.4 1.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-mid" viewBox="0 0 24 24"><path d="M12 4v3M5 9a7 7 0 0 1 14 0M3 14h18M6 14a6 6 0 0 0 12 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14a8 8 0 1 1-10-10 7 7 0 0 0 10 10z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-snack" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0-6 6c0 5 3 12 6 12s6-7 6-12a6 6 0 0 0-6-6zM12 3c0-1 1-2 2-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3L5 13h6l-1 8 8-10h-6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-run" viewBox="0 0 24 24"><circle cx="14" cy="5" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 21l3-6 3 2 1-5-4-2-3 3M13 12l3 1 1 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c0 4-4 5-4 9a4 4 0 0 0 8 0c0-2-1-3-1-3 0 1.5-1 2-1.5 2 .5-3-1.5-5-1.5-8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-home2" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7M6 10v9h12v-9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-tree" viewBox="0 0 24 24"><path d="M12 3l5 7h-3l3 5H7l3-5H7z M12 15v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bike" viewBox="0 0 24 24"><circle cx="6" cy="17" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="17" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 17l4-7h5l3 7M10 10l-1-3h-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-couch" viewBox="0 0 24 24"><path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M3 11a2 2 0 0 1 2 2v3h14v-3a2 2 0 0 1 2-2M6 19v-3M18 19v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 14a4 4 0 0 0 8 0M9 9.5h.01M15 9.5h.01" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-chef" viewBox="0 0 24 24"><path d="M7 14a4 4 0 0 1-1-7.8A4 4 0 0 1 13 5a4 4 0 0 1 5 6.5V14zM7 14v4h10v-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-cart" viewBox="0 0 24 24"><path d="M4 5h2l2 11h10l2-8H7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.3" fill="currentColor"/><circle cx="17" cy="20" r="1.3" fill="currentColor"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V5h3M20 8V5h-3M4 16v3h3M20 16v3h-3M7 8v8M10 8v8M13 8v8M16 8v8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-one" viewBox="0 0 24 24"><circle cx="12" cy="7" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 21a6 6 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-two" viewBox="0 0 24 24"><circle cx="8" cy="8" r="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="16" cy="8" r="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 20a5 5 0 0 1 10 0M11 20a5 5 0 0 1 10 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-fam" viewBox="0 0 24 24"><circle cx="7" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="13" r="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 18a4 4 0 0 1 8 0M13 18a4 4 0 0 1 8 0M9 22a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M4 8l8-4 8 4-8 4-8-4zM4 8v8l8 4 8-4V8M12 12v8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<!-- ════ HOME ════ -->
 <div class="screen active" id="home">
-  <div class="home-pad">
-    <div class="home-meta">
-      <div class="avatar">🧑</div>
-      <div class="streak-badge">⚡ 5 jours de streak</div>
-    </div>
-    <div class="home-eyebrow">Mercredi 25 juin</div>
-    <div class="home-h1">Qu'est-ce<br>qu'on <span class="accent">fait</span> ?</div>
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-dot" style="background:var(--neon-g)"></div>
-        <div><div class="stat-val">1 240</div><div class="stat-key">kcal</div></div>
-      </div>
-      <div class="stat">
-        <div class="stat-dot" style="background:var(--neon-b)"></div>
-        <div><div class="stat-val">Repos</div><div class="stat-key">Today</div></div>
-      </div>
-      <div class="stat">
-        <div class="stat-dot" style="background:var(--neon-o)"></div>
-        <div><div class="stat-val">2,1L</div><div class="stat-key">eau</div></div>
-      </div>
-    </div>
+  <div class="topbar">
+    <div class="brand">NoBrain<b>Fit</b></div>
+    <div class="av"><svg class="ic" width="18" height="18"><use href="#i-user"/></svg></div>
   </div>
-  <div class="home-pad actions-list">
-    <div class="action-btn ab-g" onclick="openFlow('eat')">
-      <div class="noise"></div>
-      <div class="ab-emoji">🍽️</div>
-      <div class="ab-text">
-        <div class="ab-tag" style="color:var(--neon-g)">Nutrition</div>
-        <div class="ab-label">MANGER</div>
-        <div class="ab-sub">Loguer un repas</div>
+  <div class="hero">
+    <div class="eyebrow">Mercredi 25 juin</div>
+    <div class="hero-h1">On fait quoi<br><span class="dim">aujourd'hui ?</span></div>
+  </div>
+  <div class="strip">
+    <div class="strip-cell"><div class="strip-val" style="color:var(--acc-g)">1 240</div><div class="strip-key">kcal</div></div>
+    <div class="strip-cell"><div class="strip-val">Repos</div><div class="strip-key">Séance</div></div>
+    <div class="strip-cell"><div class="strip-val">J·5</div><div class="strip-key">Streak</div></div>
+  </div>
+  <div class="rows">
+    <div class="row" onclick="openFlow('eat')">
+      <span class="idx">01</span>
+      <div class="row-ic" style="color:var(--acc-g)"><svg class="ic" width="24" height="24"><use href="#i-eat"/></svg></div>
+      <div class="row-txt">
+        <div class="row-kicker" style="color:var(--acc-g)">Nutrition</div>
+        <div class="row-title">Manger</div>
+        <div class="row-sub">Loguer un repas en 2 gestes</div>
       </div>
-      <div class="ab-arr">›</div>
+      <svg class="ic row-arr" width="22" height="22"><use href="#i-arr"/></svg>
     </div>
-    <div class="action-btn ab-b" onclick="openFlow('train')">
-      <div class="noise"></div>
-      <div class="ab-emoji">💪</div>
-      <div class="ab-text">
-        <div class="ab-tag" style="color:var(--neon-b)">Training</div>
-        <div class="ab-label">S'ENTRAÎNER</div>
-        <div class="ab-sub">Séance générée pour toi</div>
+    <div class="row" onclick="openFlow('train')">
+      <span class="idx">02</span>
+      <div class="row-ic" style="color:var(--acc-b)"><svg class="ic" width="24" height="24"><use href="#i-train"/></svg></div>
+      <div class="row-txt">
+        <div class="row-kicker" style="color:var(--acc-b)">Training</div>
+        <div class="row-title">S'entraîner</div>
+        <div class="row-sub">Séance générée pour toi</div>
       </div>
-      <div class="ab-arr">›</div>
+      <svg class="ic row-arr" width="22" height="22"><use href="#i-arr"/></svg>
     </div>
-    <div class="action-btn ab-o" onclick="openFlow('cook')">
-      <div class="noise"></div>
-      <div class="ab-emoji">👨‍🍳</div>
-      <div class="ab-text">
-        <div class="ab-tag" style="color:var(--neon-o)">Cuisine</div>
-        <div class="ab-label">CUISINER</div>
-        <div class="ab-sub">3 recettes rapides</div>
+    <div class="row" onclick="openFlow('cook')">
+      <span class="idx">03</span>
+      <div class="row-ic" style="color:var(--acc-o)"><svg class="ic" width="24" height="24"><use href="#i-cook"/></svg></div>
+      <div class="row-txt">
+        <div class="row-kicker" style="color:var(--acc-o)">Cuisine</div>
+        <div class="row-title">Cuisiner</div>
+        <div class="row-sub">3 recettes + liste de courses</div>
       </div>
-      <div class="ab-arr">›</div>
+      <svg class="ic row-arr" width="22" height="22"><use href="#i-arr"/></svg>
     </div>
   </div>
 </div>
 
-<!-- ════════════ FLOW (shared) ════════════ -->
+<!-- ════ FLOW ════ -->
 <div class="screen" id="flow">
-  <div class="flow-head">
-    <div class="back-btn" onclick="flowBack()">‹</div>
-    <div class="flow-title-wrap">
-      <div class="flow-sup" id="flowSup">Nutrition</div>
-      <div class="flow-title" id="flowTitle">Manger</div>
-    </div>
+  <div class="fhead">
+    <div class="back" onclick="flowBack()"><svg class="ic" width="22" height="22"><use href="#i-back"/></svg></div>
+    <div><div class="fsup" id="fsup">Nutrition</div><div class="ftitle" id="ftitle">Manger</div></div>
   </div>
-  <div class="flow-bar-wrap"><div class="flow-bar" id="flowBar"></div></div>
-  <div class="q-label" id="qLabel">Quel repas ?</div>
-  <div class="grid" id="flowGrid"></div>
+  <div class="steps"><div class="step-seg" id="seg0"></div><div class="step-seg" id="seg1"></div></div>
+  <div class="qrow"><div class="q" id="q">Quel repas ?</div><div class="qcount" id="qc">1 / 2</div></div>
+  <div class="grid" id="grid"></div>
 </div>
 
-<!-- ════════════ EAT RESULT ════════════ -->
+<!-- ════ EAT RESULT ════ -->
 <div class="screen" id="eatResult">
   <div class="scroll">
-    <div style="padding:8px 20px 0"><div class="home-icon-btn" onclick="goHome()">⌂</div></div>
-    <div class="res-top">
-      <div class="res-big-emoji">✅</div>
-      <div class="res-kicker" style="color:var(--neon-g)">Nutrition · Enregistré</div>
-      <div class="res-title">Repas loggé.</div>
-      <div class="res-sub" id="eatSub">Déjeuner · ~600 kcal</div>
-    </div>
-    <div class="card" style="margin-top:20px">
-      <div class="card-row">
-        <div class="card-title">Bilan du jour</div>
-        <div class="neon-badge" style="background:rgba(0,255,136,.1);color:var(--neon-g)">1890 / 2000 kcal</div>
-      </div>
-      <div class="macros">
-        <div><div class="macro-val" style="color:var(--neon-g)">92g</div><div class="macro-key">Prot.</div></div>
-        <div><div class="macro-val" style="color:var(--neon-b)">210g</div><div class="macro-key">Gluc.</div></div>
-        <div><div class="macro-val" style="color:var(--neon-o)">55g</div><div class="macro-key">Lip.</div></div>
-      </div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:94.5%"></div></div>
-      <div class="kcal-row"><span class="kcal-label">0</span><span class="kcal-label" style="color:var(--neon-g);font-weight:700">94%</span><span class="kcal-label">2000</span></div>
+    <div style="padding:6px 22px 0"><div class="hicon" onclick="goHome()"><svg class="ic" width="18" height="18"><use href="#i-home"/></svg></div></div>
+    <div class="rtop">
+      <div class="rkick" style="color:var(--acc-g)">Nutrition · Enregistré</div>
+      <div class="rtitle">Repas loggé.</div>
+      <div class="rsub" id="eatSub">Déjeuner · ~600 kcal</div>
     </div>
     <div class="card">
-      <div class="card-row"><div class="card-title">💡 Conseil</div></div>
-      <div class="advice-text">Il te reste 110 kcal. Un dîner léger — soupe ou yaourt — et tu seras pile sur ton objectif 🎯</div>
+      <div class="crow"><div class="ctitle">Bilan du jour</div><div class="tag" style="color:var(--acc-g)">1890 / 2000 kcal</div></div>
+      <div class="macros">
+        <div class="macro"><div class="mv">92<span style="font-size:12px;color:var(--txt3)">g</span></div><div class="mk">Protéines</div></div>
+        <div class="macro"><div class="mv">210<span style="font-size:12px;color:var(--txt3)">g</span></div><div class="mk">Glucides</div></div>
+        <div class="macro"><div class="mv">55<span style="font-size:12px;color:var(--txt3)">g</span></div><div class="mk">Lipides</div></div>
+      </div>
+      <div class="pwrap"><div class="pfill" style="width:94.5%;background:var(--acc-g)"></div></div>
+      <div class="krow"><span>0</span><span style="color:var(--acc-g)">94 %</span><span>2000</span></div>
     </div>
-    <div style="height:16px"></div>
+    <div class="card">
+      <div class="crow"><div class="ctitle">Conseil</div></div>
+      <div class="advice">Il te reste 110 kcal. Un dîner léger — soupe ou yaourt — et tu seras pile sur ton objectif.</div>
+    </div>
+    <div style="height:14px"></div>
   </div>
-  <div class="bar">
-    <button class="btn-ghost" onclick="goHome()">Accueil</button>
-    <button class="btn-neon g">+ Ajouter aliment</button>
-  </div>
+  <div class="bar"><button class="ghost" onclick="goHome()">Accueil</button><button class="solid" style="background:var(--acc-g)">Ajouter un aliment</button></div>
 </div>
 
-<!-- ════════════ TRAIN RESULT ════════════ -->
+<!-- ════ TRAIN RESULT ════ -->
 <div class="screen" id="trainResult">
   <div class="scroll">
-    <div style="padding:8px 20px 0"><div class="home-icon-btn" onclick="goHome()">⌂</div></div>
-    <div class="res-top">
-      <div class="res-big-emoji" id="trainEmoji">🏠</div>
-      <div class="res-kicker" style="color:var(--neon-b)">Training · Généré pour toi</div>
-      <div class="res-title" id="trainTitle">Full Body · 30 min</div>
-      <div class="res-sub" id="trainSub">4 exercices · Maison</div>
+    <div style="padding:6px 22px 0"><div class="hicon" onclick="goHome()"><svg class="ic" width="18" height="18"><use href="#i-home"/></svg></div></div>
+    <div class="rtop">
+      <div class="rkick" style="color:var(--acc-b)">Training · Généré pour toi</div>
+      <div class="rtitle" id="trainTitle">Full Body · 30 min</div>
+      <div class="rsub" id="trainSub">4 exercices · Maison</div>
     </div>
-    <div class="card" style="margin-top:20px">
-      <div class="card-row">
-        <div class="card-title">Ta séance</div>
-        <div class="neon-badge" id="trainCount" style="background:rgba(0,200,255,.1);color:var(--neon-b)">0 / 4</div>
-      </div>
-      <div id="exList" style="margin-top:4px"></div>
+    <div class="card">
+      <div class="crow"><div class="ctitle">Ta séance</div><div class="tag" id="trainCount" style="color:var(--acc-b)">0 / 4</div></div>
+      <div id="exList" style="margin-top:6px"></div>
     </div>
-    <div style="height:16px"></div>
+    <div style="height:14px"></div>
   </div>
-  <div class="bar">
-    <button class="btn-ghost" onclick="goHome()">Accueil</button>
-    <button class="btn-neon b">▶ Démarrer</button>
-  </div>
+  <div class="bar"><button class="ghost" onclick="goHome()">Accueil</button><button class="solid" style="background:var(--acc-b)">Démarrer la séance</button></div>
 </div>
 
-<!-- ════════════ COOK RESULT ════════════ -->
+<!-- ════ COOK RESULT ════ -->
 <div class="screen" id="cookResult">
   <div class="scroll">
-    <div style="padding:8px 20px 0"><div class="home-icon-btn" onclick="goHome()">⌂</div></div>
-    <div class="res-top">
-      <div class="res-big-emoji">🍳</div>
-      <div class="res-kicker" style="color:var(--neon-o)">Cuisine · Sélection du soir</div>
-      <div class="res-title">3 recettes.</div>
-      <div class="res-sub" id="cookSub">~25 min · 2 personnes</div>
+    <div style="padding:6px 22px 0"><div class="hicon" onclick="goHome()"><svg class="ic" width="18" height="18"><use href="#i-home"/></svg></div></div>
+    <div class="rtop">
+      <div class="rkick" style="color:var(--acc-o)">Cuisine · Sélection du soir</div>
+      <div class="rtitle">3 recettes.</div>
+      <div class="rsub" id="cookSub">~25 min · 2 personnes</div>
     </div>
-    <div class="recipes-scroll" id="recipesRow"></div>
-    <div class="card" style="margin-top:12px">
-      <div class="card-row">
-        <div class="card-title">🛒 Liste de courses</div>
-        <div class="neon-badge" style="background:rgba(255,77,28,.1);color:var(--neon-o)">Monoprix 0.3km</div>
-      </div>
-      <div id="shopList" style="margin-top:8px"></div>
+    <div class="recs" id="recsList"></div>
+    <div class="card">
+      <div class="crow"><div class="ctitle">Liste de courses</div><div class="tag" style="color:var(--acc-o)">Monoprix · 0,3 km</div></div>
+      <div id="shopList" style="margin-top:6px"></div>
     </div>
-    <div style="height:16px"></div>
+    <div style="height:14px"></div>
   </div>
-  <div class="bar">
-    <button class="btn-ghost" onclick="goHome()">Accueil</button>
-    <button class="btn-neon o">Voir recette →</button>
-  </div>
+  <div class="bar"><button class="ghost" onclick="goHome()">Accueil</button><button class="solid" style="background:var(--acc-o)">Voir la recette</button></div>
 </div>
 
 </div><!-- /phone -->
 
 <script>
 const FLOWS = {
-  eat: {
-    emoji:'🍽️', sup:'Nutrition', color:'#00FF88', q1:'Quel repas ?', q2:'Quelle quantité ?',
-    step1:[
-      {emoji:'☀️',label:'Petit-dej'},{emoji:'🌤️',label:'Déjeuner'},
-      {emoji:'🌙',label:'Dîner'},{emoji:'🍎',label:'Collation'}
-    ],
-    step2:[
-      {emoji:'🥗',label:'Léger',sub:'~350 kcal'},{emoji:'🍝',label:'Normal',sub:'~600 kcal'},
-      {emoji:'🍔',label:'Copieux',sub:'~900 kcal'},{emoji:'📸',label:'Scanner',sub:'Code-barres'}
-    ]
-  },
-  train: {
-    emoji:'💪', sup:'Training', color:'#00C8FF', q1:'Combien de temps ?', q2:'Où tu t\'entraînes ?',
-    step1:[
-      {emoji:'⚡',label:'15 min',sub:'Express'},{emoji:'🏃',label:'30 min',sub:'Standard'},
-      {emoji:'💪',label:'45 min',sub:'Complet'},{emoji:'🏋️',label:'1h+',sub:'Intensif'}
-    ],
-    step2:[
-      {emoji:'🏠',label:'Maison',sub:'Sans matériel'},{emoji:'🏋️',label:'Salle',sub:'Avec machines'},
-      {emoji:'🌳',label:'Dehors',sub:'Parc, rue…'},{emoji:'🚴',label:'Cardio',sub:'Vélo, rameur…'}
-    ]
-  },
-  cook: {
-    emoji:'👨‍🍳', sup:'Cuisine', color:'#FF4D1C', q1:'T\'as le courage ?', q2:'Pour combien ?',
-    step1:[
-      {emoji:'🛋️',label:'La flemme',sub:'Max 10 min'},{emoji:'😊',label:'Un peu',sub:'20-25 min'},
-      {emoji:'👨‍🍳',label:'Motivé !',sub:'45 min+'},{emoji:'🛒',label:'Courses',sub:'Liste auto'}
-    ],
-    step2:[
-      {emoji:'🧍',label:'Juste moi'},{emoji:'👫',label:'2 pers.'},
-      {emoji:'👨‍👩‍👧',label:'Famille'},{emoji:'📦',label:'Meal prep',sub:'Toute la semaine'}
-    ]
-  }
+  eat: { sup:'Nutrition', color:'var(--acc-g)', q1:'Quel repas ?', q2:'Quelle quantité ?',
+    step1:[{ic:'i-sun',l:'Petit-déjeuner'},{ic:'i-mid',l:'Déjeuner'},{ic:'i-moon',l:'Dîner'},{ic:'i-snack',l:'Collation'}],
+    step2:[{ic:'i-eat',l:'Léger',s:'~350 kcal'},{ic:'i-eat',l:'Normal',s:'~600 kcal'},{ic:'i-eat',l:'Copieux',s:'~900 kcal'},{ic:'i-scan',l:'Scanner',s:'Code-barres'}] },
+  train: { sup:'Training', color:'var(--acc-b)', q1:'Combien de temps ?', q2:'Où ?',
+    step1:[{ic:'i-bolt',l:'15 min',s:'Express'},{ic:'i-run',l:'30 min',s:'Standard'},{ic:'i-train',l:'45 min',s:'Complet'},{ic:'i-flame',l:'1h +',s:'Intensif'}],
+    step2:[{ic:'i-home2',l:'Maison',s:'Sans matériel'},{ic:'i-train',l:'Salle',s:'Avec machines'},{ic:'i-tree',l:'Dehors',s:'Parc, rue'},{ic:'i-bike',l:'Cardio',s:'Vélo, rameur'}] },
+  cook: { sup:'Cuisine', color:'var(--acc-o)', q1:'T\'as le courage ?', q2:'Pour combien ?',
+    step1:[{ic:'i-couch',l:'La flemme',s:'Max 10 min'},{ic:'i-smile',l:'Un peu',s:'20–25 min'},{ic:'i-chef',l:'Motivé',s:'45 min +'},{ic:'i-cart',l:'Juste les courses',s:'Liste auto'}],
+    step2:[{ic:'i-one',l:'Juste moi'},{ic:'i-two',l:'2 personnes'},{ic:'i-fam',l:'Famille'},{ic:'i-box',l:'Meal prep',s:'Toute la semaine'}] }
 };
-
 const EXERCISES = [
-  {name:'Pompes',detail:'3 × 12 reps · 60s repos'},
-  {name:'Squats sautés',detail:'3 × 15 reps · 45s repos'},
-  {name:'Gainage',detail:'3 × 40 secondes'},
-  {name:'Burpees',detail:'2 × 10 reps · 60s repos'}
+  {name:'Pompes',d:'3 × 12 reps · 60 s repos'},
+  {name:'Squats sautés',d:'3 × 15 reps · 45 s repos'},
+  {name:'Gainage',d:'3 × 40 secondes'},
+  {name:'Burpees',d:'2 × 10 reps · 60 s repos'}
 ];
-const SHOP = ['Escalope de poulet (300g)','Courgettes','Poivrons rouges',"Huile d'olive",'Pâtes (200g)','Pesto basilic'];
+const SHOP = ['Escalope de poulet · 300 g','Courgettes','Poivrons rouges',"Huile d'olive",'Pâtes · 200 g','Pesto basilic'];
 const RECIPES = [
-  {emoji:'🥗',name:'Poulet grillé & légumes rôtis',bg:'#0D1F15',time:'25 min',kcal:'480 kcal',prot:'38g prot'},
-  {emoji:'🍜',name:'Pâtes au pesto & thon',bg:'#0D1520',time:'15 min',kcal:'520 kcal',prot:'30g prot'},
-  {emoji:'🥚',name:'Omelette aux champignons',bg:'#1A1508',time:'10 min',kcal:'310 kcal',prot:'24g prot'}
+  {ic:'i-eat',n:'Poulet grillé & légumes rôtis',meta:'25 min · 480 kcal · 38 g prot',c:'var(--acc-g)'},
+  {ic:'i-eat',n:'Pâtes au pesto & thon',meta:'15 min · 520 kcal · 30 g prot',c:'var(--acc-b)'},
+  {ic:'i-eat',n:'Omelette aux champignons',meta:'10 min · 310 kcal · 24 g prot',c:'var(--acc-o)'}
 ];
-const KCAL_MAP = {'Léger':350,'Normal':600,'Copieux':900,'Scanner':500};
-const LOC_EMOJI = {Maison:'🏠',Salle:'🏋️',Dehors:'🌳',Cardio:'🚴'};
-
-let state = { type:null, step:0, c1:null };
-let exDone = new Set(), shopDone = new Set();
-
+const KCAL = {'Léger':350,'Normal':600,'Copieux':900,'Scanner':500};
 const $ = id => document.getElementById(id);
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
 const goHome = () => show('home');
+let state = {type:null,step:0,c1:null}, exDone=new Set(), shopDone=new Set();
+const svg = (ic,sz=20) => `<svg class="ic" width="${sz}" height="${sz}"><use href="#${ic}"/></svg>`;
 
-function openFlow(type){
-  state = { type, step:0, c1:null };
-  renderFlow(); show('flow');
-}
-
+function openFlow(t){ state={type:t,step:0,c1:null}; renderFlow(); show('flow'); }
 function renderFlow(){
   const f = FLOWS[state.type];
-  $('flowSup').textContent  = f.sup;
-  $('flowSup').style.color  = f.color;
-  $('flowTitle').textContent = state.step === 0 ? f.emoji+' '+f.sup : state.c1;
-  $('qLabel').textContent   = state.step === 0 ? f.q1 : f.q2;
-  $('flowBar').style.width  = ((state.step+1)/3*100)+'%';
-  $('flowBar').style.background = f.color;
-  $('flowBar').style.boxShadow  = `0 0 8px ${f.color}`;
-  const choices = state.step === 0 ? f.step1 : f.step2;
-  $('flowGrid').innerHTML = '';
-  choices.forEach(c => {
-    const el = document.createElement('div');
-    el.className = 'choice';
-    el.innerHTML = `<div class="ce">${c.emoji}</div><div class="cl">${c.label}</div>${c.sub?`<div class="cs">${c.sub}</div>`:''}`;
-    el.onclick = () => {
-      el.classList.add('sel');
-      el.style.background = hexToRgba(f.color, .1);
-      el.style.borderColor = f.color;
-      el.style.boxShadow = `0 0 16px ${hexToRgba(f.color, .2)}`;
-      setTimeout(() => pick(c), 200);
-    };
-    $('flowGrid').appendChild(el);
+  $('fsup').textContent = f.sup; $('fsup').style.color = f.color;
+  $('ftitle').textContent = state.step===0 ? f.sup : state.c1;
+  $('q').textContent = state.step===0 ? f.q1 : f.q2;
+  $('qc').textContent = (state.step+1)+' / 2';
+  $('seg0').style.background = f.color;
+  $('seg1').style.background = state.step===1 ? f.color : 'rgba(255,255,255,.08)';
+  const choices = state.step===0 ? f.step1 : f.step2;
+  $('grid').innerHTML='';
+  choices.forEach(c=>{
+    const el=document.createElement('div'); el.className='opt';
+    el.innerHTML = `<div class="opt-ic">${svg(c.ic)}</div><div><div class="opt-l">${c.l}</div>${c.s?`<div class="opt-s">${c.s}</div>`:''}</div><span class="opt-check">${svg('i-check',18)}</span>`;
+    el.onclick = ()=>{ el.classList.add('sel'); el.style.color=f.color; setTimeout(()=>pick(c),180); };
+    $('grid').appendChild(el);
   });
 }
-
-function flowBack(){
-  if(state.step === 0) goHome();
-  else { state.step = 0; renderFlow(); }
-}
-
-function pick(c){
-  if(state.step === 0){ state.c1 = c.label; state.step = 1; renderFlow(); }
-  else finish(c.label);
-}
-
+function flowBack(){ if(state.step===0) goHome(); else { state.step=0; renderFlow(); } }
+function pick(c){ if(state.step===0){ state.c1=c.l; state.step=1; renderFlow(); } else finish(c.l); }
 function finish(c2){
-  const t = state.type;
-  if(t === 'eat'){
-    const kcal = KCAL_MAP[c2]||500;
-    $('eatSub').textContent = `${state.c1} · ~${kcal} kcal`;
-    show('eatResult');
-  } else if(t === 'train'){
-    $('trainEmoji').textContent = LOC_EMOJI[c2]||'🏠';
-    $('trainTitle').textContent = `Full Body · ${state.c1}`;
-    $('trainSub').textContent   = `${EXERCISES.length} exercices · ${c2}`;
-    renderExercises(); show('trainResult');
-  } else {
-    $('cookSub').textContent = `~25 min · ${c2}`;
-    renderRecipes(); renderShop(); show('cookResult');
-  }
+  const t=state.type;
+  if(t==='eat'){ $('eatSub').textContent = `${state.c1} · ~${KCAL[c2]||500} kcal`; show('eatResult'); }
+  else if(t==='train'){ $('trainTitle').textContent = `Full Body · ${state.c1}`; $('trainSub').textContent = `${EXERCISES.length} exercices · ${c2}`; renderEx(); show('trainResult'); }
+  else { $('cookSub').textContent = `~25 min · ${c2}`; renderRecs(); renderShop(); show('cookResult'); }
 }
-
-function renderExercises(){
-  exDone = new Set();
-  $('exList').innerHTML = '';
-  EXERCISES.forEach((ex,i) => {
-    const d = document.createElement('div'); d.className='ex-row';
-    d.innerHTML = `
-      <div class="ex-num" style="background:rgba(0,200,255,.12);color:var(--neon-b)">${i+1}</div>
-      <div><div class="ex-name" id="en${i}">${ex.name}</div><div class="ex-detail">${ex.detail}</div></div>
-      <div class="chk" id="ec${i}"></div>`;
-    d.onclick = () => toggleEx(i);
-    $('exList').appendChild(d);
+function renderEx(){
+  exDone=new Set(); $('exList').innerHTML='';
+  EXERCISES.forEach((ex,i)=>{
+    const d=document.createElement('div'); d.className='ex';
+    d.innerHTML=`<div class="exn">${String(i+1).padStart(2,'0')}</div><div><div class="exname">${ex.name}</div><div class="exd">${ex.d}</div></div><div class="box" id="b${i}"></div>`;
+    d.onclick=()=>togEx(i,d); $('exList').appendChild(d);
   });
-  updateCount();
+  cnt();
 }
-function toggleEx(i){
-  const cb=$(`ec${i}`), nm=$(`en${i}`);
-  if(exDone.has(i)){
-    exDone.delete(i); cb.textContent=''; nm.classList.remove('struck');
-    cb.style.background='transparent'; cb.style.borderColor='var(--muted)'; cb.style.boxShadow='';
-  } else {
-    exDone.add(i); cb.textContent='✓'; nm.classList.add('struck');
-    cb.style.background='var(--neon-b)'; cb.style.borderColor='var(--neon-b)';
-    cb.style.boxShadow='0 0 10px rgba(0,200,255,.4)'; cb.style.color='#000';
-  }
-  updateCount();
+function togEx(i,row){
+  const b=$('b'+i);
+  if(exDone.has(i)){ exDone.delete(i); row.classList.remove('struck'); b.innerHTML=''; b.style.background='transparent'; b.style.borderColor='var(--txt3)'; }
+  else { exDone.add(i); row.classList.add('struck'); b.innerHTML=svg('i-check',14); b.style.background='var(--acc-b)'; b.style.borderColor='var(--acc-b)'; b.style.color='#0A0A0C'; }
+  cnt();
 }
-function updateCount(){ $('trainCount').textContent=`${exDone.size} / ${EXERCISES.length}`; }
-
-function renderRecipes(){
-  $('recipesRow').innerHTML = '';
-  RECIPES.forEach(r => {
-    const el = document.createElement('div'); el.className='rec-card';
-    el.innerHTML = `
-      <div class="rec-img" style="background:${r.bg}">${r.emoji}</div>
-      <div class="rec-body" style="background:${r.bg}">
-        <div class="rec-name">${r.name}</div>
-        <div class="rec-tags"><span class="rec-tag">⏱ ${r.time}</span><span class="rec-tag">🔥 ${r.kcal}</span><span class="rec-tag">💪 ${r.prot}</span></div>
-      </div>`;
-    $('recipesRow').appendChild(el);
+function cnt(){ $('trainCount').textContent=`${exDone.size} / ${EXERCISES.length}`; }
+function renderRecs(){
+  $('recsList').innerHTML='';
+  RECIPES.forEach(r=>{
+    const el=document.createElement('div'); el.className='rec';
+    el.innerHTML=`<div class="rec-th" style="background:var(--surface);border:1px solid var(--border);color:${r.c}">${svg(r.ic,22)}</div><div><div class="rec-n">${r.n}</div><div class="rec-meta">${r.meta}</div></div>`;
+    $('recsList').appendChild(el);
   });
 }
-
 function renderShop(){
-  shopDone = new Set();
-  $('shopList').innerHTML = '';
-  SHOP.forEach((item,i) => {
-    const d = document.createElement('div'); d.className='shop-row';
-    d.innerHTML = `<div class="shop-chk" id="sc${i}"></div><div class="shop-name" id="sn${i}">${item}</div>`;
-    d.onclick = () => toggleShop(i);
-    $('shopList').appendChild(d);
+  shopDone=new Set(); $('shopList').innerHTML='';
+  SHOP.forEach((it,i)=>{
+    const d=document.createElement('div'); d.className='sh';
+    d.innerHTML=`<div class="shbox" id="s${i}"></div><div class="shn">${it}</div>`;
+    d.onclick=()=>togSh(i,d); $('shopList').appendChild(d);
   });
 }
-function toggleShop(i){
-  const cb=$(`sc${i}`), nm=$(`sn${i}`);
-  if(shopDone.has(i)){
-    shopDone.delete(i); cb.textContent=''; nm.classList.remove('struck');
-    cb.style.background='transparent'; cb.style.borderColor='var(--muted)';
-  } else {
-    shopDone.add(i); cb.textContent='✓'; nm.classList.add('struck');
-    cb.style.background='var(--neon-o)'; cb.style.borderColor='var(--neon-o)';
-    cb.style.boxShadow='0 0 8px rgba(255,77,28,.4)'; cb.style.color='#000';
-  }
-}
-
-function hexToRgba(hex, a){
-  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-  return `rgba(${r},${g},${b},${a})`;
+function togSh(i,row){
+  const b=$('s'+i);
+  if(shopDone.has(i)){ shopDone.delete(i); row.classList.remove('struck'); b.innerHTML=''; b.style.background='transparent'; b.style.borderColor='var(--txt3)'; }
+  else { shopDone.add(i); row.classList.add('struck'); b.innerHTML=svg('i-check',12); b.style.background='var(--acc-o)'; b.style.borderColor='var(--acc-o)'; b.style.color='#0A0A0C'; }
 }
 </script>
 </body>
