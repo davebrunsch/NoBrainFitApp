@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:no_brain_fit/utils/brand.dart';
+import 'package:no_brain_fit/widgets/tri_strike_logo.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -7,18 +9,20 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1A),
+      backgroundColor: Brand.bgVoid,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+          padding: const EdgeInsets.fromLTRB(Brand.s20, Brand.s16, Brand.s20, Brand.s20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _Header(),
-              const SizedBox(height: 8),
-              const _QuickStats(),
-              const SizedBox(height: 20),
-              const Expanded(child: _ThreeButtons()),
+              const _TopBar(),
+              const SizedBox(height: Brand.s24),
+              const _HeroText(),
+              const SizedBox(height: Brand.s20),
+              const _StatStrip(),
+              const SizedBox(height: Brand.s20),
+              const Expanded(child: _ActionRows()),
             ],
           ),
         ),
@@ -27,171 +31,155 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _Header extends StatelessWidget {
-  const _Header();
+class _TopBar extends StatelessWidget {
+  const _TopBar();
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Bonjour 👋',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: Colors.grey)),
-              const SizedBox(height: 2),
-              Text(
-                "Qu'est-ce qu'on fait ?",
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: -0.5,
-                    ),
-              ),
-              Text(
-                "Appuie, l'app s'occupe du reste.",
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: Colors.grey),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        const _ProfileButton(),
+        const TriStrikeWordmark(markSize: 26),
+        const Spacer(),
+        _AvatarButton(),
       ],
     );
   }
 }
 
-class _ProfileButton extends StatelessWidget {
-  const _ProfileButton();
-
+class _AvatarButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => context.push('/settings'),
       child: Container(
-        width: 46,
-        height: 46,
+        width: 34,
+        height: 34,
         decoration: BoxDecoration(
+          color: Brand.bgCard,
           shape: BoxShape.circle,
-          gradient: const LinearGradient(
-            colors: [Color(0xFFE8622A), Color(0xFFC0392B)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFE8622A).withOpacity(0.35),
-              blurRadius: 14,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          border: Border.all(color: Brand.border2),
         ),
-        child: const Icon(Icons.person, color: Colors.white, size: 24),
+        child: const Icon(Icons.person_outline_rounded, size: 18, color: Brand.grey1),
       ),
     );
   }
 }
 
-class _QuickStats extends StatelessWidget {
-  const _QuickStats();
+class _HeroText extends StatelessWidget {
+  const _HeroText();
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: const [
-          _Pill(emoji: '🔥', text: '1240 kcal'),
-          SizedBox(width: 8),
-          _Pill(emoji: '💪', text: 'Repos'),
-          SizedBox(width: 8),
-          _Pill(emoji: '🏅', text: 'Jour 5'),
-        ],
-      ),
+    final now = DateTime.now();
+    final days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+    final months = ['jan.', 'fév.', 'mar.', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sep.', 'oct.', 'nov.', 'déc.'];
+    final label = '${days[now.weekday - 1]} ${now.day} ${months[now.month - 1]}';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: const TextStyle(
+            fontSize: 10, fontWeight: FontWeight.w700,
+            letterSpacing: .18, color: Brand.grey2,
+          ),
+        ),
+        const SizedBox(height: Brand.s8),
+        RichText(
+          text: const TextSpan(
+            style: TextStyle(fontFamily: 'SpaceGrotesk', fontSize: 34, fontWeight: FontWeight.w600, letterSpacing: -1.2, height: 1.05),
+            children: [
+              TextSpan(text: 'On fait quoi\n', style: TextStyle(color: Brand.white)),
+              TextSpan(text: 'aujourd\'hui ?', style: TextStyle(color: Brand.grey2)),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _Pill extends StatelessWidget {
-  final String emoji, text;
-  const _Pill({required this.emoji, required this.text});
+class _StatStrip extends StatelessWidget {
+  const _StatStrip();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Brand.border),
+        borderRadius: BorderRadius.circular(Brand.rCard),
       ),
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 14)),
-          const SizedBox(width: 5),
-          Text(text,
-              style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500)),
+          _StatCell(value: '1 240', label: 'kcal', valueColor: Brand.lime, isLast: false),
+          _StatCell(value: 'Repos', label: 'Séance', isLast: false),
+          _StatCell(value: 'J · 5', label: 'Streak', isLast: true),
         ],
       ),
     );
   }
 }
 
-class _ThreeButtons extends StatelessWidget {
-  const _ThreeButtons();
+class _StatCell extends StatelessWidget {
+  const _StatCell({required this.value, required this.label, this.valueColor, required this.isLast});
+  final String value, label;
+  final Color? valueColor;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: Brand.s16, vertical: 14),
+        decoration: isLast ? null : BoxDecoration(border: Border(right: BorderSide(color: Brand.border))),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(value, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, letterSpacing: -.5, color: valueColor ?? Brand.white)),
+            const SizedBox(height: 3),
+            Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .12, color: Brand.grey2)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionRows extends StatelessWidget {
+  const _ActionRows();
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _BigButton(
-          emoji: '🍽️',
-          label: 'MANGER',
-          sub: 'Loguer un repas',
-          gradient: const LinearGradient(
-            colors: [Color(0xFFE8622A), Color(0xFFC0392B)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          shadowColor: const Color(0xFFE8622A),
+        _ActionRow(
+          index: '01',
+          icon: Icons.restaurant_outlined,
+          kicker: 'Nutrition',
+          title: 'Manger',
+          sub: 'Loguer un repas en 2 gestes',
+          accent: Brand.lime,
           onTap: () => context.push('/eat'),
         ),
-        const SizedBox(height: 14),
-        _BigButton(
-          emoji: '💪',
-          label: "S'ENTRAÎNER",
-          sub: 'Programme du jour',
-          gradient: const LinearGradient(
-            colors: [Color(0xFF2980B9), Color(0xFF1565C0)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          shadowColor: const Color(0xFF2980B9),
+        const SizedBox(height: Brand.s12),
+        _ActionRow(
+          index: '02',
+          icon: Icons.fitness_center_outlined,
+          kicker: 'Training',
+          title: 'S\'entraîner',
+          sub: 'Séance générée pour toi',
+          accent: Brand.blue,
           onTap: () => context.push('/train'),
         ),
-        const SizedBox(height: 14),
-        _BigButton(
-          emoji: '👨‍🍳',
-          label: 'CUISINER',
-          sub: '3 recettes rapides',
-          gradient: const LinearGradient(
-            colors: [Color(0xFF27AE60), Color(0xFF1A8A49)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          shadowColor: const Color(0xFF27AE60),
+        const SizedBox(height: Brand.s12),
+        _ActionRow(
+          index: '03',
+          icon: Icons.soup_kitchen_outlined,
+          kicker: 'Cuisine',
+          title: 'Cuisiner',
+          sub: '3 recettes + liste de courses',
+          accent: Brand.orange,
           onTap: () => context.push('/cook'),
         ),
       ],
@@ -199,26 +187,26 @@ class _ThreeButtons extends StatelessWidget {
   }
 }
 
-class _BigButton extends StatefulWidget {
-  final String emoji, label, sub;
-  final LinearGradient gradient;
-  final Color shadowColor;
-  final VoidCallback onTap;
-
-  const _BigButton({
-    required this.emoji,
-    required this.label,
+class _ActionRow extends StatefulWidget {
+  const _ActionRow({
+    required this.index,
+    required this.icon,
+    required this.kicker,
+    required this.title,
     required this.sub,
-    required this.gradient,
-    required this.shadowColor,
+    required this.accent,
     required this.onTap,
   });
+  final String index, kicker, title, sub;
+  final IconData icon;
+  final Color accent;
+  final VoidCallback onTap;
 
   @override
-  State<_BigButton> createState() => _BigButtonState();
+  State<_ActionRow> createState() => _ActionRowState();
 }
 
-class _BigButtonState extends State<_BigButton> {
+class _ActionRowState extends State<_ActionRow> {
   bool _pressed = false;
 
   @override
@@ -226,57 +214,54 @@ class _BigButtonState extends State<_BigButton> {
     return Expanded(
       child: GestureDetector(
         onTapDown: (_) => setState(() => _pressed = true),
-        onTapUp: (_) {
-          setState(() => _pressed = false);
-          widget.onTap();
-        },
+        onTapUp: (_) { setState(() => _pressed = false); widget.onTap(); },
         onTapCancel: () => setState(() => _pressed = false),
         child: AnimatedScale(
-          scale: _pressed ? 0.96 : 1.0,
+          scale: _pressed ? .98 : 1.0,
           duration: const Duration(milliseconds: 100),
           child: Container(
             decoration: BoxDecoration(
-              gradient: widget.gradient,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: widget.shadowColor.withOpacity(0.35),
-                  blurRadius: 24,
-                  offset: const Offset(0, 10),
-                ),
-              ],
+              color: _pressed ? Brand.bgCardHi : Brand.bgCard,
+              borderRadius: BorderRadius.circular(Brand.rRow),
+              border: Border.all(color: _pressed ? Brand.border2 : Brand.border),
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: Row(
-                children: [
-                  Text(widget.emoji, style: const TextStyle(fontSize: 48)),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(widget.label,
-                            style: const TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                              letterSpacing: -0.5,
-                            )),
-                        Text(widget.sub,
-                            style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.white.withOpacity(0.75))),
-                      ],
-                    ),
+            padding: const EdgeInsets.symmetric(horizontal: Brand.s20),
+            child: Row(
+              children: [
+                // Icon container
+                Container(
+                  width: 46, height: 46,
+                  decoration: BoxDecoration(
+                    color: widget.accent.withOpacity(.10),
+                    borderRadius: BorderRadius.circular(Brand.rCard),
+                    border: Border.all(color: widget.accent.withOpacity(.2)),
                   ),
-                  Text('›',
-                      style: TextStyle(
-                          fontSize: 28,
-                          color: Colors.white.withOpacity(0.5))),
-                ],
-              ),
+                  child: Icon(widget.icon, size: 22, color: widget.accent),
+                ),
+                const SizedBox(width: Brand.s16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.kicker.toUpperCase(),
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .16, color: widget.accent),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(widget.title, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w600, letterSpacing: -.4, color: Brand.white)),
+                      const SizedBox(height: 2),
+                      Text(widget.sub, style: const TextStyle(fontSize: 12, color: Brand.grey2)),
+                    ],
+                  ),
+                ),
+                Text(
+                  widget.index,
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: .1, color: Brand.grey2),
+                ),
+                const SizedBox(width: Brand.s8),
+                const Icon(Icons.chevron_right_rounded, size: 20, color: Brand.grey2),
+              ],
             ),
           ),
         ),

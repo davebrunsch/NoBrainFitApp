@@ -1,341 +1,331 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:no_brain_fit/utils/brand.dart';
+import 'package:no_brain_fit/services/ai/ai_config.dart';
+import 'package:no_brain_fit/services/ai/ai_provider.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
-  static const _kName = 'profile_name';
-  static const _kGoal = 'profile_goal';
-  static const _kNotifications = 'pref_notifications';
-  static const _kSound = 'pref_sound';
-
-  final _nameController = TextEditingController();
-  String _goal = 'maintain';
-  bool _notifications = true;
-  bool _sound = true;
-  bool _loaded = false;
-
-  static const _goals = <String, ({String emoji, String label})>{
-    'lose': (emoji: '🔥', label: 'Perdre du gras'),
-    'maintain': (emoji: '⚖️', label: 'Maintenir'),
-    'gain': (emoji: '💪', label: 'Prendre du muscle'),
-  };
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  final _apiKeyCtrl   = TextEditingController();
+  final _urlCtrl      = TextEditingController();
+  final _modelCtrl    = TextEditingController();
+  bool _saving = false;
+  bool _obscureKey = true;
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _apiKeyCtrl.dispose(); _urlCtrl.dispose(); _modelCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _nameController.text = prefs.getString(_kName) ?? '';
-      _goal = prefs.getString(_kGoal) ?? 'maintain';
-      _notifications = prefs.getBool(_kNotifications) ?? true;
-      _sound = prefs.getBool(_kSound) ?? true;
-      _loaded = true;
-    });
-  }
-
-  Future<void> _save() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kName, _nameController.text.trim());
-    await prefs.setString(_kGoal, _goal);
-    await prefs.setBool(_kNotifications, _notifications);
-    await prefs.setBool(_kSound, _sound);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Préférences enregistrées ✅'),
-        behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1A),
-      body: SafeArea(
-        child: !_loaded
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => context.pop(),
-                          child: Container(
-                            width: 38,
-                            height: 38,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.08),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(Icons.chevron_left,
-                                color: Colors.white, size: 22),
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        const Text('⚙️', style: TextStyle(fontSize: 26)),
-                        const SizedBox(width: 8),
-                        const Text('Réglages',
-                            style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white)),
-                      ],
-                    ),
+    final configAsync = ref.watch(aiConfigProvider);
+    return configAsync.when(
+      loading: () => const Scaffold(backgroundColor: Brand.bgVoid, body: Center(child: CircularProgressIndicator(color: Brand.lime))),
+      error:   (e, _) => Scaffold(backgroundColor: Brand.bgVoid, body: Center(child: Text('$e', style: const TextStyle(color: Brand.orange)))),
+      data: (config) {
+        // Sync controllers on first load
+        if (_apiKeyCtrl.text.isEmpty && config.claudeApiKey.isNotEmpty) {
+          _apiKeyCtrl.text = config.claudeApiKey;
+        }
+        if (_urlCtrl.text.isEmpty) _urlCtrl.text = config.ollamaBaseUrl;
+        if (_modelCtrl.text.isEmpty) _modelCtrl.text = config.ollamaModel;
+
+        return Scaffold(
+          backgroundColor: Brand.bgVoid,
+          body: SafeArea(
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(Brand.s20, Brand.s16, Brand.s20, 0),
+                  child: Row(
+                    children: [
+                      _IconBtn(icon: Icons.arrow_back_rounded, onTap: () => Navigator.of(context).pop()),
+                      const SizedBox(width: Brand.s12),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('PARAMÈTRES', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: Brand.grey2)),
+                          Text('Intelligence artificielle', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, letterSpacing: -.3, color: Brand.white)),
+                        ],
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 24),
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                ),
+                const SizedBox(height: Brand.s24),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: Brand.s20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const _Avatar(),
-                        const SizedBox(height: 28),
-                        const _SectionLabel('Profil'),
-                        const SizedBox(height: 10),
-                        _Card(
-                          child: TextField(
-                            controller: _nameController,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: InputDecoration(
-                              labelText: 'Ton prénom',
-                              labelStyle:
-                                  const TextStyle(color: Colors.white54),
-                              border: InputBorder.none,
-                              icon: Icon(Icons.person_outline,
-                                  color: Colors.white.withOpacity(0.6)),
-                            ),
+                        // Backend toggle
+                        _SectionLabel('Backend actif'),
+                        const SizedBox(height: Brand.s8),
+                        _BackendToggle(
+                          current: config.backend,
+                          onChange: (b) => _save(config.copyWith(backend: b)),
+                        ),
+                        const SizedBox(height: Brand.s24),
+
+                        // ── OLLAMA ────────────────────────────────────
+                        _SectionLabel('Ollama (local · recommandé)'),
+                        const SizedBox(height: Brand.s8),
+                        _InfoCard(
+                          icon: Icons.info_outline_rounded,
+                          color: Brand.blue,
+                          text: 'Lance Ollama sur ton Mac/PC avec :\n'
+                              'ollama serve\n'
+                              'Sur émulateur Android : l\'IP hôte est 10.0.2.2\n'
+                              'Sur un vrai téléphone (même WiFi) : l\'IP LAN de ton PC',
+                        ),
+                        const SizedBox(height: Brand.s12),
+                        _Field(
+                          label: 'URL Ollama',
+                          hint: AiConfig.defaultOllamaUrl,
+                          ctrl: _urlCtrl,
+                          icon: Icons.link_rounded,
+                        ),
+                        const SizedBox(height: Brand.s8),
+                        _Field(
+                          label: 'Modèle',
+                          hint: AiConfig.defaultOllamaModel,
+                          ctrl: _modelCtrl,
+                          icon: Icons.memory_rounded,
+                        ),
+                        const SizedBox(height: Brand.s8),
+                        _ModelSuggestions(
+                          onPick: (m) => setState(() => _modelCtrl.text = m),
+                        ),
+                        const SizedBox(height: Brand.s24),
+
+                        // ── CLAUDE ────────────────────────────────────
+                        _SectionLabel('Claude API (Anthropic)'),
+                        const SizedBox(height: Brand.s8),
+                        _InfoCard(
+                          icon: Icons.lock_outline_rounded,
+                          color: Brand.lime,
+                          text: 'Clé API disponible sur console.anthropic.com\n'
+                              'Modèle utilisé : ${AiConfig.defaultClaudeModel}\n'
+                              'La clé n\'est stockée que sur cet appareil.',
+                        ),
+                        const SizedBox(height: Brand.s12),
+                        _Field(
+                          label: 'Clé API Claude',
+                          hint: 'sk-ant-...',
+                          ctrl: _apiKeyCtrl,
+                          icon: Icons.vpn_key_rounded,
+                          obscure: _obscureKey,
+                          suffixIcon: IconButton(
+                            icon: Icon(_obscureKey ? Icons.visibility_outlined : Icons.visibility_off_outlined, size: 18, color: Brand.grey2),
+                            onPressed: () => setState(() => _obscureKey = !_obscureKey),
                           ),
                         ),
-                        const SizedBox(height: 28),
-                        const _SectionLabel('Objectif'),
-                        const SizedBox(height: 10),
-                        ..._goals.entries.map((e) {
-                          final selected = _goal == e.key;
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: GestureDetector(
-                              onTap: () => setState(() => _goal = e.key),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 18, vertical: 16),
-                                decoration: BoxDecoration(
-                                  color: selected
-                                      ? const Color(0xFFE8622A)
-                                          .withOpacity(0.15)
-                                      : Colors.white.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(18),
-                                  border: Border.all(
-                                    color: selected
-                                        ? const Color(0xFFE8622A)
-                                        : Colors.white.withOpacity(0.1),
-                                    width: selected ? 2 : 1.5,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Text(e.value.emoji,
-                                        style: const TextStyle(fontSize: 24)),
-                                    const SizedBox(width: 14),
-                                    Text(e.value.label,
-                                        style: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.white)),
-                                    const Spacer(),
-                                    if (selected)
-                                      const Icon(Icons.check_circle,
-                                          color: Color(0xFFE8622A), size: 22),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        }),
-                        const SizedBox(height: 18),
-                        const _SectionLabel('Préférences'),
-                        const SizedBox(height: 10),
-                        _Card(
-                          child: Column(
-                            children: [
-                              _SwitchRow(
-                                emoji: '🔔',
-                                label: 'Notifications',
-                                value: _notifications,
-                                onChanged: (v) =>
-                                    setState(() => _notifications = v),
-                              ),
-                              Divider(
-                                  color: Colors.white.withOpacity(0.08),
-                                  height: 24),
-                              _SwitchRow(
-                                emoji: '🔊',
-                                label: 'Sons',
-                                value: _sound,
-                                onChanged: (v) => setState(() => _sound = v),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-                        const _SectionLabel('À propos'),
-                        const SizedBox(height: 10),
-                        _Card(
-                          child: Row(
-                            children: [
-                              Icon(Icons.info_outline,
-                                  color: Colors.white.withOpacity(0.6)),
-                              const SizedBox(width: 14),
-                              const Text('NoBrainFit',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600)),
-                              const Spacer(),
-                              const Text('v1.0.0',
-                                  style: TextStyle(color: Colors.white38)),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: Brand.s32),
+
+                        // Save button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: _save,
+                            onPressed: _saving ? null : () => _save(config.copyWith(
+                              claudeApiKey:  _apiKeyCtrl.text.trim(),
+                              ollamaBaseUrl: _urlCtrl.text.trim().isNotEmpty ? _urlCtrl.text.trim() : AiConfig.defaultOllamaUrl,
+                              ollamaModel:   _modelCtrl.text.trim().isNotEmpty ? _modelCtrl.text.trim() : AiConfig.defaultOllamaModel,
+                            )),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFE8622A),
-                              foregroundColor: Colors.white,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                              ),
+                              backgroundColor: Brand.lime,
+                              foregroundColor: Brand.bgVoid,
+                              padding: const EdgeInsets.symmetric(vertical: Brand.s16),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Brand.rButton)),
                             ),
-                            child: const Text('Enregistrer',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700)),
+                            child: _saving
+                              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Brand.bgVoid))
+                              : const Text('Enregistrer', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                           ),
                         ),
+                        const SizedBox(height: Brand.s20),
                       ],
                     ),
                   ),
-                ],
-              ),
-      ),
-    );
-  }
-}
-
-class _Avatar extends StatelessWidget {
-  const _Avatar();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 88,
-        height: 88,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: [Color(0xFFE8622A), Color(0xFFC0392B)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+                ),
+              ],
+            ),
           ),
-        ),
-        child: const Icon(Icons.person, color: Colors.white, size: 44),
-      ),
+        );
+      },
     );
   }
+
+  Future<void> _save(AiConfig config) async {
+    setState(() => _saving = true);
+    await ref.read(aiConfigProvider.notifier).update(config);
+    if (mounted) {
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Paramètres sauvegardés'),
+        backgroundColor: Brand.bgCard,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Brand.rChip)),
+      ));
+    }
+  }
 }
+
+// ── Sub-widgets ───────────────────────────────────────────────────────────────
 
 class _SectionLabel extends StatelessWidget {
-  final String text;
   const _SectionLabel(this.text);
+  final String text;
+  @override
+  Widget build(BuildContext context) => Text(
+    text.toUpperCase(),
+    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: Brand.grey2),
+  );
+}
+
+class _BackendToggle extends StatelessWidget {
+  const _BackendToggle({required this.current, required this.onChange});
+  final AiBackend current;
+  final void Function(AiBackend) onChange;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text.toUpperCase(),
-      style: const TextStyle(
-        color: Colors.white38,
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.2,
+    return Row(children: [
+      _ToggleBtn(label: 'Ollama', icon: Icons.computer_rounded, accent: Brand.blue, selected: current == AiBackend.ollama, onTap: () => onChange(AiBackend.ollama)),
+      const SizedBox(width: Brand.s8),
+      _ToggleBtn(label: 'Claude', icon: Icons.auto_awesome_rounded, accent: Brand.lime, selected: current == AiBackend.claude, onTap: () => onChange(AiBackend.claude)),
+    ]);
+  }
+}
+
+class _ToggleBtn extends StatelessWidget {
+  const _ToggleBtn({required this.label, required this.icon, required this.accent, required this.selected, required this.onTap});
+  final String label; final IconData icon; final Color accent; final bool selected; final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: Brand.s16),
+          decoration: BoxDecoration(
+            color: selected ? accent.withOpacity(.1) : Brand.bgCard,
+            borderRadius: BorderRadius.circular(Brand.rCard),
+            border: Border.all(color: selected ? accent : Brand.border, width: selected ? 1.5 : 1),
+          ),
+          child: Column(children: [
+            Icon(icon, size: 22, color: selected ? accent : Brand.grey2),
+            const SizedBox(height: 6),
+            Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: selected ? accent : Brand.grey1)),
+          ]),
+        ),
       ),
     );
   }
 }
 
-class _Card extends StatelessWidget {
-  final Widget child;
-  const _Card({required this.child});
+class _Field extends StatelessWidget {
+  const _Field({required this.label, required this.hint, required this.ctrl, required this.icon, this.obscure = false, this.suffixIcon});
+  final String label, hint; final TextEditingController ctrl; final IconData icon; final bool obscure; final Widget? suffixIcon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Brand.grey1)),
+      const SizedBox(height: 6),
+      TextField(
+        controller: ctrl,
+        obscureText: obscure,
+        style: const TextStyle(fontSize: 14, color: Brand.white, fontFamily: 'SpaceGrotesk'),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(color: Brand.grey2, fontSize: 13),
+          prefixIcon: Icon(icon, size: 18, color: Brand.grey2),
+          suffixIcon: suffixIcon,
+          filled: true,
+          fillColor: Brand.bgCard,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(Brand.rChip), borderSide: BorderSide(color: Brand.border)),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(Brand.rChip), borderSide: BorderSide(color: Brand.border)),
+          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(Brand.rChip), borderSide: const BorderSide(color: Brand.lime, width: 1.5)),
+        ),
+      ),
+    ]);
+  }
+}
+
+class _InfoCard extends StatelessWidget {
+  const _InfoCard({required this.icon, required this.color, required this.text});
+  final IconData icon; final Color color; final String text;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      padding: const EdgeInsets.all(Brand.s12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.5),
+        color: color.withOpacity(.07),
+        borderRadius: BorderRadius.circular(Brand.rChip),
+        border: Border.all(color: color.withOpacity(.2)),
       ),
-      child: child,
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(icon, size: 16, color: color),
+        const SizedBox(width: Brand.s8),
+        Expanded(child: Text(text, style: TextStyle(fontSize: 12, color: color.withOpacity(.85), height: 1.6))),
+      ]),
     );
   }
 }
 
-class _SwitchRow extends StatelessWidget {
-  final String emoji, label;
-  final bool value;
-  final ValueChanged<bool> onChanged;
+class _ModelSuggestions extends StatelessWidget {
+  const _ModelSuggestions({required this.onPick});
+  final void Function(String) onPick;
 
-  const _SwitchRow({
-    required this.emoji,
-    required this.label,
-    required this.value,
-    required this.onChanged,
-  });
+  static const _models = ['llama3.2', 'llama3.1', 'mistral', 'gemma3', 'phi3', 'qwen2.5'];
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text(emoji, style: const TextStyle(fontSize: 20)),
-        const SizedBox(width: 14),
-        Text(label,
-            style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w600)),
-        const Spacer(),
-        Switch(
-          value: value,
-          onChanged: onChanged,
-          activeColor: const Color(0xFFE8622A),
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: _models.map((m) => GestureDetector(
+        onTap: () => onPick(m),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: Brand.bgCard,
+            borderRadius: BorderRadius.circular(Brand.rTag),
+            border: Border.all(color: Brand.border2),
+          ),
+          child: Text(m, style: const TextStyle(fontSize: 11, color: Brand.grey1, fontWeight: FontWeight.w500)),
         ),
-      ],
+      )).toList(),
+    );
+  }
+}
+
+class _IconBtn extends StatelessWidget {
+  const _IconBtn({required this.icon, required this.onTap});
+  final IconData icon; final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 38, height: 38,
+        decoration: BoxDecoration(color: Brand.bgCard, borderRadius: BorderRadius.circular(Brand.rButton), border: Border.all(color: Brand.border2)),
+        child: Icon(icon, size: 20, color: Brand.white),
+      ),
     );
   }
 }

@@ -1,94 +1,110 @@
 import 'package:flutter/material.dart';
+import 'package:no_brain_fit/utils/brand.dart';
 
 class ChoiceItem {
-  final String emoji;
+  const ChoiceItem({required this.icon, required this.label, this.sub});
+  final IconData icon;
   final String label;
   final String? sub;
-  const ChoiceItem({required this.emoji, required this.label, this.sub});
 }
 
-class ChoiceGrid extends StatefulWidget {
-  final List<ChoiceItem> choices;
-  final void Function(ChoiceItem) onSelect;
-  final Color color;
-
-  const ChoiceGrid({
+class ChoiceList extends StatefulWidget {
+  const ChoiceList({
     super.key,
     required this.choices,
     required this.onSelect,
-    required this.color,
+    required this.accent,
   });
+  final List<ChoiceItem> choices;
+  final void Function(ChoiceItem) onSelect;
+  final Color accent;
 
   @override
-  State<ChoiceGrid> createState() => _ChoiceGridState();
+  State<ChoiceList> createState() => _ChoiceListState();
 }
 
-class _ChoiceGridState extends State<ChoiceGrid> {
+class _ChoiceListState extends State<ChoiceList> {
   int? _selected;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          GridView.count(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.1,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            children: List.generate(widget.choices.length, (i) {
-              final c = widget.choices[i];
-              final selected = _selected == i;
-              return GestureDetector(
-                onTap: () {
-                  setState(() => _selected = i);
-                  Future.delayed(
-                    const Duration(milliseconds: 180),
-                    () => widget.onSelect(c),
-                  );
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  decoration: BoxDecoration(
-                    color: selected
-                        ? widget.color.withOpacity(0.15)
-                        : Colors.white.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: selected
-                          ? widget.color
-                          : Colors.white.withOpacity(0.1),
-                      width: selected ? 2 : 1.5,
-                    ),
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: Brand.s20),
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: widget.choices.length,
+      separatorBuilder: (_, __) => const SizedBox(height: Brand.s8),
+      itemBuilder: (_, i) {
+        final c = widget.choices[i];
+        final sel = _selected == i;
+        return _OptionRow(
+          choice: c,
+          selected: sel,
+          accent: widget.accent,
+          onTap: () {
+            setState(() => _selected = i);
+            Future.delayed(const Duration(milliseconds: 180), () => widget.onSelect(c));
+          },
+        );
+      },
+    );
+  }
+}
+
+class _OptionRow extends StatelessWidget {
+  const _OptionRow({required this.choice, required this.selected, required this.accent, required this.onTap});
+  final ChoiceItem choice;
+  final bool selected;
+  final Color accent;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 140),
+        padding: const EdgeInsets.symmetric(horizontal: Brand.s16, vertical: Brand.s16),
+        decoration: BoxDecoration(
+          color: selected ? accent.withOpacity(.08) : Brand.bgCard,
+          borderRadius: BorderRadius.circular(Brand.rCard),
+          border: Border.all(color: selected ? accent : Brand.border),
+        ),
+        child: Row(
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 140),
+              width: 38, height: 38,
+              decoration: BoxDecoration(
+                color: selected ? accent.withOpacity(.15) : Brand.bgSurface,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: selected ? accent.withOpacity(.4) : Brand.border),
+              ),
+              child: Icon(choice.icon, size: 20, color: selected ? accent : Brand.grey2),
+            ),
+            const SizedBox(width: Brand.s12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    choice.label,
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: -.2, color: selected ? Brand.white : Brand.white),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(c.emoji, style: const TextStyle(fontSize: 32)),
-                      const SizedBox(height: 8),
-                      Text(c.label,
-                          style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white)),
-                      if (c.sub != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2),
-                          child: Text(c.sub!,
-                              style: const TextStyle(
-                                  fontSize: 11, color: Colors.white54)),
-                        ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ),
-        ],
+                  if (choice.sub != null) ...[
+                    const SizedBox(height: 2),
+                    Text(choice.sub!, style: const TextStyle(fontSize: 11, color: Brand.grey2)),
+                  ],
+                ],
+              ),
+            ),
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 140),
+              opacity: selected ? 1.0 : 0.0,
+              child: Icon(Icons.check_rounded, size: 18, color: accent),
+            ),
+          ],
+        ),
       ),
     );
   }

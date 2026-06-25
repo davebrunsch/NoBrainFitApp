@@ -1,75 +1,110 @@
 import 'package:flutter/material.dart';
+import 'package:no_brain_fit/utils/brand.dart';
 
 class FlowScaffold extends StatelessWidget {
-  final String emoji;
-  final String title;
-  final Color color;
-  final double progress;
-  final VoidCallback onBack;
-  final Widget child;
-
   const FlowScaffold({
     super.key,
-    required this.emoji,
+    required this.icon,
+    required this.sup,
     required this.title,
-    required this.color,
-    required this.progress,
+    required this.accent,
+    required this.step,
+    required this.totalSteps,
     required this.onBack,
+    required this.question,
+    required this.stepLabel,
     required this.child,
   });
+
+  final IconData icon;
+  final String sup, title, question, stepLabel;
+  final Color accent;
+  final int step, totalSteps;
+  final VoidCallback onBack;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1A),
+      backgroundColor: Brand.bgVoid,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              padding: const EdgeInsets.fromLTRB(Brand.s20, Brand.s16, Brand.s20, 0),
               child: Row(
                 children: [
-                  GestureDetector(
-                    onTap: onBack,
-                    child: Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(12),
+                  _BackButton(onTap: onBack),
+                  const SizedBox(width: Brand.s12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        sup.toUpperCase(),
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: accent),
                       ),
-                      child: const Icon(Icons.chevron_left,
-                          color: Colors.white, size: 22),
-                    ),
+                      Text(title, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w600, letterSpacing: -.3, color: Brand.white)),
+                    ],
                   ),
-                  const SizedBox(width: 14),
-                  Text(emoji, style: const TextStyle(fontSize: 26)),
-                  const SizedBox(width: 8),
-                  Text(title,
-                      style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white)),
                 ],
               ),
             ),
+            // Step segments
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(2),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  backgroundColor: Colors.white.withOpacity(0.08),
-                  valueColor: AlwaysStoppedAnimation<Color>(color),
-                  minHeight: 4,
-                ),
+              padding: const EdgeInsets.fromLTRB(Brand.s20, Brand.s16, Brand.s20, 0),
+              child: Row(
+                children: List.generate(totalSteps, (i) => Expanded(
+                  child: Container(
+                    height: 3,
+                    margin: EdgeInsets.only(right: i < totalSteps - 1 ? Brand.s8 : 0),
+                    decoration: BoxDecoration(
+                      color: i <= step ? accent : Brand.border,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                )),
               ),
             ),
-            const SizedBox(height: 24),
+            // Question + counter
+            Padding(
+              padding: const EdgeInsets.fromLTRB(Brand.s20, Brand.s24, Brand.s20, Brand.s16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Expanded(
+                    child: Text(question, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, letterSpacing: -.5, color: Brand.white)),
+                  ),
+                  Text(stepLabel, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: .1, color: Brand.grey2)),
+                ],
+              ),
+            ),
             Expanded(child: child),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _BackButton extends StatelessWidget {
+  const _BackButton({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 38, height: 38,
+        decoration: BoxDecoration(
+          color: Brand.bgCard,
+          borderRadius: BorderRadius.circular(Brand.rButton),
+          border: Border.all(color: Brand.border2),
+        ),
+        child: const Icon(Icons.chevron_left_rounded, size: 22, color: Brand.white),
       ),
     );
   }

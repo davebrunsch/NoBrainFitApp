@@ -3,472 +3,454 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NoBrainFit — Prototype</title>
+<title>NoBrainFit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0F0F1A;
-    --surface: #1A1A2E;
-    --orange: #E8622A;
-    --orange2: #C0392B;
-    --blue: #2980B9;
-    --blue2: #1565C0;
-    --green: #27AE60;
-    --green2: #1A8A49;
-    --grey: #888888;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body {
-    background: #05050a;
-    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    color: #fff;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-  /* Phone frame */
-  .phone {
-    width: 390px;
-    max-width: 100%;
-    height: 844px;
-    max-height: 95vh;
-    background: var(--bg);
-    border-radius: 44px;
-    border: 10px solid #000;
-    box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 2px #222;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-  }
-  .notch {
-    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-    width: 150px; height: 26px; background: #000;
-    border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;
-    z-index: 50;
-  }
-  .screen {
-    flex: 1;
-    display: none;
-    flex-direction: column;
-    padding: 44px 0 0 0;
-    overflow: hidden;
-    animation: fade .25s ease;
-  }
-  .screen.active { display: flex; }
-  @keyframes fade { from { opacity: 0; transform: translateY(6px);} to {opacity:1; transform:none;} }
+:root {
+  --bg:      #0A0A0C;
+  --surface: #111114;
+  --card:    #141418;
+  --card-hi: #1A1A20;
+  --border:  rgba(255,255,255,.06);
+  --border2: rgba(255,255,255,.12);
+  --acc-g:   #CCFF00;   /* lime strike — Nutrition */
+  --acc-b:   #3D8EFF;   /* steel blue — Training */
+  --acc-o:   #FF5C2B;   /* burn orange — Cuisine */
+  --txt:     #F5F5F7;
+  --txt2:    #8A8A96;
+  --txt3:    #56565F;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-  .pad { padding: 0 20px; }
-  .scroll { flex: 1; overflow-y: auto; padding-bottom: 8px; }
-  .scroll::-webkit-scrollbar { width: 0; }
+html, body {
+  background: #050506;
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  color: var(--txt);
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 20px; overflow: hidden;
+}
 
-  /* HOME */
-  .greet { color: var(--grey); font-size: 15px; }
-  .h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; margin-top: 2px; }
-  .tagline { color: var(--grey); font-size: 13px; margin-top: 2px; }
-  .pills { display: flex; gap: 8px; margin: 16px 0 20px; overflow-x: auto; }
-  .pills::-webkit-scrollbar { display: none; }
-  .pill {
-    display: flex; align-items: center; gap: 5px; white-space: nowrap;
-    padding: 7px 14px; border-radius: 20px;
-    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08);
-    font-size: 13px; color: rgba(255,255,255,.7); font-weight: 500;
-  }
-  .big-buttons { display: flex; flex-direction: column; gap: 14px; flex: 1; padding-bottom: 20px; }
-  .big-btn {
-    flex: 1; border-radius: 28px; padding: 0 28px;
-    display: flex; align-items: center; gap: 20px;
-    cursor: pointer; transition: transform .1s ease;
-    min-height: 110px;
-  }
-  .big-btn:active { transform: scale(.96); }
-  .big-btn .emoji { font-size: 48px; }
-  .big-btn .label { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
-  .big-btn .sub { font-size: 13px; color: rgba(255,255,255,.75); }
-  .big-btn .chev { margin-left: auto; font-size: 28px; color: rgba(255,255,255,.5); }
-  .b-eat   { background: linear-gradient(135deg, var(--orange), var(--orange2)); box-shadow: 0 10px 24px rgba(232,98,42,.35); }
-  .b-train { background: linear-gradient(135deg, var(--blue), var(--blue2)); box-shadow: 0 10px 24px rgba(41,128,185,.35); }
-  .b-cook  { background: linear-gradient(135deg, var(--green), var(--green2)); box-shadow: 0 10px 24px rgba(39,174,96,.35); }
+.phone {
+  width: 390px; max-width: 100%; height: 844px; max-height: 95vh;
+  background: var(--bg); border-radius: 46px; border: 8px solid #0A0A0C;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.05), 0 50px 120px rgba(0,0,0,.85);
+  overflow: hidden; position: relative; display: flex; flex-direction: column;
+}
+.notch {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 110px; height: 22px; background: #000;
+  border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; z-index: 50;
+}
 
-  /* Flow header */
-  .flow-head { display: flex; align-items: center; gap: 14px; padding: 0 20px; }
-  .icon-btn {
-    width: 38px; height: 38px; border-radius: 12px;
-    background: rgba(255,255,255,.08);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 22px; color: #fff; flex-shrink: 0;
-  }
-  .flow-title { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-  .flow-title .e { font-size: 26px; }
-  .progress { height: 4px; border-radius: 2px; background: rgba(255,255,255,.08); margin: 16px 20px 0; overflow: hidden; }
-  .progress > div { height: 100%; border-radius: 2px; transition: width .3s ease; }
+.screen { flex: 1; display: none; flex-direction: column; padding-top: 38px; overflow: hidden; }
+.screen.active { display: flex; animation: in .25s cubic-bezier(.22,1,.36,1); }
+@keyframes in { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
+.scroll { flex:1; overflow-y:auto; padding-bottom:8px; }
+.scroll::-webkit-scrollbar { width:0; }
 
-  /* Choice grid */
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 24px 20px 0; }
-  .choice {
-    aspect-ratio: 1.1; border-radius: 20px;
-    background: rgba(255,255,255,.05); border: 1.5px solid rgba(255,255,255,.1);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; transition: all .15s ease; text-align: center; padding: 8px;
-  }
-  .choice .ce { font-size: 32px; }
-  .choice .cl { font-size: 14px; font-weight: 700; margin-top: 8px; }
-  .choice .cs { font-size: 11px; color: rgba(255,255,255,.54); margin-top: 2px; }
-  .choice.sel { transform: scale(.97); }
+svg.ic { display: block; }
+.pad { padding: 0 22px; }
 
-  /* Result screens */
-  .result-top { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 20px; }
-  .result-emoji { font-size: 64px; }
-  .result-title { font-size: 24px; font-weight: 800; margin-top: 8px; }
-  .result-sub { color: var(--grey); font-size: 14px; margin-top: 2px; }
-  .card {
-    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
-    border-radius: 20px; padding: 18px; margin: 0 20px 12px;
-  }
-  .card-head { display: flex; align-items: center; }
-  .card-head .ct { font-weight: 700; }
-  .badge { margin-left: auto; padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-  .macros { display: flex; justify-content: space-around; margin-top: 12px; }
-  .macro .mv { font-size: 20px; font-weight: 800; }
-  .macro .ml { font-size: 11px; color: var(--grey); text-align: center; margin-top: 2px; }
-  .advice { color: #ccc; font-size: 14px; line-height: 1.5; margin-top: 12px; }
+/* ── HOME ── */
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 6px 22px 0; }
+.brand { font-size: 15px; font-weight: 700; letter-spacing: -.3px; }
+.brand b { color: var(--acc-g); }
+.av { width: 34px; height: 34px; border-radius: 50%; background: var(--card); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--txt2); }
 
-  /* Exercise / shopping list rows */
-  .ex-row, .shop-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; cursor: pointer; }
-  .ex-num { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
-  .ex-name { font-weight: 600; font-size: 14px; }
-  .ex-detail { font-size: 11px; color: var(--grey); }
-  .checkbox {
-    width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,.24);
-    margin-left: auto; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-    transition: all .15s ease; font-size: 16px; color: #fff;
-  }
-  .checkbox.sm { width: 22px; height: 22px; border-radius: 6px; margin-left: 0; font-size: 14px; }
-  .checked { color: var(--grey); text-decoration: line-through; }
+.hero { padding: 30px 22px 0; }
+.eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--txt3); }
+.hero-h1 { font-size: 34px; font-weight: 600; line-height: 1.04; letter-spacing: -1.2px; margin-top: 10px; }
+.hero-h1 .dim { color: var(--txt3); }
 
-  /* Recipe cards */
-  .recipe { border-radius: 18px; overflow: hidden; margin: 0 20px 10px; }
-  .recipe .top { height: 80px; display: flex; align-items: center; justify-content: center; font-size: 44px; }
-  .recipe .bot { padding: 10px 14px 12px; background: rgba(255,255,255,.06); }
-  .recipe .rn { font-weight: 700; font-size: 14px; }
-  .tags { display: flex; gap: 6px; margin-top: 6px; }
-  .tag { padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,.08); font-size: 10px; color: rgba(255,255,255,.7); }
+/* Stat strip */
+.strip { display: flex; gap: 0; margin: 24px 22px 0; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.strip-cell { flex: 1; padding: 14px 16px; border-right: 1px solid var(--border); }
+.strip-cell:last-child { border-right: none; }
+.strip-val { font-size: 18px; font-weight: 600; letter-spacing: -.5px; }
+.strip-key { font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--txt3); margin-top: 3px; }
 
-  /* Bottom action bar */
-  .actions { display: flex; gap: 12px; padding: 16px 20px; }
-  .btn-outline {
-    flex: 1; padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,.24);
-    background: transparent; color: #fff; font-size: 15px; cursor: pointer; font-weight: 500;
-  }
-  .btn-fill {
-    flex: 2; padding: 16px; border-radius: 16px; border: none;
-    color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
-  }
+/* Action rows */
+.rows { display: flex; flex-direction: column; gap: 10px; flex: 1; padding: 22px 22px; }
+.row {
+  flex: 1; border-radius: 18px; background: var(--card); border: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px; cursor: pointer; position: relative;
+  transition: background .15s, border-color .15s, transform .1s; overflow: hidden;
+}
+.row:hover { background: var(--card-hi); border-color: var(--border2); }
+.row:active { transform: scale(.985); }
+.row-ic {
+  width: 50px; height: 50px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; margin-right: 16px;
+  border: 1px solid var(--border2);
+}
+.row-txt { flex: 1; }
+.row-kicker { font-size: 10px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 3px; }
+.row-title { font-size: 19px; font-weight: 600; letter-spacing: -.4px; }
+.row-sub { font-size: 12px; color: var(--txt2); margin-top: 1px; }
+.row-arr { color: var(--txt3); flex-shrink: 0; }
+.idx { position: absolute; top: 14px; right: 18px; font-size: 11px; font-weight: 600; color: var(--txt3); letter-spacing: .1em; }
 
-  /* Hint banner outside phone */
-  .hint {
-    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
-    color: #555; font-size: 12px; text-align: center; width: 100%;
-  }
+/* ── FLOW ── */
+.fhead { display: flex; align-items: center; gap: 14px; padding: 6px 22px 0; }
+.back {
+  width: 38px; height: 38px; border-radius: 12px; background: var(--card); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--txt); flex-shrink: 0;
+  transition: border-color .15s;
+}
+.back:hover { border-color: var(--border2); }
+.fsup { font-size: 10px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
+.ftitle { font-size: 19px; font-weight: 600; letter-spacing: -.3px; margin-top: 2px; }
+.steps { display: flex; gap: 6px; padding: 18px 22px 0; }
+.step-seg { flex: 1; height: 3px; border-radius: 2px; background: rgba(255,255,255,.08); transition: background .3s; }
+
+.qrow { display: flex; align-items: baseline; justify-content: space-between; padding: 26px 22px 16px; }
+.q { font-size: 22px; font-weight: 600; letter-spacing: -.5px; }
+.qcount { font-size: 11px; color: var(--txt3); font-weight: 600; letter-spacing: .1em; }
+
+.grid { display: flex; flex-direction: column; gap: 9px; padding: 0 22px; }
+.opt {
+  display: flex; align-items: center; padding: 16px 18px; border-radius: 14px;
+  background: var(--card); border: 1px solid var(--border); cursor: pointer;
+  transition: all .14s ease; position: relative;
+}
+.opt:hover { border-color: var(--border2); background: var(--card-hi); }
+.opt-ic { width: 38px; height: 38px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; margin-right: 14px; flex-shrink: 0; color: var(--txt2); }
+.opt-l { font-size: 15px; font-weight: 600; letter-spacing: -.2px; }
+.opt-s { font-size: 11px; color: var(--txt3); margin-top: 1px; }
+.opt-check { margin-left: auto; opacity: 0; transition: opacity .14s; }
+.opt.sel { border-color: currentColor; }
+.opt.sel .opt-check { opacity: 1; }
+
+/* ── RESULTS ── */
+.rtop { padding: 26px 22px 0; }
+.rkick { font-size: 10px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
+.rtitle { font-size: 27px; font-weight: 600; letter-spacing: -.8px; margin-top: 8px; }
+.rsub { font-size: 13px; color: var(--txt2); margin-top: 5px; }
+
+.card { margin: 14px 22px 0; padding: 18px; border-radius: 16px; background: var(--card); border: 1px solid var(--border); }
+.crow { display: flex; align-items: center; }
+.ctitle { font-size: 13px; font-weight: 600; letter-spacing: .02em; }
+.tag { margin-left: auto; padding: 4px 10px; border-radius: 7px; font-size: 11px; font-weight: 600; background: var(--surface); border: 1px solid var(--border); }
+
+.macros { display: flex; margin-top: 16px; }
+.macro { flex: 1; }
+.mv { font-size: 20px; font-weight: 600; letter-spacing: -.5px; }
+.mk { font-size: 10px; color: var(--txt3); font-weight: 600; letter-spacing: .1em; text-transform: uppercase; margin-top: 3px; }
+.pwrap { height: 3px; background: rgba(255,255,255,.07); border-radius: 2px; margin-top: 16px; overflow: hidden; }
+.pfill { height: 100%; border-radius: 2px; }
+.krow { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--txt3); }
+.advice { font-size: 13px; color: var(--txt2); line-height: 1.6; margin-top: 12px; }
+
+/* Exercise list */
+.ex { display: flex; align-items: center; padding: 13px 0; cursor: pointer; border-bottom: 1px solid var(--border); }
+.ex:last-child { border-bottom: none; }
+.exn { width: 24px; font-size: 12px; font-weight: 600; color: var(--txt3); flex-shrink: 0; }
+.exname { font-size: 14px; font-weight: 600; letter-spacing: -.2px; }
+.exd { font-size: 11px; color: var(--txt3); margin-top: 2px; }
+.struck .exname { text-decoration: line-through; color: var(--txt3); }
+.box { margin-left: auto; width: 22px; height: 22px; border-radius: 7px; border: 1.5px solid var(--txt3);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .14s; }
+
+/* Recipes */
+.recs { display: flex; flex-direction: column; gap: 10px; margin: 14px 22px 0; }
+.rec { display: flex; align-items: center; padding: 12px; border-radius: 14px; background: var(--card); border: 1px solid var(--border);
+  cursor: pointer; transition: border-color .15s; }
+.rec:hover { border-color: var(--border2); }
+.rec-th { width: 52px; height: 52px; border-radius: 11px; flex-shrink: 0; margin-right: 14px;
+  display: flex; align-items: center; justify-content: center; }
+.rec-n { font-size: 14px; font-weight: 600; letter-spacing: -.2px; }
+.rec-meta { font-size: 11px; color: var(--txt3); margin-top: 3px; }
+
+/* Shopping */
+.sh { display: flex; align-items: center; padding: 11px 0; cursor: pointer; border-bottom: 1px solid var(--border); }
+.sh:last-child { border-bottom: none; }
+.shbox { width: 19px; height: 19px; border-radius: 6px; border: 1.5px solid var(--txt3); margin-right: 13px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; transition: all .14s; }
+.shn { font-size: 13px; font-weight: 500; }
+.struck .shn { text-decoration: line-through; color: var(--txt3); }
+
+/* Bottom bar */
+.bar { display: flex; gap: 10px; padding: 14px 22px 20px; }
+.ghost { flex: 1; padding: 15px 0; border-radius: 14px; border: 1px solid var(--border2); background: transparent;
+  color: var(--txt2); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: border-color .15s; }
+.ghost:hover { border-color: var(--txt3); }
+.solid { flex: 2; padding: 15px 0; border-radius: 14px; border: none; color: #0A0A0C; font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: inherit; letter-spacing: -.1px; transition: transform .1s, filter .15s; }
+.solid:active { transform: scale(.985); }
+.solid:hover { filter: brightness(1.08); }
+.hicon { width: 38px; height: 38px; border-radius: 12px; background: var(--card); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--txt2); }
 </style>
 </head>
 <body>
 <div class="phone">
-  <div class="notch"></div>
+<div class="notch"></div>
 
-  <!-- ===== HOME ===== -->
-  <div class="screen active" id="home">
-    <div class="pad">
-      <div class="greet">Bonjour 👋</div>
-      <div class="h1">Qu'est-ce qu'on fait ?</div>
-      <div class="tagline">Appuie, l'app s'occupe du reste.</div>
-      <div class="pills">
-        <div class="pill">🔥 1240 kcal</div>
-        <div class="pill">💪 Repos</div>
-        <div class="pill">🏅 Jour 5</div>
-      </div>
+<!-- icon defs -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="i-eat" viewBox="0 0 24 24"><path d="M4 3v7a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V3M6 3v18M14 3c-1.5 1-2 3-2 5s.5 4 2 5v8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-train" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M4 9v6M20 9v6M6.5 12h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-cook" viewBox="0 0 24 24"><path d="M5 10a7 7 0 0 1 14 0M3 10h18M6 10v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8M12 3v3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-arr" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5L19 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7M6 10v9h12v-9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 20a7 7 0 0 1 14 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.5 5.5l1.4 1.4M17.1 17.1l1.4 1.4M18.5 5.5l-1.4 1.4M6.9 17.1l-1.4 1.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-mid" viewBox="0 0 24 24"><path d="M12 4v3M5 9a7 7 0 0 1 14 0M3 14h18M6 14a6 6 0 0 0 12 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14a8 8 0 1 1-10-10 7 7 0 0 0 10 10z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-snack" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0-6 6c0 5 3 12 6 12s6-7 6-12a6 6 0 0 0-6-6zM12 3c0-1 1-2 2-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3L5 13h6l-1 8 8-10h-6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-run" viewBox="0 0 24 24"><circle cx="14" cy="5" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 21l3-6 3 2 1-5-4-2-3 3M13 12l3 1 1 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c0 4-4 5-4 9a4 4 0 0 0 8 0c0-2-1-3-1-3 0 1.5-1 2-1.5 2 .5-3-1.5-5-1.5-8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-home2" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7M6 10v9h12v-9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-tree" viewBox="0 0 24 24"><path d="M12 3l5 7h-3l3 5H7l3-5H7z M12 15v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bike" viewBox="0 0 24 24"><circle cx="6" cy="17" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="17" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 17l4-7h5l3 7M10 10l-1-3h-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-couch" viewBox="0 0 24 24"><path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M3 11a2 2 0 0 1 2 2v3h14v-3a2 2 0 0 1 2-2M6 19v-3M18 19v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 14a4 4 0 0 0 8 0M9 9.5h.01M15 9.5h.01" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-chef" viewBox="0 0 24 24"><path d="M7 14a4 4 0 0 1-1-7.8A4 4 0 0 1 13 5a4 4 0 0 1 5 6.5V14zM7 14v4h10v-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-cart" viewBox="0 0 24 24"><path d="M4 5h2l2 11h10l2-8H7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.3" fill="currentColor"/><circle cx="17" cy="20" r="1.3" fill="currentColor"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V5h3M20 8V5h-3M4 16v3h3M20 16v3h-3M7 8v8M10 8v8M13 8v8M16 8v8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-one" viewBox="0 0 24 24"><circle cx="12" cy="7" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 21a6 6 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-two" viewBox="0 0 24 24"><circle cx="8" cy="8" r="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="16" cy="8" r="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 20a5 5 0 0 1 10 0M11 20a5 5 0 0 1 10 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-fam" viewBox="0 0 24 24"><circle cx="7" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="13" r="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 18a4 4 0 0 1 8 0M13 18a4 4 0 0 1 8 0M9 22a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M4 8l8-4 8 4-8 4-8-4zM4 8v8l8 4 8-4V8M12 12v8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<!-- ════ HOME ════ -->
+<div class="screen active" id="home">
+  <div class="topbar">
+    <!-- Tri-Strike wordmark -->
+    <div style="display:flex;align-items:center;gap:9px">
+      <svg width="26" height="26" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="6" y="14" width="52" height="11" rx="5.5" fill="#CCFF00" transform="rotate(-18 32 19.5)"/>
+        <rect x="14" y="33" width="52" height="11" rx="5.5" fill="#3D8EFF" transform="rotate(-18 40 38.5)"/>
+        <rect x="22" y="52" width="52" height="11" rx="5.5" fill="#FF5C2B" transform="rotate(-18 48 57.5)"/>
+      </svg>
+      <span style="font-size:16px;font-weight:700;letter-spacing:-.4px">NoBrain<span style="color:var(--acc-g)">Fit</span></span>
     </div>
-    <div class="pad big-buttons">
-      <div class="big-btn b-eat" onclick="startEat()">
-        <span class="emoji">🍽️</span>
-        <span><div class="label">MANGER</div><div class="sub">Loguer un repas</div></span>
-        <span class="chev">›</span>
+    <div class="av"><svg class="ic" width="18" height="18"><use href="#i-user"/></svg></div>
+  </div>
+  <div class="hero">
+    <div class="eyebrow">Mercredi 25 juin</div>
+    <div class="hero-h1">On fait quoi<br><span class="dim">aujourd'hui ?</span></div>
+  </div>
+  <div class="strip">
+    <div class="strip-cell"><div class="strip-val" style="color:var(--acc-g)">1 240</div><div class="strip-key">kcal</div></div>
+    <div class="strip-cell"><div class="strip-val">Repos</div><div class="strip-key">Séance</div></div>
+    <div class="strip-cell"><div class="strip-val">J·5</div><div class="strip-key">Streak</div></div>
+  </div>
+  <div class="rows">
+    <div class="row" onclick="openFlow('eat')">
+      <span class="idx">01</span>
+      <div class="row-ic" style="color:var(--acc-g)"><svg class="ic" width="24" height="24"><use href="#i-eat"/></svg></div>
+      <div class="row-txt">
+        <div class="row-kicker" style="color:var(--acc-g)">Nutrition</div>
+        <div class="row-title">Manger</div>
+        <div class="row-sub">Loguer un repas en 2 gestes</div>
       </div>
-      <div class="big-btn b-train" onclick="startTrain()">
-        <span class="emoji">💪</span>
-        <span><div class="label">S'ENTRAÎNER</div><div class="sub">Programme du jour</div></span>
-        <span class="chev">›</span>
+      <svg class="ic row-arr" width="22" height="22"><use href="#i-arr"/></svg>
+    </div>
+    <div class="row" onclick="openFlow('train')">
+      <span class="idx">02</span>
+      <div class="row-ic" style="color:var(--acc-b)"><svg class="ic" width="24" height="24"><use href="#i-train"/></svg></div>
+      <div class="row-txt">
+        <div class="row-kicker" style="color:var(--acc-b)">Training</div>
+        <div class="row-title">S'entraîner</div>
+        <div class="row-sub">Séance générée pour toi</div>
       </div>
-      <div class="big-btn b-cook" onclick="startCook()">
-        <span class="emoji">👨‍🍳</span>
-        <span><div class="label">CUISINER</div><div class="sub">3 recettes rapides</div></span>
-        <span class="chev">›</span>
+      <svg class="ic row-arr" width="22" height="22"><use href="#i-arr"/></svg>
+    </div>
+    <div class="row" onclick="openFlow('cook')">
+      <span class="idx">03</span>
+      <div class="row-ic" style="color:var(--acc-o)"><svg class="ic" width="24" height="24"><use href="#i-cook"/></svg></div>
+      <div class="row-txt">
+        <div class="row-kicker" style="color:var(--acc-o)">Cuisine</div>
+        <div class="row-title">Cuisiner</div>
+        <div class="row-sub">3 recettes + liste de courses</div>
       </div>
+      <svg class="ic row-arr" width="22" height="22"><use href="#i-arr"/></svg>
     </div>
   </div>
-
-  <!-- ===== FLOW (shared, 2 steps) ===== -->
-  <div class="screen" id="flow">
-    <div class="flow-head">
-      <div class="icon-btn" onclick="flowBack()">‹</div>
-      <div class="flow-title"><span class="e" id="flowEmoji">🍽️</span><span id="flowTitle">Manger</span></div>
-    </div>
-    <div class="progress"><div id="flowBar" style="width:33%"></div></div>
-    <div class="grid" id="flowGrid"></div>
-  </div>
-
-  <!-- ===== EAT RESULT ===== -->
-  <div class="screen" id="eatResult">
-    <div class="pad"><div class="icon-btn" onclick="goHome()">⌂</div></div>
-    <div class="scroll">
-      <div style="height:24px"></div>
-      <div class="result-top">
-        <div class="result-emoji">✅</div>
-        <div class="result-title">Repas enregistré !</div>
-        <div class="result-sub" id="eatSub">Déjeuner · ~600 kcal estimées</div>
-      </div>
-      <div style="height:32px"></div>
-      <div class="card">
-        <div class="card-head"><span class="ct">Bilan du jour</span>
-          <span class="badge" style="background:rgba(232,98,42,.2);color:var(--orange)">1890 / 2000 kcal</span></div>
-        <div class="macros">
-          <div class="macro"><div class="mv" style="color:#4CAF50">92g</div><div class="ml">Protéines</div></div>
-          <div class="macro"><div class="mv" style="color:#2196F3">210g</div><div class="ml">Glucides</div></div>
-          <div class="macro"><div class="mv" style="color:#FF9800">55g</div><div class="ml">Lipides</div></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-head"><span class="ct">Conseil du soir 💡</span></div>
-        <div class="advice">Il te reste 110 kcal. Un dîner léger — soupe ou yaourt — et tu seras pile sur ton objectif 🎯</div>
-      </div>
-    </div>
-    <div class="actions">
-      <button class="btn-outline" onclick="goHome()">Accueil</button>
-      <button class="btn-fill" style="background:var(--orange)">+ Ajouter un aliment</button>
-    </div>
-  </div>
-
-  <!-- ===== TRAIN RESULT ===== -->
-  <div class="screen" id="trainResult">
-    <div class="pad"><div class="icon-btn" onclick="goHome()">⌂</div></div>
-    <div class="scroll">
-      <div style="height:20px"></div>
-      <div class="result-top">
-        <div class="result-emoji" id="trainEmoji">🏠</div>
-        <div class="result-title" id="trainTitle">Full Body · 30 min</div>
-        <div class="result-sub" id="trainSub">4 exercices · Maison</div>
-      </div>
-      <div style="height:24px"></div>
-      <div class="card">
-        <div class="card-head"><span class="ct">Ta séance</span>
-          <span class="badge" style="background:rgba(41,128,185,.2);color:var(--blue)" id="trainCount">0 / 4</span></div>
-        <div id="exList" style="margin-top:12px"></div>
-      </div>
-    </div>
-    <div class="actions">
-      <button class="btn-outline" onclick="goHome()">Accueil</button>
-      <button class="btn-fill" style="background:var(--blue)">▶ Démarrer</button>
-    </div>
-  </div>
-
-  <!-- ===== COOK RESULT ===== -->
-  <div class="screen" id="cookResult">
-    <div class="pad"><div class="icon-btn" onclick="goHome()">⌂</div></div>
-    <div class="scroll">
-      <div style="height:16px"></div>
-      <div class="result-top">
-        <div class="result-emoji">🍳</div>
-        <div class="result-title">3 recettes pour ce soir</div>
-        <div class="result-sub" id="cookSub">~25 min · 2 personnes</div>
-      </div>
-      <div style="height:20px"></div>
-      <div class="recipe"><div class="top" style="background:#1A3A2A">🥗</div>
-        <div class="bot"><div class="rn">Poulet grillé & légumes rôtis</div>
-          <div class="tags"><span class="tag">⏱️ 25 min</span><span class="tag">🔥 480 kcal</span><span class="tag">💪 38g prot</span></div></div></div>
-      <div class="recipe"><div class="top" style="background:#1A2A3A">🍜</div>
-        <div class="bot"><div class="rn">Pâtes au pesto & thon</div>
-          <div class="tags"><span class="tag">⏱️ 15 min</span><span class="tag">🔥 520 kcal</span><span class="tag">💪 30g prot</span></div></div></div>
-      <div class="recipe"><div class="top" style="background:#2A2A1A">🥚</div>
-        <div class="bot"><div class="rn">Omelette aux champignons</div>
-          <div class="tags"><span class="tag">⏱️ 10 min</span><span class="tag">🔥 310 kcal</span><span class="tag">💪 24g prot</span></div></div></div>
-      <div class="card">
-        <div class="card-head"><span class="ct">🛒 Liste de courses</span>
-          <span class="badge" style="background:rgba(39,174,96,.2);color:var(--green)">Monoprix 0.3km</span></div>
-        <div id="shopList" style="margin-top:12px"></div>
-      </div>
-    </div>
-    <div class="actions">
-      <button class="btn-outline" onclick="goHome()">Accueil</button>
-      <button class="btn-fill" style="background:var(--green)">Voir la recette →</button>
-    </div>
-  </div>
-
 </div>
-<div class="hint">Prototype NoBrainFit · clique sur les boutons pour naviguer</div>
+
+<!-- ════ FLOW ════ -->
+<div class="screen" id="flow">
+  <div class="fhead">
+    <div class="back" onclick="flowBack()"><svg class="ic" width="22" height="22"><use href="#i-back"/></svg></div>
+    <div><div class="fsup" id="fsup">Nutrition</div><div class="ftitle" id="ftitle">Manger</div></div>
+  </div>
+  <div class="steps"><div class="step-seg" id="seg0"></div><div class="step-seg" id="seg1"></div></div>
+  <div class="qrow"><div class="q" id="q">Quel repas ?</div><div class="qcount" id="qc">1 / 2</div></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- ════ EAT RESULT ════ -->
+<div class="screen" id="eatResult">
+  <div class="scroll">
+    <div style="padding:6px 22px 0"><div class="hicon" onclick="goHome()"><svg class="ic" width="18" height="18"><use href="#i-home"/></svg></div></div>
+    <div class="rtop">
+      <div class="rkick" style="color:var(--acc-g)">Nutrition · Enregistré</div>
+      <div class="rtitle">Repas loggé.</div>
+      <div class="rsub" id="eatSub">Déjeuner · ~600 kcal</div>
+    </div>
+    <div class="card">
+      <div class="crow"><div class="ctitle">Bilan du jour</div><div class="tag" style="color:var(--acc-g)">1890 / 2000 kcal</div></div>
+      <div class="macros">
+        <div class="macro"><div class="mv">92<span style="font-size:12px;color:var(--txt3)">g</span></div><div class="mk">Protéines</div></div>
+        <div class="macro"><div class="mv">210<span style="font-size:12px;color:var(--txt3)">g</span></div><div class="mk">Glucides</div></div>
+        <div class="macro"><div class="mv">55<span style="font-size:12px;color:var(--txt3)">g</span></div><div class="mk">Lipides</div></div>
+      </div>
+      <div class="pwrap"><div class="pfill" style="width:94.5%;background:var(--acc-g)"></div></div>
+      <div class="krow"><span>0</span><span style="color:var(--acc-g)">94 %</span><span>2000</span></div>
+    </div>
+    <div class="card">
+      <div class="crow"><div class="ctitle">Conseil</div></div>
+      <div class="advice">Il te reste 110 kcal. Un dîner léger — soupe ou yaourt — et tu seras pile sur ton objectif.</div>
+    </div>
+    <div style="height:14px"></div>
+  </div>
+  <div class="bar"><button class="ghost" onclick="goHome()">Accueil</button><button class="solid" style="background:var(--acc-g)">Ajouter un aliment</button></div>
+</div>
+
+<!-- ════ TRAIN RESULT ════ -->
+<div class="screen" id="trainResult">
+  <div class="scroll">
+    <div style="padding:6px 22px 0"><div class="hicon" onclick="goHome()"><svg class="ic" width="18" height="18"><use href="#i-home"/></svg></div></div>
+    <div class="rtop">
+      <div class="rkick" style="color:var(--acc-b)">Training · Généré pour toi</div>
+      <div class="rtitle" id="trainTitle">Full Body · 30 min</div>
+      <div class="rsub" id="trainSub">4 exercices · Maison</div>
+    </div>
+    <div class="card">
+      <div class="crow"><div class="ctitle">Ta séance</div><div class="tag" id="trainCount" style="color:var(--acc-b)">0 / 4</div></div>
+      <div id="exList" style="margin-top:6px"></div>
+    </div>
+    <div style="height:14px"></div>
+  </div>
+  <div class="bar"><button class="ghost" onclick="goHome()">Accueil</button><button class="solid" style="background:var(--acc-b)">Démarrer la séance</button></div>
+</div>
+
+<!-- ════ COOK RESULT ════ -->
+<div class="screen" id="cookResult">
+  <div class="scroll">
+    <div style="padding:6px 22px 0"><div class="hicon" onclick="goHome()"><svg class="ic" width="18" height="18"><use href="#i-home"/></svg></div></div>
+    <div class="rtop">
+      <div class="rkick" style="color:var(--acc-o)">Cuisine · Sélection du soir</div>
+      <div class="rtitle">3 recettes.</div>
+      <div class="rsub" id="cookSub">~25 min · 2 personnes</div>
+    </div>
+    <div class="recs" id="recsList"></div>
+    <div class="card">
+      <div class="crow"><div class="ctitle">Liste de courses</div><div class="tag" style="color:var(--acc-o)">Monoprix · 0,3 km</div></div>
+      <div id="shopList" style="margin-top:6px"></div>
+    </div>
+    <div style="height:14px"></div>
+  </div>
+  <div class="bar"><button class="ghost" onclick="goHome()">Accueil</button><button class="solid" style="background:var(--acc-o)">Voir la recette</button></div>
+</div>
+
+</div><!-- /phone -->
 
 <script>
-// ---------- Data ----------
 const FLOWS = {
-  eat: {
-    emoji: '🍽️', color: 'var(--orange)', colorHex: '#E8622A',
-    titles: ['Manger'],
-    step1: [
-      {emoji:'☀️', label:'Petit-déjeuner'}, {emoji:'🌤️', label:'Déjeuner'},
-      {emoji:'🌙', label:'Dîner'}, {emoji:'🍎', label:'Collation'}
-    ],
-    step2: [
-      {emoji:'🥗', label:'Léger', sub:'Salade, soupe…'}, {emoji:'🍝', label:'Normal', sub:'Repas classique'},
-      {emoji:'🍔', label:'Copieux', sub:'Resto, fête…'}, {emoji:'📸', label:'Scanner', sub:'Code-barres'}
-    ]
-  },
-  train: {
-    emoji: '💪', color: 'var(--blue)', colorHex: '#2980B9',
-    titles: ["S'entraîner"],
-    step1: [
-      {emoji:'⚡', label:'15 min', sub:'Express'}, {emoji:'🏃', label:'30 min', sub:'Standard'},
-      {emoji:'💪', label:'45 min', sub:'Complet'}, {emoji:'🏋️', label:'1h+', sub:'Intensif'}
-    ],
-    step2: [
-      {emoji:'🏠', label:'Maison', sub:'Sans matériel'}, {emoji:'🏋️', label:'Salle', sub:'Avec machines'},
-      {emoji:'🌳', label:'Dehors', sub:'Parc, rue…'}, {emoji:'🚴', label:'Cardio', sub:'Vélo, rameur…'}
-    ]
-  },
-  cook: {
-    emoji: '👨‍🍳', color: 'var(--green)', colorHex: '#27AE60',
-    titles: ['Cuisiner'],
-    step1: [
-      {emoji:'🛋️', label:'La flemme', sub:'Max 10 min'}, {emoji:'😊', label:'Un peu', sub:'20-25 min'},
-      {emoji:'👨‍🍳', label:'Motivé !', sub:'45 min+'}, {emoji:'🛒', label:'Courses', sub:'Liste auto'}
-    ],
-    step2: [
-      {emoji:'🧍', label:'Juste moi'}, {emoji:'👫', label:'2 personnes'},
-      {emoji:'👨‍👩‍👧', label:'Famille'}, {emoji:'📦', label:'Meal prep', sub:'Toute la semaine'}
-    ]
-  }
+  eat: { sup:'Nutrition', color:'var(--acc-g)', q1:'Quel repas ?', q2:'Quelle quantité ?',
+    step1:[{ic:'i-sun',l:'Petit-déjeuner'},{ic:'i-mid',l:'Déjeuner'},{ic:'i-moon',l:'Dîner'},{ic:'i-snack',l:'Collation'}],
+    step2:[{ic:'i-eat',l:'Léger',s:'~350 kcal'},{ic:'i-eat',l:'Normal',s:'~600 kcal'},{ic:'i-eat',l:'Copieux',s:'~900 kcal'},{ic:'i-scan',l:'Scanner',s:'Code-barres'}] },
+  train: { sup:'Training', color:'var(--acc-b)', q1:'Combien de temps ?', q2:'Où ?',
+    step1:[{ic:'i-bolt',l:'15 min',s:'Express'},{ic:'i-run',l:'30 min',s:'Standard'},{ic:'i-train',l:'45 min',s:'Complet'},{ic:'i-flame',l:'1h +',s:'Intensif'}],
+    step2:[{ic:'i-home2',l:'Maison',s:'Sans matériel'},{ic:'i-train',l:'Salle',s:'Avec machines'},{ic:'i-tree',l:'Dehors',s:'Parc, rue'},{ic:'i-bike',l:'Cardio',s:'Vélo, rameur'}] },
+  cook: { sup:'Cuisine', color:'var(--acc-o)', q1:'T\'as le courage ?', q2:'Pour combien ?',
+    step1:[{ic:'i-couch',l:'La flemme',s:'Max 10 min'},{ic:'i-smile',l:'Un peu',s:'20–25 min'},{ic:'i-chef',l:'Motivé',s:'45 min +'},{ic:'i-cart',l:'Juste les courses',s:'Liste auto'}],
+    step2:[{ic:'i-one',l:'Juste moi'},{ic:'i-two',l:'2 personnes'},{ic:'i-fam',l:'Famille'},{ic:'i-box',l:'Meal prep',s:'Toute la semaine'}] }
 };
-
 const EXERCISES = [
-  {name:'Pompes', detail:'3 séries × 12 reps · 60s repos'},
-  {name:'Squats sautés', detail:'3 séries × 15 reps · 45s repos'},
-  {name:'Gainage', detail:'3 séries × 40 secondes'},
-  {name:'Burpees', detail:'2 séries × 10 reps · 60s repos'}
+  {name:'Pompes',d:'3 × 12 reps · 60 s repos'},
+  {name:'Squats sautés',d:'3 × 15 reps · 45 s repos'},
+  {name:'Gainage',d:'3 × 40 secondes'},
+  {name:'Burpees',d:'2 × 10 reps · 60 s repos'}
 ];
-const SHOP = ['Escalope de poulet (300g)','Courgettes','Poivrons rouges',"Huile d'olive",'Pâtes (200g)','Pesto basilic'];
+const SHOP = ['Escalope de poulet · 300 g','Courgettes','Poivrons rouges',"Huile d'olive",'Pâtes · 200 g','Pesto basilic'];
+const RECIPES = [
+  {ic:'i-eat',n:'Poulet grillé & légumes rôtis',meta:'25 min · 480 kcal · 38 g prot',c:'var(--acc-g)'},
+  {ic:'i-eat',n:'Pâtes au pesto & thon',meta:'15 min · 520 kcal · 30 g prot',c:'var(--acc-b)'},
+  {ic:'i-eat',n:'Omelette aux champignons',meta:'10 min · 310 kcal · 24 g prot',c:'var(--acc-o)'}
+];
 const KCAL = {'Léger':350,'Normal':600,'Copieux':900,'Scanner':500};
-const LOC_EMOJI = {'Maison':'🏠','Salle':'🏋️','Dehors':'🌳','Cardio':'🚴'};
+const $ = id => document.getElementById(id);
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
+const goHome = () => show('home');
+let state = {type:null,step:0,c1:null}, exDone=new Set(), shopDone=new Set();
+const svg = (ic,sz=20) => `<svg class="ic" width="${sz}" height="${sz}"><use href="#${ic}"/></svg>`;
 
-// ---------- Navigation ----------
-let state = { type:null, step:0, choice1:null };
-
-function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-function goHome(){ show('home'); }
-function startEat(){ openFlow('eat'); }
-function startTrain(){ openFlow('train'); }
-function startCook(){ openFlow('cook'); }
-
-function openFlow(type){
-  state = { type, step:0, choice1:null };
-  renderFlow();
-  show('flow');
-}
-
+function openFlow(t){ state={type:t,step:0,c1:null}; renderFlow(); show('flow'); }
 function renderFlow(){
   const f = FLOWS[state.type];
-  document.getElementById('flowEmoji').textContent = f.emoji;
-  document.getElementById('flowTitle').textContent = state.step===0 ? f.titles[0] : state.choice1;
-  const bar = document.getElementById('flowBar');
-  bar.style.width = ((state.step+1)/3*100) + '%';
-  bar.style.background = f.colorHex;
+  $('fsup').textContent = f.sup; $('fsup').style.color = f.color;
+  $('ftitle').textContent = state.step===0 ? f.sup : state.c1;
+  $('q').textContent = state.step===0 ? f.q1 : f.q2;
+  $('qc').textContent = (state.step+1)+' / 2';
+  $('seg0').style.background = f.color;
+  $('seg1').style.background = state.step===1 ? f.color : 'rgba(255,255,255,.08)';
   const choices = state.step===0 ? f.step1 : f.step2;
-  const grid = document.getElementById('flowGrid');
-  grid.innerHTML = '';
+  $('grid').innerHTML='';
   choices.forEach(c=>{
-    const el = document.createElement('div');
-    el.className = 'choice';
-    el.innerHTML = `<div class="ce">${c.emoji}</div><div class="cl">${c.label}</div>${c.sub?`<div class="cs">${c.sub}</div>`:''}`;
-    el.onclick = ()=>{
-      el.classList.add('sel');
-      el.style.background = 'rgba(255,255,255,.12)';
-      el.style.borderColor = f.colorHex;
-      setTimeout(()=>selectChoice(c), 180);
-    };
-    grid.appendChild(el);
+    const el=document.createElement('div'); el.className='opt';
+    el.innerHTML = `<div class="opt-ic">${svg(c.ic)}</div><div><div class="opt-l">${c.l}</div>${c.s?`<div class="opt-s">${c.s}</div>`:''}</div><span class="opt-check">${svg('i-check',18)}</span>`;
+    el.onclick = ()=>{ el.classList.add('sel'); el.style.color=f.color; setTimeout(()=>pick(c),180); };
+    $('grid').appendChild(el);
   });
 }
-
-function selectChoice(c){
-  if(state.step===0){ state.choice1 = c.label; state.step = 1; renderFlow(); }
-  else { finishFlow(c.label); }
+function flowBack(){ if(state.step===0) goHome(); else { state.step=0; renderFlow(); } }
+function pick(c){ if(state.step===0){ state.c1=c.l; state.step=1; renderFlow(); } else finish(c.l); }
+function finish(c2){
+  const t=state.type;
+  if(t==='eat'){ $('eatSub').textContent = `${state.c1} · ~${KCAL[c2]||500} kcal`; show('eatResult'); }
+  else if(t==='train'){ $('trainTitle').textContent = `Full Body · ${state.c1}`; $('trainSub').textContent = `${EXERCISES.length} exercices · ${c2}`; renderEx(); show('trainResult'); }
+  else { $('cookSub').textContent = `~25 min · ${c2}`; renderRecs(); renderShop(); show('cookResult'); }
 }
-
-function flowBack(){
-  if(state.step===0) goHome();
-  else { state.step=0; renderFlow(); }
-}
-
-function finishFlow(choice2){
-  if(state.type==='eat'){
-    const kcal = KCAL[choice2] || 500;
-    document.getElementById('eatSub').textContent = `${state.choice1} · ~${kcal} kcal estimées`;
-    show('eatResult');
-  } else if(state.type==='train'){
-    document.getElementById('trainEmoji').textContent = LOC_EMOJI[choice2] || '🏠';
-    document.getElementById('trainTitle').textContent = `Full Body · ${state.choice1}`;
-    document.getElementById('trainSub').textContent = `${EXERCISES.length} exercices · ${choice2}`;
-    renderExercises();
-    show('trainResult');
-  } else {
-    document.getElementById('cookSub').textContent = `~25 min · ${choice2}`;
-    renderShop();
-    show('cookResult');
-  }
-}
-
-// ---------- Train: checkable exercises ----------
-let exDone = new Set();
-function renderExercises(){
-  exDone = new Set();
-  const list = document.getElementById('exList');
-  list.innerHTML = '';
+function renderEx(){
+  exDone=new Set(); $('exList').innerHTML='';
   EXERCISES.forEach((ex,i)=>{
-    const row = document.createElement('div');
-    row.className = 'ex-row';
-    row.innerHTML = `
-      <div class="ex-num" style="background:rgba(41,128,185,.2);color:var(--blue)">${i+1}</div>
-      <div><div class="ex-name" id="exn${i}">${ex.name}</div><div class="ex-detail">${ex.detail}</div></div>
-      <div class="checkbox" id="exc${i}"></div>`;
-    row.onclick = ()=>toggleEx(i);
-    list.appendChild(row);
+    const d=document.createElement('div'); d.className='ex';
+    d.innerHTML=`<div class="exn">${String(i+1).padStart(2,'0')}</div><div><div class="exname">${ex.name}</div><div class="exd">${ex.d}</div></div><div class="box" id="b${i}"></div>`;
+    d.onclick=()=>togEx(i,d); $('exList').appendChild(d);
   });
-  updateExCount();
+  cnt();
 }
-function toggleEx(i){
-  const cb = document.getElementById('exc'+i), name = document.getElementById('exn'+i);
-  if(exDone.has(i)){ exDone.delete(i); cb.style.background='transparent'; cb.style.borderColor='rgba(255,255,255,.24)'; cb.textContent=''; name.classList.remove('checked'); }
-  else { exDone.add(i); cb.style.background='var(--blue)'; cb.style.borderColor='var(--blue)'; cb.textContent='✓'; name.classList.add('checked'); }
-  updateExCount();
+function togEx(i,row){
+  const b=$('b'+i);
+  if(exDone.has(i)){ exDone.delete(i); row.classList.remove('struck'); b.innerHTML=''; b.style.background='transparent'; b.style.borderColor='var(--txt3)'; }
+  else { exDone.add(i); row.classList.add('struck'); b.innerHTML=svg('i-check',14); b.style.background='var(--acc-b)'; b.style.borderColor='var(--acc-b)'; b.style.color='#0A0A0C'; }
+  cnt();
 }
-function updateExCount(){ document.getElementById('trainCount').textContent = `${exDone.size} / ${EXERCISES.length}`; }
-
-// ---------- Cook: checkable shopping list ----------
-let shopDone = new Set();
+function cnt(){ $('trainCount').textContent=`${exDone.size} / ${EXERCISES.length}`; }
+function renderRecs(){
+  $('recsList').innerHTML='';
+  RECIPES.forEach(r=>{
+    const el=document.createElement('div'); el.className='rec';
+    el.innerHTML=`<div class="rec-th" style="background:var(--surface);border:1px solid var(--border);color:${r.c}">${svg(r.ic,22)}</div><div><div class="rec-n">${r.n}</div><div class="rec-meta">${r.meta}</div></div>`;
+    $('recsList').appendChild(el);
+  });
+}
 function renderShop(){
-  shopDone = new Set();
-  const list = document.getElementById('shopList');
-  list.innerHTML = '';
-  SHOP.forEach((item,i)=>{
-    const row = document.createElement('div');
-    row.className = 'shop-row';
-    row.innerHTML = `<div class="checkbox sm" id="shc${i}"></div><div id="shn${i}" style="font-size:14px">${item}</div>`;
-    row.onclick = ()=>toggleShop(i);
-    list.appendChild(row);
+  shopDone=new Set(); $('shopList').innerHTML='';
+  SHOP.forEach((it,i)=>{
+    const d=document.createElement('div'); d.className='sh';
+    d.innerHTML=`<div class="shbox" id="s${i}"></div><div class="shn">${it}</div>`;
+    d.onclick=()=>togSh(i,d); $('shopList').appendChild(d);
   });
 }
-function toggleShop(i){
-  const cb = document.getElementById('shc'+i), name = document.getElementById('shn'+i);
-  if(shopDone.has(i)){ shopDone.delete(i); cb.style.background='transparent'; cb.style.borderColor='rgba(255,255,255,.24)'; cb.textContent=''; name.classList.remove('checked'); }
-  else { shopDone.add(i); cb.style.background='var(--green)'; cb.style.borderColor='var(--green)'; cb.textContent='✓'; name.classList.add('checked'); }
+function togSh(i,row){
+  const b=$('s'+i);
+  if(shopDone.has(i)){ shopDone.delete(i); row.classList.remove('struck'); b.innerHTML=''; b.style.background='transparent'; b.style.borderColor='var(--txt3)'; }
+  else { shopDone.add(i); row.classList.add('struck'); b.innerHTML=svg('i-check',12); b.style.background='var(--acc-o)'; b.style.borderColor='var(--acc-o)'; b.style.color='#0A0A0C'; }
 }
 </script>
 </body>
