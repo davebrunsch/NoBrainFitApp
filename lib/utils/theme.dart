@@ -1,20 +1,67 @@
 import 'package:flutter/material.dart';
+import 'brand.dart';
 
 class AppTheme {
-  static ThemeData get darkTheme => ThemeData(
+  static ThemeData get dark => ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0F0F1A),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFE8622A),
-          secondary: Color(0xFF2980B9),
-          tertiary: Color(0xFF27AE60),
-          surface: Color(0xFF1A1A2E),
+        fontFamily: 'SpaceGrotesk',
+        scaffoldBackgroundColor: Brand.bgVoid,
+        colorScheme: ColorScheme.dark(
+          primary:    Brand.lime,
+          secondary:  Brand.blue,
+          tertiary:   Brand.orange,
+          surface:    Brand.bgCard,
+          onSurface:  Brand.white,
+          outline:    Brand.border,
+        ),
+        textTheme: const TextTheme(
+          // Display
+          displayLarge:  TextStyle(fontSize: 48, fontWeight: FontWeight.w700, letterSpacing: -2,   color: Brand.white),
+          displayMedium: TextStyle(fontSize: 36, fontWeight: FontWeight.w600, letterSpacing: -1.2, color: Brand.white),
+          // Headline
+          headlineLarge:  TextStyle(fontSize: 26, fontWeight: FontWeight.w600, letterSpacing: -.6, color: Brand.white),
+          headlineMedium: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, letterSpacing: -.4, color: Brand.white),
+          headlineSmall:  TextStyle(fontSize: 18, fontWeight: FontWeight.w600, letterSpacing: -.3, color: Brand.white),
+          // Title
+          titleLarge:  TextStyle(fontSize: 16, fontWeight: FontWeight.w600, letterSpacing: -.2, color: Brand.white),
+          titleMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, letterSpacing: -.1, color: Brand.white),
+          // Body
+          bodyLarge:  TextStyle(fontSize: 15, fontWeight: FontWeight.w400, color: Brand.grey1, height: 1.65),
+          bodyMedium: TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: Brand.grey1, height: 1.5),
+          bodySmall:  TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Brand.grey2, letterSpacing: .04),
+          // Label
+          labelLarge:  TextStyle(fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: -.1, color: Brand.white),
+          labelMedium: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: .14, color: Brand.grey2),
+          labelSmall:  TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: Brand.grey2),
         ),
         cardTheme: CardTheme(
-          color: const Color(0xFF1A1A2E),
+          color: Brand.bgCard,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(Brand.rCard),
+            side: BorderSide(color: Brand.border),
+          ),
         ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Brand.lime,
+            foregroundColor: Brand.bgVoid,
+            textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'SpaceGrotesk'),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Brand.rButton)),
+            padding: const EdgeInsets.symmetric(vertical: 15),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Brand.grey1,
+            side: BorderSide(color: Brand.border2),
+            textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'SpaceGrotesk'),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Brand.rButton)),
+            padding: const EdgeInsets.symmetric(vertical: 15),
+          ),
+        ),
+        dividerTheme: DividerThemeData(color: Brand.border, thickness: 1, space: 0),
+        iconTheme: IconThemeData(color: Brand.grey2, size: 20),
       );
 }

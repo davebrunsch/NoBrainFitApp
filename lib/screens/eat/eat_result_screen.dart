@@ -1,185 +1,146 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:no_brain_fit/utils/brand.dart';
+import 'package:no_brain_fit/widgets/result_scaffold.dart';
 
 class EatResultScreen extends StatelessWidget {
-  final String mealType;
-  final String mealSize;
+  const EatResultScreen({super.key, required this.mealType, required this.mealSize});
+  final String mealType, mealSize;
 
-  const EatResultScreen({
-    super.key,
-    required this.mealType,
-    required this.mealSize,
-  });
-
-  int get _estimatedKcal {
-    switch (mealSize) {
-      case 'Léger': return 350;
-      case 'Normal': return 600;
-      case 'Copieux': return 900;
-      default: return 500;
-    }
-  }
+  int get _kcal => switch (mealSize) {
+    'Léger'   => 350,
+    'Normal'  => 600,
+    'Copieux' => 900,
+    _         => 500,
+  };
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1A),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => context.go('/'),
-                    child: Container(
-                      width: 38, height: 38,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.home_outlined, color: Colors.white, size: 20),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text('✅', style: TextStyle(fontSize: 64)),
-            const SizedBox(height: 12),
-            Text('Repas enregistré !',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w800, color: Colors.white)),
-            Text('$mealType · ~$_estimatedKcal kcal estimées',
-                style: const TextStyle(color: Colors.grey)),
-            const SizedBox(height: 32),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    _ResultCard(
-                      title: 'Bilan du jour',
-                      badge: '1890 / 2000 kcal',
-                      badgeColor: const Color(0xFFE8622A),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: const [
-                          _MacroChip(value: '92g', label: 'Protéines', color: Color(0xFF4CAF50)),
-                          _MacroChip(value: '210g', label: 'Glucides', color: Color(0xFF2196F3)),
-                          _MacroChip(value: '55g', label: 'Lipides', color: Color(0xFFFF9800)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _ResultCard(
-                      title: 'Conseil du soir 💡',
-                      child: Text(
-                        'Il te reste 110 kcal. Un dîner léger — soupe ou yaourt — et tu seras pile sur ton objectif 🎯',
-                        style: TextStyle(color: Colors.grey[300], fontSize: 14, height: 1.5),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => context.go('/'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: Colors.white24),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: const Text('Accueil', style: TextStyle(color: Colors.white)),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 2,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE8622A),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: const Text('+ Ajouter un aliment',
-                          style: TextStyle(fontWeight: FontWeight.w700)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+    return ResultScaffold(
+      accent: Brand.lime,
+      kicker: 'Nutrition · Enregistré',
+      title: 'Repas loggé.',
+      sub: '$mealType · ~$_kcal kcal',
+      onHome: () => context.go('/'),
+      primaryLabel: 'Ajouter un aliment',
+      onPrimary: () {},
+      children: [
+        // Bilan card
+        _BrandCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                const Text('Bilan du jour', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.white)),
+                const Spacer(),
+                _NeonBadge('1890 / 2000 kcal', Brand.lime),
+              ]),
+              const SizedBox(height: Brand.s16),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: const [
+                _MacroStat(value: '92g', label: 'PROT.', color: Brand.lime),
+                _MacroStat(value: '210g', label: 'GLUC.', color: Brand.blue),
+                _MacroStat(value: '55g', label: 'LIP.', color: Brand.orange),
+              ]),
+              const SizedBox(height: Brand.s16),
+              _KcalBar(filled: .945),
+            ],
+          ),
         ),
-      ),
+        const SizedBox(height: Brand.s12),
+        _BrandCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Conseil', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.white)),
+              const SizedBox(height: Brand.s12),
+              const Text(
+                'Il te reste 110 kcal. Un dîner léger — soupe ou yaourt — et tu seras pile sur ton objectif.',
+                style: TextStyle(fontSize: 13, color: Brand.grey1, height: 1.6),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _ResultCard extends StatelessWidget {
-  final String title;
-  final String? badge;
-  final Color? badgeColor;
-  final Widget child;
+// ── Shared sub-widgets ────────────────────────────────────────────────────────
 
-  const _ResultCard({required this.title, required this.child, this.badge, this.badgeColor});
+class _BrandCard extends StatelessWidget {
+  const _BrandCard({required this.child});
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(Brand.s16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        color: Brand.bgCard,
+        borderRadius: BorderRadius.circular(Brand.rCard),
+        border: Border.all(color: Brand.border),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
-              if (badge != null) ...[
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: badgeColor?.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(badge!, style: TextStyle(fontSize: 11, color: badgeColor, fontWeight: FontWeight.w600)),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 12),
-          child,
-        ],
-      ),
+      child: child,
     );
   }
 }
 
-class _MacroChip extends StatelessWidget {
-  final String value, label;
+class _NeonBadge extends StatelessWidget {
+  const _NeonBadge(this.text, this.color);
+  final String text;
   final Color color;
-  const _MacroChip({required this.value, required this.label, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
-        const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withOpacity(.12),
+        borderRadius: BorderRadius.circular(Brand.rChip),
+        border: Border.all(color: color.withOpacity(.25)),
+      ),
+      child: Text(text, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color, letterSpacing: .04)),
     );
+  }
+}
+
+class _MacroStat extends StatelessWidget {
+  const _MacroStat({required this.value, required this.label, required this.color});
+  final String value, label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: [
+      Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, letterSpacing: -.5, color: color)),
+      const SizedBox(height: 3),
+      Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .12, color: Brand.grey2)),
+    ]);
+  }
+}
+
+class _KcalBar extends StatelessWidget {
+  const _KcalBar({required this.filled});
+  final double filled;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      ClipRRect(
+        borderRadius: BorderRadius.circular(2),
+        child: LinearProgressIndicator(
+          value: filled,
+          minHeight: 3,
+          backgroundColor: Brand.border,
+          valueColor: const AlwaysStoppedAnimation<Color>(Brand.lime),
+        ),
+      ),
+      const SizedBox(height: Brand.s8),
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        const Text('0', style: TextStyle(fontSize: 11, color: Brand.grey2)),
+        Text('${(filled * 100).round()} %', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Brand.lime)),
+        const Text('2000 kcal', style: TextStyle(fontSize: 11, color: Brand.grey2)),
+      ]),
+    ]);
   }
 }
