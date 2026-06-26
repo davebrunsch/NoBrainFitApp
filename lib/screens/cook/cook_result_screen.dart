@@ -213,7 +213,7 @@ class _Tag extends StatelessWidget {
         color: Brand.border,
         borderRadius: BorderRadius.circular(Brand.rTag),
       ),
-      child: Text(text, style: const TextStyle(fontSize: 10, color: Brand.grey1)),
+      child: Text(text, style: Brand.mono(size: 10, weight: FontWeight.w400, color: Brand.grey1)),
     );
   }
 }
@@ -248,7 +248,7 @@ class _ShoppingList extends StatelessWidget {
               ),
               child: Text(
                 '${items.length} articles',
-                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Brand.orange),
+                style: Brand.mono(size: 10, weight: FontWeight.w700, color: Brand.orange),
               ),
             ),
           ]),

@@ -138,7 +138,7 @@ class _StatCell extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(value, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, letterSpacing: -.5, color: valueColor ?? Brand.white)),
+            Text(value, style: Brand.mono(size: 17, weight: FontWeight.w700, color: valueColor ?? Brand.white, letterSpacing: -.5)),
             const SizedBox(height: 3),
             Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .12, color: Brand.grey2)),
           ],
