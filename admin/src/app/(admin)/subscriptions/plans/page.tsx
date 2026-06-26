@@ -30,7 +30,7 @@ export default async function PlansPage() {
 
               <div className="mb-4">
                 <span className="text-2xl font-bold text-snow">
-                  {plan.priceMonthly === 0 ? 'Gratuit' : `${(plan.priceMonthly / 100).toFixed(2)}€`}
+                  {plan.priceMonthly === 0 ? 'Gratuit' : `${plan.priceMonthly.toFixed(2)}€`}
                 </span>
                 {plan.priceMonthly > 0 && <span className="text-[12px] text-grey2">/mois</span>}
               </div>

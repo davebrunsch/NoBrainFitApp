@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server'
 import { db } from './db'
+import { resolveSubscription } from './subscription'
 
 export type QuotaKind = 'workout' | 'ai'
-
-// Fallback limits when a user has no subscription (free tier).
-const FREE_DEFAULTS = { maxWorkoutsDay: 3, maxAiCallsDay: 10 }
 
 interface QuotaResult {
   ok: boolean
@@ -12,15 +10,11 @@ interface QuotaResult {
   used: number
 }
 
-/** Checks a single daily quota for a user against their active plan. */
+/** Checks a single daily quota for a user against their active (non-expired) plan. */
 export async function checkQuota(userId: string, kind: QuotaKind): Promise<QuotaResult> {
-  const sub = await db.subscription.findUnique({ where: { userId }, include: { plan: true } })
-  const plan = sub?.status === 'ACTIVE' ? sub.plan : null
+  const plan = await resolveSubscription(userId)
 
-  const limit =
-    kind === 'workout'
-      ? plan?.maxWorkoutsDay ?? FREE_DEFAULTS.maxWorkoutsDay
-      : plan?.maxAiCallsDay ?? FREE_DEFAULTS.maxAiCallsDay
+  const limit = kind === 'workout' ? plan.maxWorkoutsDay : plan.maxAiCallsDay
 
   if (limit < 0) return { ok: true, limit, used: 0 } // -1 = unlimited
 

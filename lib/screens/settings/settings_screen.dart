@@ -4,6 +4,7 @@ import 'package:no_brain_fit/utils/brand.dart';
 import 'package:no_brain_fit/services/ai/ai_config.dart';
 import 'package:no_brain_fit/services/ai/ai_provider.dart';
 import 'package:no_brain_fit/services/server/server_auth_service.dart';
+import 'package:no_brain_fit/services/server/server_subscription_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -438,19 +439,25 @@ class _ServerAuthCardState extends State<_ServerAuthCard> {
           borderRadius: BorderRadius.circular(Brand.rChip),
           border: Border.all(color: Brand.lime.withOpacity(.25)),
         ),
-        child: Row(children: [
-          const Icon(Icons.check_circle_rounded, size: 18, color: Brand.lime),
-          const SizedBox(width: Brand.s12),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Connecté', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.white)),
-              Text(widget.config.serverEmail, style: const TextStyle(fontSize: 11, color: Brand.grey2)),
-            ]),
-          ),
-          GestureDetector(
-            onTap: widget.onLogout,
-            child: Text('Déconnexion', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Brand.orange.withOpacity(.9))),
-          ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            const Icon(Icons.check_circle_rounded, size: 18, color: Brand.lime),
+            const SizedBox(width: Brand.s12),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Text('Connecté', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.white)),
+                Text(widget.config.serverEmail, style: const TextStyle(fontSize: 11, color: Brand.grey2)),
+              ]),
+            ),
+            GestureDetector(
+              onTap: widget.onLogout,
+              child: Text('Déconnexion', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Brand.orange.withOpacity(.9))),
+            ),
+          ]),
+          const SizedBox(height: Brand.s12),
+          const Divider(height: 1, color: Brand.border),
+          const SizedBox(height: Brand.s12),
+          _SubscriptionLine(baseUrl: widget.config.serverBaseUrl, token: widget.config.serverToken),
         ]),
       );
     }
@@ -495,5 +502,49 @@ class _ServerAuthCardState extends State<_ServerAuthCard> {
         ),
       ),
     ]);
+  }
+}
+
+/// Shows the current plan and remaining daily quota for a connected user.
+class _SubscriptionLine extends StatefulWidget {
+  const _SubscriptionLine({required this.baseUrl, required this.token});
+  final String baseUrl;
+  final String token;
+
+  @override
+  State<_SubscriptionLine> createState() => _SubscriptionLineState();
+}
+
+class _SubscriptionLineState extends State<_SubscriptionLine> {
+  late final Future<ServerSubscription> _future =
+      ServerSubscriptionService(baseUrl: widget.baseUrl, token: widget.token).fetch();
+
+  String _fmt(int remaining) => remaining < 0 ? '∞' : '$remaining';
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<ServerSubscription>(
+      future: _future,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const Text('Chargement du plan…', style: TextStyle(fontSize: 12, color: Brand.grey2));
+        }
+        if (!snap.hasData) {
+          return const Text('Plan indisponible', style: TextStyle(fontSize: 12, color: Brand.grey2));
+        }
+        final s = snap.data!;
+        return Row(children: [
+          const Icon(Icons.workspace_premium_outlined, size: 16, color: Brand.lime),
+          const SizedBox(width: Brand.s8),
+          Expanded(
+            child: Text('Plan ${s.planName}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.white)),
+          ),
+          Text(
+            '${_fmt(s.workoutsRemaining)} séances · ${_fmt(s.aiCallsRemaining)} IA',
+            style: Brand.mono(size: 11, weight: FontWeight.w700, color: Brand.grey1),
+          ),
+        ]);
+      },
+    );
   }
 }
