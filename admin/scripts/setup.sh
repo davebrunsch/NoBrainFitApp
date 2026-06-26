@@ -27,19 +27,109 @@ hr()    { printf "%s\n" "${DIM}────────────────�
 printf "\n%s\n" "${BOLD}${BLUE}  NoBrainFit Admin — Setup${RESET}"
 hr
 
-# ── 1. prerequisites ──────────────────────────────────────────────────────────
+# ── 1. prerequisites (auto-installed on Debian/Ubuntu) ────────────────────────
 need() { command -v "$1" >/dev/null 2>&1; }
 
-if ! need docker; then
-  err "Docker n'est pas installé. → https://docs.docker.com/get-docker/"
-  exit 1
+# Privilege helper — only used when we actually install packages / start services.
+if [ "$(id -u)" -eq 0 ]; then SUDO=""
+elif need sudo;            then SUDO="sudo"
+else SUDO=""; fi
+run_root() { if [ -n "$SUDO" ]; then $SUDO "$@"; else "$@"; fi; }
+
+PKG=""; need apt-get && PKG="apt"
+
+apt_install() { run_root env DEBIAN_FRONTEND=noninteractive apt-get install -y "$@"; }
+
+require_root_for_install() {
+  if [ -z "$SUDO" ] && [ "$(id -u)" -ne 0 ]; then
+    err "Installation requise mais ni root ni sudo disponibles. Relance en root, ou installe '$1' manuellement."
+    exit 1
+  fi
+}
+
+# ensure_pkg <command> <apt-package>
+ensure_pkg() {
+  need "$1" && return 0
+  if [ "$PKG" != "apt" ]; then
+    err "'$1' manquant et l'auto-install n'est gérée que sur Debian/Ubuntu. Installe-le puis relance."
+    exit 1
+  fi
+  require_root_for_install "$2"
+  info "Installation de $2…"
+  run_root apt-get update -qq
+  apt_install "$2"
+  ok "$2 installé"
+}
+
+install_docker_debian() {
+  hr
+  warn "Docker n'est pas installé."
+  if [ "$PKG" != "apt" ]; then
+    err "Auto-install Docker non gérée sur cet OS. → https://docs.docker.com/get-docker/"; exit 1
+  fi
+  require_root_for_install docker
+  read -r -p "  L'installer maintenant via le dépôt officiel Docker ? [O/n] " a
+  case "${a:-O}" in n|N) err "Installation annulée."; exit 1 ;; esac
+
+  info "Ajout du dépôt Docker officiel…"
+  run_root install -m 0755 -d /etc/apt/keyrings
+  # shellcheck disable=SC1091
+  . /etc/os-release
+  distro="debian"
+  case "${ID:-debian}" in
+    ubuntu) distro="ubuntu" ;;
+    debian) distro="debian" ;;
+    *) case "${ID_LIKE:-}" in *ubuntu*) distro="ubuntu" ;; *debian*) distro="debian" ;; esac ;;
+  esac
+  codename="${VERSION_CODENAME:-}"; [ -z "$codename" ] && codename="${UBUNTU_CODENAME:-stable}"
+  run_root sh -c "curl -fsSL https://download.docker.com/linux/${distro}/gpg -o /etc/apt/keyrings/docker.asc"
+  run_root chmod a+r /etc/apt/keyrings/docker.asc
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/${distro} ${codename} stable" \
+    | run_root tee /etc/apt/sources.list.d/docker.list >/dev/null
+  run_root apt-get update -qq
+  info "Installation de Docker Engine + Compose…"
+  apt_install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  ok "Docker installé"
+
+  if [ "$(id -u)" -ne 0 ] && [ -n "${USER:-}" ]; then
+    run_root usermod -aG docker "$USER" 2>/dev/null || true
+    warn "Ajouté au groupe 'docker' (effectif à ta prochaine connexion ; sudo est utilisé pour ce run)."
+  fi
+}
+
+start_docker() {
+  if   need systemctl; then run_root systemctl enable --now docker >/dev/null 2>&1 || true
+  elif need service;   then run_root service docker start          >/dev/null 2>&1 || true; fi
+}
+
+# Base tools the rest of the script relies on.
+ensure_pkg curl curl
+ensure_pkg openssl openssl
+ensure_pkg git git
+[ "$PKG" = "apt" ] && { need update-ca-certificates || apt_install ca-certificates >/dev/null 2>&1 || true; }
+
+# Docker engine.
+need docker || install_docker_debian
+start_docker
+
+# Pick a working docker invocation (the socket may require sudo until re-login).
+DOCKER=""
+if   docker info >/dev/null 2>&1;                       then DOCKER="docker"
+elif [ -n "$SUDO" ] && $SUDO docker info >/dev/null 2>&1; then DOCKER="$SUDO docker"
+else
+  start_docker; sleep 2
+  if   docker info >/dev/null 2>&1;                       then DOCKER="docker"
+  elif [ -n "$SUDO" ] && $SUDO docker info >/dev/null 2>&1; then DOCKER="$SUDO docker"
+  else err "Le daemon Docker ne répond pas. Démarre-le (ex: sudo systemctl start docker) puis relance."; exit 1; fi
 fi
-if docker compose version >/dev/null 2>&1; then DC="docker compose"
-elif need docker-compose; then DC="docker-compose"
-else err "Docker Compose introuvable."; exit 1; fi
-if ! docker info >/dev/null 2>&1; then
-  err "Le daemon Docker ne tourne pas. Démarre Docker puis relance ce script."
-  exit 1
+
+# Compose plugin (or legacy binary).
+if   $DOCKER compose version >/dev/null 2>&1; then DC="$DOCKER compose"
+elif need docker-compose;                     then DC="${SUDO:+$SUDO }docker-compose"
+else
+  [ "$PKG" = "apt" ] && { info "Installation du plugin docker compose…"; apt_install docker-compose-plugin; }
+  if $DOCKER compose version >/dev/null 2>&1; then DC="$DOCKER compose"
+  else err "Docker Compose introuvable."; exit 1; fi
 fi
 
 gen_secret() {
@@ -47,7 +137,7 @@ gen_secret() {
   else head -c 96 /dev/urandom | LC_ALL=C tr -dc 'A-Za-z0-9' | cut -c1-"${2:-44}"; fi
 }
 
-ok "Docker détecté ($DC)"
+ok "Docker prêt ($DC)"
 
 # ── 2. existing install? ──────────────────────────────────────────────────────
 RECONFIGURE=1
