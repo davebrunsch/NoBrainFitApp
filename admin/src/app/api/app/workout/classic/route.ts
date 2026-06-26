@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
 import { authAppUser } from '@/lib/app-auth'
 import { renderPrompt } from '@/lib/prompts'
 import { generateText, extractJson, AiError } from '@/lib/ai'
 import { quotaGuard } from '@/lib/quota'
 
-/** RAG workout: the model may only use the exercises supplied by the client. */
+/** Classic workout: free generation from a duration + location. */
 export async function POST(req: NextRequest) {
   const user = await authAppUser(req)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -13,22 +14,20 @@ export async function POST(req: NextRequest) {
   const limited = await quotaGuard(user.id, ['workout', 'ai'])
   if (limited) return limited
 
-  const { goal, duration, equipment, exercises } = await req.json()
-  if (!goal || !duration || !equipment || !Array.isArray(exercises)) {
+  const { duration, location } = await req.json()
+  if (!duration || !location) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
   }
 
-  const prompt = await renderPrompt('rag_workout', {
-    goal: String(goal),
+  const prompt = await renderPrompt('classic_workout', {
     duration: String(duration),
-    equipment: String(equipment),
-    exercises_json: JSON.stringify(exercises),
+    location: String(location),
   })
   if (!prompt) return NextResponse.json({ error: 'Prompt not configured' }, { status: 503 })
 
   let raw: string
   try {
-    raw = await generateText(prompt, { json: true, userId: user.id, maxTokens: 2048 })
+    raw = await generateText(prompt, { json: true, userId: user.id })
   } catch (e) {
     const status = e instanceof AiError ? e.status : 502
     return NextResponse.json({ error: 'AI generation failed' }, { status })
@@ -44,11 +43,10 @@ export async function POST(req: NextRequest) {
   await db.workoutSession.create({
     data: {
       userId: user.id,
-      type: 'rag',
-      goal,
+      type: 'classic',
       duration: String(duration),
-      equipment,
-      exercisesJson: exercises,
+      location: String(location),
+      exercisesJson: workout as Prisma.InputJsonValue,
       completedAt: new Date(),
     },
   })
