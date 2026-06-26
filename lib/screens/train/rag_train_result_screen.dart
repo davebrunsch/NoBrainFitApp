@@ -5,6 +5,7 @@ import 'package:no_brain_fit/services/ai/ai_provider.dart';
 import 'package:no_brain_fit/services/ai/ai_service.dart';
 import 'package:no_brain_fit/utils/brand.dart';
 import 'package:no_brain_fit/widgets/result_scaffold.dart';
+import 'package:no_brain_fit/screens/train/active_workout_screen.dart';
 
 class RagTrainResultScreen extends ConsumerStatefulWidget {
   const RagTrainResultScreen({
@@ -63,6 +64,9 @@ class _RagTrainResultScreenState extends ConsumerState<RagTrainResultScreen> {
         return _shell(
           title: plan.title,
           sub: '${plan.exercises.length} exercices · ${widget.equipment}',
+          onStart: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => ActiveWorkoutScreen(plan: plan, accent: Brand.blue)),
+          ),
           child: _ExerciseCard(
             exercises: plan.exercises,
             done: _done,
@@ -76,7 +80,7 @@ class _RagTrainResultScreenState extends ConsumerState<RagTrainResultScreen> {
     );
   }
 
-  Widget _shell({required String title, required String sub, required Widget child}) {
+  Widget _shell({required String title, required String sub, required Widget child, VoidCallback? onStart}) {
     return ResultScaffold(
       accent: Brand.blue,
       kicker: 'Training · Programme IA',
@@ -84,7 +88,7 @@ class _RagTrainResultScreenState extends ConsumerState<RagTrainResultScreen> {
       sub: sub,
       onHome: () => context.go('/'),
       primaryLabel: '▶  Démarrer',
-      onPrimary: () {},
+      onPrimary: onStart ?? () {},
       children: [child],
     );
   }

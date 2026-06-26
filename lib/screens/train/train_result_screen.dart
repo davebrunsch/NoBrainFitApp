@@ -5,6 +5,7 @@ import 'package:no_brain_fit/services/ai/ai_provider.dart';
 import 'package:no_brain_fit/services/ai/ai_service.dart';
 import 'package:no_brain_fit/utils/brand.dart';
 import 'package:no_brain_fit/widgets/result_scaffold.dart';
+import 'package:no_brain_fit/screens/train/active_workout_screen.dart';
 
 class TrainResultScreen extends ConsumerStatefulWidget {
   const TrainResultScreen({super.key, required this.duration, required this.location});
@@ -63,6 +64,9 @@ class _TrainResultScreenState extends ConsumerState<TrainResultScreen> {
           ),
           doneCount: _done.length,
           totalCount: plan.exercises.length,
+          onStart: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => ActiveWorkoutScreen(plan: plan, accent: Brand.blue)),
+          ),
         );
       },
     );
@@ -74,6 +78,7 @@ class _TrainResultScreenState extends ConsumerState<TrainResultScreen> {
     required Widget child,
     int doneCount = 0,
     int totalCount = 0,
+    VoidCallback? onStart,
   }) {
     return ResultScaffold(
       accent: Brand.blue,
@@ -82,7 +87,7 @@ class _TrainResultScreenState extends ConsumerState<TrainResultScreen> {
       sub: sub,
       onHome: () => context.go('/'),
       primaryLabel: '▶  Démarrer',
-      onPrimary: () {},
+      onPrimary: onStart ?? () {},
       children: [child],
     );
   }
