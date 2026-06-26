@@ -16,12 +16,17 @@ chown -R 1001:1001 /certs /control 2>/dev/null || true
 chmod 755 /certs /control 2>/dev/null || true
 
 DOMAIN="${SSL_DOMAIN:-localhost}"
+# SSL_DOMAIN may be a comma-separated list — first is the CN, all go in the SAN.
+CN="$(echo "$DOMAIN" | cut -d',' -f1 | tr -d ' ')"
+SAN="$(echo "$DOMAIN" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | sed '/^$/d;s/^/DNS:/' | paste -sd, -)"
+[ -z "$CN" ] && CN="localhost"
+[ -z "$SAN" ] && SAN="DNS:localhost"
 
 if [ ! -f /certs/fullchain.pem ] || [ ! -f /certs/privkey.pem ]; then
   echo "[ssl-init] generating self-signed bootstrap certificate for ${DOMAIN}"
   openssl req -x509 -nodes -newkey rsa:2048 -days 365 \
     -keyout /certs/privkey.pem -out /certs/fullchain.pem \
-    -subj "/CN=${DOMAIN}" -addext "subjectAltName=DNS:${DOMAIN}" >/dev/null 2>&1
+    -subj "/CN=${CN}" -addext "subjectAltName=${SAN}" >/dev/null 2>&1
   chown 1001:1001 /certs/fullchain.pem /certs/privkey.pem 2>/dev/null || true
   chmod 644 /certs/fullchain.pem
   chmod 600 /certs/privkey.pem

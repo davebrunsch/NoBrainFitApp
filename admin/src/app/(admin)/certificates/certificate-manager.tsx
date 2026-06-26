@@ -185,7 +185,7 @@ function LetsEncryptForm({ config, status, onSubmitted }: { config: Cfg; status:
       {status.state === 'error'   && <Banner kind="err"  msg={status.message || 'Échec.'} />}
       {err && <Banner kind="err" msg={err} />}
 
-      <FieldInput label="Domaine" value={domain} onChange={setDomain} placeholder="admin.mondomaine.com" />
+      <FieldInput label="Domaine(s) — séparés par des virgules" value={domain} onChange={setDomain} placeholder="admin.mondomaine.com, www.mondomaine.com" />
       <FieldInput label="Email (notifications d'expiration)" value={email} onChange={setEmail} placeholder="vous@exemple.com" type="email" />
 
       <label className="flex items-center gap-2 cursor-pointer">
@@ -269,7 +269,7 @@ function SelfSignedForm({ defaultDomain }: { defaultDomain: string }) {
         navigateurs afficheront un avertissement — pratique pour un usage interne ou un test.
       </p>
       {msg && <Banner kind={msg.kind} msg={msg.text} />}
-      <FieldInput label="Domaine / CN" value={domain} onChange={setDomain} placeholder="admin.mondomaine.com" />
+      <FieldInput label="Domaine(s) / CN — séparés par des virgules" value={domain} onChange={setDomain} placeholder="admin.mondomaine.com" />
       <button type="submit" disabled={busy || !domain}
         className="flex items-center gap-2 rounded-lg bg-blue px-4 py-2 text-[13px] font-semibold text-void hover:bg-blue/90 transition-colors disabled:opacity-50">
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}

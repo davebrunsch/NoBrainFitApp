@@ -19,8 +19,10 @@ FILENAME="nobrainfit_${TIMESTAMP}.sql.gz"
 
 mkdir -p "$BACKUP_DIR"
 
-# Load env
-set -a; . ./.env; set +a
+# Read only what we need (never `source` .env — values may contain spaces/$).
+envget() { grep -E "^$1=" .env | head -n1 | cut -d= -f2-; }
+POSTGRES_USER="$(envget POSTGRES_USER)"
+POSTGRES_DB="$(envget POSTGRES_DB)"
 
 echo "=== NoBrainFit Admin — Backup ==="
 echo "Dumping database → $BACKUP_DIR/$FILENAME"

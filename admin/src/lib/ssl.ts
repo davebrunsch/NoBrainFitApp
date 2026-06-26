@@ -124,32 +124,43 @@ export async function installCustomCertificate(certPem: string, keyPem: string):
   await signalReload()
 }
 
+/** Parse + validate a comma-separated domain list (e.g. "a.com, www.a.com"). */
+function parseDomains(input: string): string[] {
+  const domains = input.split(',').map(d => d.trim()).filter(Boolean)
+  if (domains.length === 0) throw new Error('Aucun domaine fourni.')
+  for (const d of domains) {
+    if (!/^[a-zA-Z0-9.-]+$/.test(d)) throw new Error(`Domaine invalide : ${d}`)
+  }
+  return domains
+}
+
 /** Generate a self-signed certificate via openssl, install it, reload nginx. */
 export async function generateSelfSigned(domain: string, days = 365): Promise<void> {
-  if (!/^[a-zA-Z0-9.-]+$/.test(domain)) {
-    throw new Error('Domaine invalide.')
-  }
+  const domains = parseDomains(domain)
+  const san = domains.map(d => `DNS:${d}`).join(',')
   await fs.mkdir(CERT_DIR, { recursive: true })
   await pexec('openssl', [
     'req', '-x509', '-nodes', '-newkey', 'rsa:2048',
     '-days', String(days),
     '-keyout', PRIVKEY,
     '-out', FULLCHAIN,
-    '-subj', `/CN=${domain}`,
-    '-addext', `subjectAltName=DNS:${domain}`,
+    '-subj', `/CN=${domains[0]}`,
+    '-addext', `subjectAltName=${san}`,
   ])
   await fs.chmod(PRIVKEY, 0o600).catch(() => {})
   await signalReload()
 }
 
-/** Queue a Let's Encrypt issuance/renewal job for the certbot container. */
+/** Queue a Let's Encrypt issuance/renewal job for the certbot container.
+ *  `domain` may be a comma-separated list (first one is the primary / cert name). */
 export async function requestLetsEncrypt(domain: string, email: string, staging: boolean): Promise<void> {
-  if (!/^[a-zA-Z0-9.-]+$/.test(domain)) throw new Error('Domaine invalide.')
+  const domains = parseDomains(domain)
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('Email invalide.')
 
+  const normalized = domains.join(',')
   await fs.mkdir(CONTROL_DIR, { recursive: true })
-  await writeStatus({ state: 'running', message: `Demande pour ${domain} en file d'attente…`, ts: new Date().toISOString() })
-  await fs.writeFile(LE_REQUEST, JSON.stringify({ domain, email, staging }), { mode: 0o644 })
+  await writeStatus({ state: 'running', message: `Demande pour ${normalized} en file d'attente…`, ts: new Date().toISOString() })
+  await fs.writeFile(LE_REQUEST, JSON.stringify({ domain: normalized, email, staging }), { mode: 0o644 })
 }
 
 export async function readLetsEncryptStatus(): Promise<LetsEncryptStatus> {

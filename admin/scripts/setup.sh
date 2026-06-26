@@ -102,10 +102,14 @@ if [ "$RECONFIGURE" -eq 1 ]; then
     hr
     printf "%s\n\n" "${BOLD}Production — domaine & HTTPS${RESET}"
     while true; do
-      read -r -p "  Domaine du panel (ex: admin.mondomaine.com) : " SSL_DOMAIN
-      printf "%s" "$SSL_DOMAIN" | grep -Eq '^[a-zA-Z0-9.-]+$' && [ -n "$SSL_DOMAIN" ] && break
+      read -r -p "  Domaine(s) du panel, séparés par des virgules (ex: admin.mondomaine.com) : " SSL_DOMAIN
+      printf "%s" "$SSL_DOMAIN" | grep -Eq '^[a-zA-Z0-9.,[:space:]-]+$' && [ -n "$SSL_DOMAIN" ] && break
       err "  Domaine invalide."
     done
+    # normalize (strip spaces) so the value is safe in .env / shell
+    SSL_DOMAIN="$(printf "%s" "$SSL_DOMAIN" | tr -d ' ')"
+    # primary domain (first of the list) → used for the canonical URL
+    PRIMARY_DOMAIN="$(printf "%s" "$SSL_DOMAIN" | cut -d',' -f1)"
     echo
     echo "  Certificat HTTPS :"
     echo "    1) Auto-signé        — immédiat, avertissement navigateur (interne/test)"
@@ -126,7 +130,7 @@ if [ "$RECONFIGURE" -eq 1 ]; then
       case "${stg:-N}" in o|O|y|Y) SSL_STAGING="true" ;; *) SSL_STAGING="false" ;; esac
     fi
     APP_PORT="3000"; POSTGRES_PORT="5432"
-    NEXTAUTH_URL="https://${SSL_DOMAIN}"
+    NEXTAUTH_URL="https://${PRIMARY_DOMAIN}"
   else
     # ── 5b. local ─────────────────────────────────────────────────────────────
     hr
@@ -194,7 +198,15 @@ info "Démarrage de la stack (db → migrate → ssl → backend → nginx)…"
 DCC up -d
 
 # ── 8. wait for the backend ───────────────────────────────────────────────────
-set -a; . ./.env; set +a
+# Read values straight from .env (never `source` it — passwords/domains may
+# contain characters that break shell parsing).
+envget() { grep -E "^$1=" .env | head -n1 | cut -d= -f2-; }
+if [ "$RECONFIGURE" -eq 0 ]; then
+  APP_PORT="$(envget APP_PORT)"
+  NEXTAUTH_URL="$(envget NEXTAUTH_URL)"
+  SSL_MODE="$(envget SSL_MODE)"
+  ADMIN_EMAIL="$(envget ADMIN_EMAIL)"
+fi
 
 is_prod() { [ "$COMPOSE_FILE" = "docker-compose.prod.yml" ]; }
 if is_prod; then HEALTH_URL="https://127.0.0.1/api/health"; else HEALTH_URL="http://localhost:${APP_PORT:-3000}/api/health"; fi

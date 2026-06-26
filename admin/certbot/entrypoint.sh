@@ -56,14 +56,22 @@ process_request() {
     return 0
   fi
 
+  # Expand a comma-separated domain list into multiple -d flags.
+  # The first domain names the certbot live/ directory.
+  primary="$(echo "$domain" | cut -d',' -f1 | tr -d ' ')"
+  dflags=""
+  for d in $(echo "$domain" | tr ',' ' '); do
+    [ -n "$d" ] && dflags="$dflags -d $d"
+  done
+
   write_status running "Émission du certificat pour $domain…"
   echo "[certbot] requesting cert for $domain (staging=${staging:-no})"
 
   if certbot certonly --webroot -w "$WEBROOT" \
-        -d "$domain" --email "$email" \
+        $dflags --email "$email" \
         --agree-tos --no-eff-email --non-interactive \
-        --keep-until-expiring $staging; then
-    if install_live_cert "$domain"; then
+        --keep-until-expiring --cert-name "$primary" $staging; then
+    if install_live_cert "$primary"; then
       touch "$CONTROL/reload"
       write_status success "Certificat actif pour $domain."
       echo "[certbot] success for $domain"
