@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:no_brain_fit/widgets/flow_scaffold.dart';
 import 'package:no_brain_fit/widgets/choice_grid.dart';
 import 'package:no_brain_fit/screens/eat/eat_result_screen.dart';
+import 'package:no_brain_fit/screens/eat/food_search_screen.dart';
+import 'package:no_brain_fit/api/models/food_product.dart';
 
 class EatFlow extends StatefulWidget {
   const EatFlow({super.key});
@@ -53,9 +55,28 @@ class _EatFlowState extends State<EatFlow> {
         ChoiceItem(emoji: '🥗', label: 'Léger', sub: 'Salade, soupe…'),
         ChoiceItem(emoji: '🍝', label: 'Normal', sub: 'Repas classique'),
         ChoiceItem(emoji: '🍔', label: 'Copieux', sub: 'Resto, fête…'),
-        ChoiceItem(emoji: '📸', label: 'Scanner', sub: 'Code-barres'),
+        ChoiceItem(emoji: '🔍', label: 'Chercher', sub: 'Aliment précis'),
       ],
-      onSelect: (choice) {
+      onSelect: (choice) async {
+        // L'option "Chercher" ouvre la recherche OpenFoodFacts et logue
+        // l'aliment réel sélectionné par l'utilisateur.
+        if (choice.label == 'Chercher') {
+          final product = await Navigator.of(context).push<FoodProduct>(
+            MaterialPageRoute(builder: (_) => const FoodSearchScreen()),
+          );
+          if (product == null || !mounted) return;
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => EatResultScreen(
+                mealType: _mealType!,
+                mealSize: 'Normal',
+                product: product,
+              ),
+            ),
+          );
+          return;
+        }
+
         _mealSize = choice.label;
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(

@@ -1,17 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:no_brain_fit/api/models/food_product.dart';
 
 class EatResultScreen extends StatelessWidget {
   final String mealType;
   final String mealSize;
 
+  /// Aliment réel issu d'OpenFoodFacts (optionnel).
+  /// Quand il est fourni, les calories et macros affichées sont réelles.
+  final FoodProduct? product;
+
   const EatResultScreen({
     super.key,
     required this.mealType,
     required this.mealSize,
+    this.product,
   });
 
+  /// Portion de référence utilisée pour un aliment scanné (en grammes).
+  static const _portionGrams = 100.0;
+
   int get _estimatedKcal {
+    final real = product?.kcalForPortion(_portionGrams);
+    if (real != null) return real;
     switch (mealSize) {
       case 'Léger': return 350;
       case 'Normal': return 600;
@@ -51,7 +62,11 @@ class EatResultScreen extends StatelessWidget {
             Text('Repas enregistré !',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800, color: Colors.white)),
-            Text('$mealType · ~$_estimatedKcal kcal estimées',
+            Text(
+                product != null
+                    ? '$mealType · ${product!.name}'
+                    : '$mealType · ~$_estimatedKcal kcal estimées',
+                textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 32),
             Expanded(
@@ -59,6 +74,11 @@ class EatResultScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
+                    if (product != null) ...[
+                      _ProductDetailCard(
+                          product: product!, portionGrams: _portionGrams),
+                      const SizedBox(height: 12),
+                    ],
                     _ResultCard(
                       title: 'Bilan du jour',
                       badge: '1890 / 2000 kcal',
@@ -161,6 +181,46 @@ class _ResultCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           child,
+        ],
+      ),
+    );
+  }
+}
+
+/// Carte détaillant l'aliment réel scanné via OpenFoodFacts.
+class _ProductDetailCard extends StatelessWidget {
+  final FoodProduct product;
+  final double portionGrams;
+
+  const _ProductDetailCard({required this.product, required this.portionGrams});
+
+  String _macro(double? per100g) {
+    if (per100g == null) return '—';
+    return '${(per100g * portionGrams / 100).round()}g';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final kcal = product.kcalForPortion(portionGrams);
+    return _ResultCard(
+      title: 'Aliment loggé',
+      badge: kcal != null ? '$kcal kcal · ${portionGrams.round()}g' : 'OpenFoodFacts',
+      badgeColor: const Color(0xFFE8622A),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _MacroChip(
+              value: _macro(product.proteinsPer100g),
+              label: 'Protéines',
+              color: const Color(0xFF4CAF50)),
+          _MacroChip(
+              value: _macro(product.carbsPer100g),
+              label: 'Glucides',
+              color: const Color(0xFF2196F3)),
+          _MacroChip(
+              value: _macro(product.fatPer100g),
+              label: 'Lipides',
+              color: const Color(0xFFFF9800)),
         ],
       ),
     );
