@@ -6,14 +6,21 @@ the AI program generators (prompts + exercise library), and the API configuratio
 
 ## Installation en une commande
 
-Sur **Debian/Ubuntu**, aucun prérequis manuel : le script installe Docker et
-tout ce qui manque. (Lance-le en root, ou en utilisateur avec `sudo` — `sudo`
-n'est utilisé que pour installer les paquets.)
+Sur **Debian/Ubuntu**, aucun prérequis manuel : le script installe Docker,
+Docker Compose et tout ce qui manque (`curl`, `openssl`, `git`,
+`ca-certificates`). Il fonctionne sur une Debian fraîche/minimale. (Lance-le en
+root, ou en utilisateur avec `sudo` — `sudo` n'est utilisé que pour installer
+les paquets et démarrer le daemon Docker.)
 
 ```bash
-git pull
+# Première installation sur une Debian clean (en root) :
+apt-get update && apt-get install -y git
+git clone https://github.com/davebrunsch/NoBrainFitApp.git
+cd NoBrainFitApp/admin
 bash scripts/setup.sh
 ```
+
+Pour les mises à jour ensuite : `bash scripts/update.sh`.
 
 Le script :
 

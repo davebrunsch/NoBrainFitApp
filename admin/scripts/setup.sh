@@ -12,6 +12,10 @@
 #
 # Run as root, or as a user with sudo (needed only to install packages).
 #
+
+# Re-exec under bash when invoked via sh/dash (the script relies on bash features).
+if [ -z "${BASH_VERSION:-}" ]; then exec bash "$0" "$@"; fi
+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -41,7 +45,16 @@ run_root() { if [ -n "$SUDO" ]; then $SUDO "$@"; else "$@"; fi; }
 
 PKG=""; need apt-get && PKG="apt"
 
-apt_install() { run_root env DEBIAN_FRONTEND=noninteractive apt-get install -y "$@"; }
+# Show what we're targeting (transparency on a fresh box).
+if [ "$PKG" = "apt" ]; then
+  # shellcheck disable=SC1091
+  . /etc/os-release 2>/dev/null || true
+  info "Cible : ${PRETTY_NAME:-Debian/Ubuntu} · $(dpkg --print-architecture 2>/dev/null || uname -m) · $([ "$(id -u)" -eq 0 ] && echo root || echo "${USER:-utilisateur}+sudo")"
+fi
+
+APT_UPDATED=0
+apt_update_once() { [ "$APT_UPDATED" = "1" ] && return 0; run_root apt-get update -qq; APT_UPDATED=1; }
+apt_install()     { run_root env DEBIAN_FRONTEND=noninteractive apt-get install -y "$@"; }
 
 require_root_for_install() {
   if [ -z "$SUDO" ] && [ "$(id -u)" -ne 0 ]; then
@@ -59,21 +72,15 @@ ensure_pkg() {
   fi
   require_root_for_install "$2"
   info "Installation de $2…"
-  run_root apt-get update -qq
+  apt_update_once
   apt_install "$2"
   ok "$2 installé"
 }
 
-install_docker_debian() {
-  hr
-  warn "Docker n'est pas installé."
-  if [ "$PKG" != "apt" ]; then
-    err "Auto-install Docker non gérée sur cet OS. → https://docs.docker.com/get-docker/"; exit 1
-  fi
+# Idempotently configure Docker's official apt repository.
+setup_docker_repo() {
+  [ -f /etc/apt/sources.list.d/docker.list ] && return 0
   require_root_for_install docker
-  read -r -p "  L'installer maintenant via le dépôt officiel Docker ? [O/n] " a
-  case "${a:-O}" in n|N) err "Installation annulée."; exit 1 ;; esac
-
   info "Ajout du dépôt Docker officiel…"
   run_root install -m 0755 -d /etc/apt/keyrings
   # shellcheck disable=SC1091
@@ -90,6 +97,20 @@ install_docker_debian() {
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/${distro} ${codename} stable" \
     | run_root tee /etc/apt/sources.list.d/docker.list >/dev/null
   run_root apt-get update -qq
+  APT_UPDATED=1
+}
+
+install_docker_debian() {
+  hr
+  warn "Docker n'est pas installé."
+  if [ "$PKG" != "apt" ]; then
+    err "Auto-install Docker non gérée sur cet OS. → https://docs.docker.com/get-docker/"; exit 1
+  fi
+  require_root_for_install docker
+  read -r -p "  L'installer maintenant via le dépôt officiel Docker ? [O/n] " a
+  case "${a:-O}" in n|N) err "Installation annulée."; exit 1 ;; esac
+
+  setup_docker_repo
   info "Installation de Docker Engine + Compose…"
   apt_install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
   ok "Docker installé"
@@ -105,11 +126,14 @@ start_docker() {
   elif need service;   then run_root service docker start          >/dev/null 2>&1 || true; fi
 }
 
-# Base tools the rest of the script relies on.
+# Base tools the rest of the script relies on (a clean Debian may lack these).
 ensure_pkg curl curl
 ensure_pkg openssl openssl
 ensure_pkg git git
-[ "$PKG" = "apt" ] && { need update-ca-certificates || apt_install ca-certificates >/dev/null 2>&1 || true; }
+# ca-certificates: required for every HTTPS call below (Docker key, Let's Encrypt).
+if [ "$PKG" = "apt" ] && ! need update-ca-certificates; then
+  require_root_for_install ca-certificates; apt_update_once; apt_install ca-certificates
+fi
 
 # Docker engine.
 need docker || install_docker_debian
@@ -126,13 +150,18 @@ else
   else err "Le daemon Docker ne répond pas. Démarre-le (ex: sudo systemctl start docker) puis relance."; exit 1; fi
 fi
 
-# Compose plugin (or legacy binary).
+# Compose plugin (or legacy binary). Install the plugin from Docker's repo if
+# missing — covers the case where Docker came from Debian's own `docker.io`.
 if   $DOCKER compose version >/dev/null 2>&1; then DC="$DOCKER compose"
 elif need docker-compose;                     then DC="${SUDO:+$SUDO }docker-compose"
-else
-  [ "$PKG" = "apt" ] && { info "Installation du plugin docker compose…"; apt_install docker-compose-plugin; }
+elif [ "$PKG" = "apt" ]; then
+  info "Installation du plugin docker compose…"
+  setup_docker_repo
+  apt_install docker-compose-plugin
   if $DOCKER compose version >/dev/null 2>&1; then DC="$DOCKER compose"
-  else err "Docker Compose introuvable."; exit 1; fi
+  else err "Docker Compose introuvable après installation."; exit 1; fi
+else
+  err "Docker Compose introuvable."; exit 1
 fi
 
 gen_secret() {
