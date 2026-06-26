@@ -38,8 +38,9 @@ async function getExercises(params: SearchParams) {
   })
 }
 
-export default async function ExercisesPage({ searchParams }: { searchParams: SearchParams }) {
-  const exercises = await getExercises(searchParams)
+export default async function ExercisesPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const params    = await searchParams
+  const exercises = await getExercises(params)
 
   const muscles    = [...new Set(exercises.map(e => e.muscle))].sort()
   const equipments = [...new Set(exercises.map(e => e.equipment))].sort()
@@ -59,16 +60,16 @@ export default async function ExercisesPage({ searchParams }: { searchParams: Se
         <form method="GET" className="flex items-center gap-2 flex-wrap">
           <input
             name="q"
-            defaultValue={searchParams.q}
+            defaultValue={params.q}
             placeholder="Rechercher un exercice…"
             className="h-9 flex-1 min-w-[180px] max-w-xs rounded-lg border border-[rgba(255,255,255,0.08)] bg-card px-3 text-sm text-snow placeholder:text-grey2 focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-2 focus:ring-offset-surface"
           />
-          <select name="equipment" defaultValue={searchParams.equipment ?? ''}
+          <select name="equipment" defaultValue={params.equipment ?? ''}
             className="h-9 rounded-lg border border-[rgba(255,255,255,0.08)] bg-card px-2 text-sm text-snow focus:outline-none focus:ring-2 focus:ring-blue">
             <option value="">Tous les équipements</option>
             {equipments.map(e => <option key={e} value={e}>{EQUIPMENT_MAP[e] ?? e}</option>)}
           </select>
-          <select name="muscle" defaultValue={searchParams.muscle ?? ''}
+          <select name="muscle" defaultValue={params.muscle ?? ''}
             className="h-9 rounded-lg border border-[rgba(255,255,255,0.08)] bg-card px-2 text-sm text-snow focus:outline-none focus:ring-2 focus:ring-blue">
             <option value="">Tous les muscles</option>
             {muscles.map(m => <option key={m} value={m}>{m}</option>)}
