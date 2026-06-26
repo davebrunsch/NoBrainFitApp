@@ -3,16 +3,37 @@ import { Header } from '@/components/admin/header'
 import { Badge } from '@/components/ui/badge'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
+import { SubscriptionActions } from './subscription-actions'
 
-export default async function SubscriptionsPage() {
-  const subscriptions = await db.subscription.findMany({
-    include: { user: true, plan: true },
-    orderBy: { startedAt: 'desc' },
-  })
+interface SearchParams { status?: string; plan?: string }
 
-  const active   = subscriptions.filter(s => s.status === 'ACTIVE').length
-  const expired  = subscriptions.filter(s => s.status === 'EXPIRED').length
-  const cancelled = subscriptions.filter(s => s.status === 'CANCELLED').length
+function formatPrice(euros: number) {
+  if (euros === 0) return 'Gratuit'
+  return `${euros.toFixed(2).replace(/\.00$/, '')}€/mois`
+}
+
+export default async function SubscriptionsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const params = await searchParams
+
+  const where = {
+    ...(params.status ? { status: params.status as 'ACTIVE' | 'EXPIRED' | 'CANCELLED' } : {}),
+    ...(params.plan   ? { plan: { slug: params.plan } } : {}),
+  }
+
+  const [subscriptions, plans, counts] = await Promise.all([
+    db.subscription.findMany({
+      where,
+      include: { user: true, plan: true },
+      orderBy: { startedAt: 'desc' },
+    }),
+    db.plan.findMany({ where: { isActive: true }, orderBy: { priceMonthly: 'asc' } }),
+    db.subscription.groupBy({ by: ['status'], _count: true }),
+  ])
+
+  const countOf = (s: string) => counts.find(c => c.status === s)?._count ?? 0
+  const active    = countOf('ACTIVE')
+  const expired   = countOf('EXPIRED')
+  const cancelled = countOf('CANCELLED')
 
   return (
     <div>
@@ -41,18 +62,43 @@ export default async function SubscriptionsPage() {
         ))}
       </div>
 
-      <div className="p-6">
+      <div className="p-6 space-y-4">
+        {/* Filters */}
+        <form method="GET" className="flex items-center gap-2 flex-wrap">
+          <select name="status" defaultValue={params.status ?? ''}
+            className="h-9 rounded-lg border border-[rgba(255,255,255,0.08)] bg-card px-2 text-sm text-snow focus:outline-none focus:ring-2 focus:ring-blue">
+            <option value="">Tous les statuts</option>
+            <option value="ACTIVE">Actif</option>
+            <option value="EXPIRED">Expiré</option>
+            <option value="CANCELLED">Annulé</option>
+          </select>
+          <select name="plan" defaultValue={params.plan ?? ''}
+            className="h-9 rounded-lg border border-[rgba(255,255,255,0.08)] bg-card px-2 text-sm text-snow focus:outline-none focus:ring-2 focus:ring-blue">
+            <option value="">Tous les plans</option>
+            {plans.map(p => <option key={p.id} value={p.slug}>{p.name}</option>)}
+          </select>
+          <button type="submit" className="h-9 rounded-lg bg-blue/10 border border-blue/20 px-4 text-sm font-medium text-blue hover:bg-blue/20 transition-colors">
+            Filtrer
+          </button>
+        </form>
+
         <div className="overflow-hidden rounded-xl border border-[rgba(255,255,255,0.07)] bg-card">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[rgba(255,255,255,0.06)]">
-                {['Utilisateur', 'Plan', 'Statut', 'Début', 'Expiration'].map(h => (
+                {['Utilisateur', 'Plan', 'Statut', 'Début', 'Expiration', ''].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-grey2">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(255,255,255,0.04)]">
-              {subscriptions.map(sub => (
+              {subscriptions.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-12 text-center text-[13px] text-grey2">
+                    Aucun abonnement trouvé
+                  </td>
+                </tr>
+              ) : subscriptions.map(sub => (
                 <tr key={sub.id} className="hover:bg-card-hi transition-colors">
                   <td className="px-4 py-3">
                     <Link href={`/users/${sub.userId}`} className="text-[13px] font-medium text-snow hover:text-blue transition-colors">
@@ -62,7 +108,7 @@ export default async function SubscriptionsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-[13px] text-snow">{sub.plan.name}</span>
-                    <div className="text-[11px] text-grey2">{sub.plan.priceMonthly === 0 ? 'Gratuit' : `${sub.plan.priceMonthly / 100}€/mois`}</div>
+                    <div className="text-[11px] text-grey2">{formatPrice(sub.plan.priceMonthly)}</div>
                   </td>
                   <td className="px-4 py-3">
                     <SubStatusBadge status={sub.status} />
@@ -70,6 +116,15 @@ export default async function SubscriptionsPage() {
                   <td className="px-4 py-3 text-[12px] text-grey1">{formatDate(sub.startedAt)}</td>
                   <td className="px-4 py-3 text-[12px] text-grey1">
                     {sub.expiresAt ? formatDate(sub.expiresAt) : <span className="text-grey2">—</span>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <SubscriptionActions
+                      subscriptionId={sub.id}
+                      status={sub.status}
+                      currentPlanId={sub.planId}
+                      expiresAt={sub.expiresAt ? sub.expiresAt.toISOString() : null}
+                      plans={plans.map(p => ({ id: p.id, name: p.name }))}
+                    />
                   </td>
                 </tr>
               ))}
