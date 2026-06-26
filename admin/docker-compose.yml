@@ -1,40 +1,61 @@
-version: '3.9'
-
 services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB:       ${POSTGRES_DB:-nobrainfitdb}
+      POSTGRES_DB:       ${POSTGRES_DB:-nobrainfit}
       POSTGRES_USER:     ${POSTGRES_USER:-nobrainfit}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nobrainfit}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nobrainfit} -d ${POSTGRES_DB:-nobrainfit}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+
+  # One-shot: syncs the schema and seeds initial data, then exits.
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrator
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL:   postgresql://${POSTGRES_USER:-nobrainfit}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-nobrainfit}
+      ADMIN_EMAIL:    ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_NAME:     ${ADMIN_NAME:-Admin}
+    restart: "no"
 
   admin:
     build:
       context: .
       dockerfile: Dockerfile
+      target: runner
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     environment:
-      DATABASE_URL:      postgresql://${POSTGRES_USER:-nobrainfit}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-nobrainfitdb}
-      NEXTAUTH_SECRET:   ${NEXTAUTH_SECRET:-dev-secret-change-me}
-      NEXTAUTH_URL:      ${NEXTAUTH_URL:-http://localhost:3000}
-      ADMIN_EMAIL:       ${ADMIN_EMAIL:-admin@nobrainfit.app}
-      ADMIN_PASSWORD:    ${ADMIN_PASSWORD:-Admin1234!}
-      APP_API_TOKEN:     ${APP_API_TOKEN:-dev-app-token}
+      DATABASE_URL:    postgresql://${POSTGRES_USER:-nobrainfit}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-nobrainfit}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXTAUTH_URL:    ${NEXTAUTH_URL:-http://localhost:3000}
+      APP_API_TOKEN:   ${APP_API_TOKEN}
     ports:
-      - "3000:3000"
+      - "${APP_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
 
 volumes:
   pgdata:

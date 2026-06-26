@@ -1,25 +1,33 @@
 #!/usr/bin/env bash
+#
+# NoBrainFit Admin — database backup (gzipped pg_dump, 30-day retention).
+#   bash scripts/backup.sh
+#
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$ROOT_DIR"
 
+if docker compose version >/dev/null 2>&1; then DC="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then DC="docker-compose"
+else echo "Docker Compose introuvable." >&2; exit 1; fi
+
 BACKUP_DIR="${BACKUP_DIR:-$ROOT_DIR/backups}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-FILENAME="nobrainfitdb_${TIMESTAMP}.sql.gz"
+FILENAME="nobrainfit_${TIMESTAMP}.sql.gz"
 
 mkdir -p "$BACKUP_DIR"
 
 # Load env
-set -a; source .env; set +a
+set -a; . ./.env; set +a
 
 echo "=== NoBrainFit Admin — Backup ==="
 echo "Dumping database → $BACKUP_DIR/$FILENAME"
 
-docker compose exec -T postgres pg_dump \
+$DC exec -T postgres pg_dump \
   -U "${POSTGRES_USER:-nobrainfit}" \
-  "${POSTGRES_DB:-nobrainfitdb}" \
+  "${POSTGRES_DB:-nobrainfit}" \
   | gzip > "$BACKUP_DIR/$FILENAME"
 
 echo "✅ Backup saved: $BACKUP_DIR/$FILENAME"

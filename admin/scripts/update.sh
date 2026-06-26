@@ -1,23 +1,34 @@
 #!/usr/bin/env bash
+#
+# NoBrainFit Admin — update an existing install.
+#   bash scripts/update.sh
+#
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$ROOT_DIR"
 
-echo "=== NoBrainFit Admin — Update ==="
+if docker compose version >/dev/null 2>&1; then DC="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then DC="docker-compose"
+else echo "Docker Compose introuvable." >&2; exit 1; fi
 
-echo "Pulling latest code…"
-git pull
+if [ ! -f .env ]; then
+  echo "Aucun .env trouvé — lance d'abord: bash scripts/setup.sh" >&2
+  exit 1
+fi
 
-echo "Rebuilding image…"
-docker compose build admin
+echo "▸ Récupération du code…"
+git pull --ff-only || echo "  (git pull ignoré — pas un dépôt ou déjà à jour)"
 
-echo "Applying migrations…"
-docker compose run --rm admin npx prisma migrate deploy
+echo "▸ Reconstruction des images…"
+$DC build
 
-echo "Restarting service (zero-downtime)…"
-docker compose up -d --no-deps admin
+# `up -d` re-resolves the dependency chain: if the schema changed, the migrator
+# image changes → migrate re-runs (db push + idempotent seed) before admin
+# restarts. If nothing changed, only updated services are recreated.
+echo "▸ Application des migrations + redémarrage…"
+$DC up -d
 
-echo "✅ Update complete!"
-docker compose ps
+echo "✓ Mise à jour terminée."
+$DC ps

@@ -9,19 +9,28 @@ async function main() {
   // ── Admin user ──────────────────────────────────────────────────────────────
   const adminEmail    = process.env.ADMIN_EMAIL    ?? 'admin@nobrainfitapp.com'
   const adminPassword = process.env.ADMIN_PASSWORD ?? 'changeme123'
+  const adminName     = process.env.ADMIN_NAME     ?? 'Admin'
+  const adminHash     = await bcrypt.hash(adminPassword, 12)
 
+  // Upsert ensures the credentials provided at setup time always work,
+  // even when re-running the seed against an existing database.
   await db.user.upsert({
     where: { email: adminEmail },
-    update: {},
+    update: {
+      passwordHash: adminHash,
+      name: adminName,
+      role: 'SUPER_ADMIN',
+      status: 'ACTIVE',
+    },
     create: {
       email: adminEmail,
-      passwordHash: await bcrypt.hash(adminPassword, 12),
-      name: 'Admin',
+      passwordHash: adminHash,
+      name: adminName,
       role: 'SUPER_ADMIN',
       status: 'ACTIVE',
     },
   })
-  console.log(`✅ Admin user: ${adminEmail}`)
+  console.log(`✅ Admin user: ${adminEmail} (${adminName})`)
 
   // ── Plans ───────────────────────────────────────────────────────────────────
   const plans = [

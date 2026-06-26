@@ -1,43 +1,212 @@
 #!/usr/bin/env bash
+#
+# NoBrainFit Admin — fully automated setup.
+#
+#   git pull && bash scripts/setup.sh
+#
+# Asks for the admin account + a couple of settings, generates all secrets,
+# builds the containers, prepares the database, and leaves the backend running.
+#
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$ROOT_DIR"
 
-echo "=== NoBrainFit Admin — Setup ==="
+# ── pretty output ─────────────────────────────────────────────────────────────
+BOLD=$'\033[1m'; DIM=$'\033[2m'; RESET=$'\033[0m'
+BLUE=$'\033[34m'; GREEN=$'\033[32m'; YELLOW=$'\033[33m'; RED=$'\033[31m'
+info()  { printf "%s\n" "${BLUE}▸${RESET} $1"; }
+ok()    { printf "%s\n" "${GREEN}✓${RESET} $1"; }
+warn()  { printf "%s\n" "${YELLOW}!${RESET} $1"; }
+err()   { printf "%s\n" "${RED}✗${RESET} $1" >&2; }
+hr()    { printf "%s\n" "${DIM}────────────────────────────────────────────────────────${RESET}"; }
 
-# Check .env exists
-if [ ! -f .env ]; then
-  echo "Creating .env from .env.example…"
-  cp .env.example .env
-  echo "⚠  Edit .env before continuing (set NEXTAUTH_SECRET, passwords, etc.)"
-  echo "   Run: nano .env"
+printf "\n%s\n" "${BOLD}${BLUE}  NoBrainFit Admin — Setup${RESET}"
+hr
+
+# ── 1. prerequisites ──────────────────────────────────────────────────────────
+need() { command -v "$1" >/dev/null 2>&1; }
+
+if ! need docker; then
+  err "Docker n'est pas installé. → https://docs.docker.com/get-docker/"
   exit 1
 fi
 
-# Generate a random NEXTAUTH_SECRET if still the placeholder
-if grep -q "CHANGE_ME" .env; then
-  SECRET=$(openssl rand -base64 32)
-  sed -i "s|NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=${SECRET}|" .env
-  echo "✓ Generated NEXTAUTH_SECRET"
+# docker compose v2 (plugin) or v1 (binary)
+if docker compose version >/dev/null 2>&1; then
+  DC="docker compose"
+elif need docker-compose; then
+  DC="docker-compose"
+else
+  err "Docker Compose introuvable. Installe Docker Desktop ou le plugin compose."
+  exit 1
 fi
 
-echo "Starting containers…"
-docker compose up -d --build
+if ! docker info >/dev/null 2>&1; then
+  err "Le daemon Docker ne tourne pas. Démarre Docker puis relance ce script."
+  exit 1
+fi
 
-echo "Waiting for postgres to be ready…"
-until docker compose exec -T postgres pg_isready -U "$(grep POSTGRES_USER .env | cut -d= -f2)" 2>/dev/null; do
-  sleep 2
+# secret generator (openssl preferred, fallback to /dev/urandom)
+gen_secret() {
+  if need openssl; then openssl rand -base64 "${1:-32}" | tr -d '\n/+=' | cut -c1-"${2:-44}"
+  else head -c 64 /dev/urandom | LC_ALL=C tr -dc 'A-Za-z0-9' | cut -c1-"${2:-44}"; fi
+}
+
+ok "Docker détecté ($DC)"
+
+# ── 2. existing install? ──────────────────────────────────────────────────────
+RECONFIGURE=1
+if [ -f .env ]; then
+  warn "Un fichier .env existe déjà."
+  read -r -p "    Le reconfigurer (réécrit les identifiants admin) ? [o/N] " ans
+  case "${ans:-N}" in
+    o|O|y|Y) RECONFIGURE=1 ;;
+    *) RECONFIGURE=0; info "Conservation du .env existant." ;;
+  esac
+fi
+
+# ── 3. interactive questions ──────────────────────────────────────────────────
+if [ "$RECONFIGURE" -eq 1 ]; then
+  hr
+  printf "%s\n\n" "${BOLD}Compte administrateur${RESET}"
+
+  # Admin name
+  default_name="Admin"
+  read -r -p "  Nom de l'administrateur [${default_name}] : " ADMIN_NAME
+  ADMIN_NAME="${ADMIN_NAME:-$default_name}"
+
+  # Admin email (validated)
+  while true; do
+    read -r -p "  Email de connexion : " ADMIN_EMAIL
+    if printf "%s" "$ADMIN_EMAIL" | grep -Eq '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$'; then
+      break
+    fi
+    err "  Email invalide, réessaie."
+  done
+
+  # Admin password (hidden, confirmed, min 8 chars)
+  while true; do
+    read -r -s -p "  Mot de passe (min. 8 caractères) : " ADMIN_PASSWORD; echo
+    if [ "${#ADMIN_PASSWORD}" -lt 8 ]; then
+      err "  Trop court (8 caractères minimum)."
+      continue
+    fi
+    read -r -s -p "  Confirme le mot de passe : " ADMIN_PASSWORD2; echo
+    if [ "$ADMIN_PASSWORD" != "$ADMIN_PASSWORD2" ]; then
+      err "  Les mots de passe ne correspondent pas."
+      continue
+    fi
+    break
+  done
+
+  hr
+  printf "%s\n\n" "${BOLD}Réseau${RESET}"
+
+  default_port="3000"
+  read -r -p "  Port d'écoute du panel [${default_port}] : " APP_PORT
+  APP_PORT="${APP_PORT:-$default_port}"
+
+  default_url="http://localhost:${APP_PORT}"
+  read -r -p "  URL publique du panel [${default_url}] : " NEXTAUTH_URL
+  NEXTAUTH_URL="${NEXTAUTH_URL:-$default_url}"
+
+  default_pgport="5432"
+  read -r -p "  Port PostgreSQL exposé [${default_pgport}] : " POSTGRES_PORT
+  POSTGRES_PORT="${POSTGRES_PORT:-$default_pgport}"
+
+  # ── 4. auto-generated secrets & DB creds ────────────────────────────────────
+  info "Génération des secrets…"
+  NEXTAUTH_SECRET="$(gen_secret 32 44)"
+  APP_API_TOKEN="$(gen_secret 32 44)"
+  POSTGRES_USER="nobrainfit"
+  POSTGRES_DB="nobrainfit"
+  POSTGRES_PASSWORD="$(gen_secret 24 32)"
+
+  # ── 5. write .env ───────────────────────────────────────────────────────────
+  cat > .env <<EOF
+# Generated by scripts/setup.sh on $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+# Do not commit this file.
+
+# ── Database ──────────────────────────────────────────────────────────────────
+POSTGRES_DB=${POSTGRES_DB}
+POSTGRES_USER=${POSTGRES_USER}
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+POSTGRES_PORT=${POSTGRES_PORT}
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}
+
+# ── App ───────────────────────────────────────────────────────────────────────
+APP_PORT=${APP_PORT}
+NEXTAUTH_URL=${NEXTAUTH_URL}
+NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+APP_API_TOKEN=${APP_API_TOKEN}
+
+# ── Admin account (seeded into the database) ──────────────────────────────────
+ADMIN_NAME=${ADMIN_NAME}
+ADMIN_EMAIL=${ADMIN_EMAIL}
+ADMIN_PASSWORD=${ADMIN_PASSWORD}
+EOF
+  chmod 600 .env
+  ok ".env généré (permissions 600)"
+fi
+
+# Make sure .gitignore protects the .env
+if [ -f .gitignore ]; then
+  grep -qxF '.env' .gitignore || echo '.env' >> .gitignore
+else
+  echo '.env' > .gitignore
+fi
+
+# ── 6. build & launch ─────────────────────────────────────────────────────────
+hr
+info "Construction des images (peut prendre quelques minutes la 1re fois)…"
+$DC build
+
+info "Démarrage de PostgreSQL + migration + seed + backend…"
+# `up -d` resolves the dependency chain:
+#   postgres (healthy) → migrate (push schema + seed, exits) → admin (serves)
+$DC up -d
+
+# ── 7. wait for the backend to be healthy ─────────────────────────────────────
+# shellcheck disable=SC1091
+set -a; . ./.env; set +a
+HEALTH_URL="http://localhost:${APP_PORT:-3000}/api/health"
+
+info "Attente du backend (${HEALTH_URL})…"
+ATTEMPTS=60
+for i in $(seq 1 $ATTEMPTS); do
+  if need curl && curl -fs "$HEALTH_URL" >/dev/null 2>&1; then ready=1; break; fi
+  if ! need curl && need wget && wget -q -O /dev/null "$HEALTH_URL" 2>/dev/null; then ready=1; break; fi
+  # if the migrate job failed, surface it immediately
+  if [ "$($DC ps -a --status exited --format '{{.Service}}' 2>/dev/null | grep -c '^migrate$' || true)" -ge 1 ]; then
+    code="$($DC ps -a --format '{{.Service}} {{.ExitCode}}' 2>/dev/null | awk '$1=="migrate"{print $2}')"
+    if [ "${code:-0}" != "0" ] && [ -n "${code:-}" ]; then
+      err "La préparation de la base (service 'migrate') a échoué (exit ${code})."
+      echo; $DC logs migrate | tail -n 40
+      exit 1
+    fi
+  fi
+  printf "  %s/%s\r" "$i" "$ATTEMPTS"
+  sleep 3
 done
+echo
 
-echo "Running migrations…"
-docker compose exec admin npx prisma migrate deploy
+if [ "${ready:-0}" != "1" ]; then
+  err "Le backend n'a pas répondu à temps. Logs :"
+  echo; $DC logs --tail 50 admin
+  exit 1
+fi
 
-echo "Seeding initial data…"
-docker compose exec admin npx prisma db seed
-
-echo ""
-echo "✅ Setup complete!"
-echo "   Admin panel: http://localhost:3000"
-echo "   Login with the ADMIN_EMAIL / ADMIN_PASSWORD from your .env"
+# ── 8. done ───────────────────────────────────────────────────────────────────
+hr
+printf "\n%s\n\n" "${BOLD}${GREEN}🎉 Backend en ligne !${RESET}"
+printf "  %s %s\n"   "${BOLD}Panel :${RESET}" "${NEXTAUTH_URL}"
+printf "  %s %s\n"   "${BOLD}Login :${RESET}" "${ADMIN_EMAIL}"
+printf "  %s %s\n\n" "${BOLD}Pass  :${RESET}" "(celui que tu viens de saisir)"
+printf "%s\n" "${DIM}  Commandes utiles :"
+printf "%s\n"   "    $DC ps          # état des services"
+printf "%s\n"   "    $DC logs -f admin   # logs du backend"
+printf "%s\n"   "    bash scripts/update.sh   # mettre à jour"
+printf "%s\n"   "    bash scripts/backup.sh   # sauvegarder la base${RESET}"
+echo
