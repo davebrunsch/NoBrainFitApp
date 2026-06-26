@@ -6,7 +6,9 @@ the AI program generators (prompts + exercise library), and the API configuratio
 
 ## Installation en une commande
 
-Prérequis : **Docker** + **Docker Compose** (Docker Desktop suffit).
+Sur **Debian/Ubuntu**, aucun prérequis manuel : le script installe Docker et
+tout ce qui manque. (Lance-le en root, ou en utilisateur avec `sudo` — `sudo`
+n'est utilisé que pour installer les paquets.)
 
 ```bash
 git pull
@@ -15,17 +17,23 @@ bash scripts/setup.sh
 
 Le script :
 
-1. vérifie Docker,
+1. **installe les prérequis manquants** (Docker Engine + Compose, `curl`,
+   `openssl`, `git`) via le dépôt officiel Docker, démarre le daemon, et ajoute
+   l'utilisateur au groupe `docker` ;
 2. demande le **nom**, l'**email** et le **mot de passe** de l'administrateur,
-   ainsi que le port et l'URL publique,
+   le type de déploiement (local ou production) et, en production, le domaine +
+   la stratégie HTTPS ;
 3. génère automatiquement tous les secrets (`NEXTAUTH_SECRET`, `APP_API_TOKEN`,
-   mot de passe PostgreSQL) dans un fichier `.env`,
+   mot de passe PostgreSQL) dans un fichier `.env` ;
 4. construit les images, démarre PostgreSQL, applique le schéma, insère les
-   données initiales (admin, plans, prompts, exercices),
+   données initiales (admin, plans, prompts, exercices) ;
 5. attend que le backend réponde, puis affiche l'URL de connexion.
 
 À la fin, le backend tourne sur l'URL indiquée (par défaut
 <http://localhost:3000>). Connecte-toi avec l'email / mot de passe saisis.
+
+> Sur un OS non-Debian (Fedora, Arch, macOS…), installe Docker au préalable —
+> le script détecte alors qu'il est présent et continue normalement.
 
 ## Scripts
 

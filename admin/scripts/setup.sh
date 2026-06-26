@@ -4,10 +4,13 @@
 #
 #   git pull && bash scripts/setup.sh
 #
-# Asks for the admin account, the deployment type (local or production) and,
-# for production, the HTTPS strategy (self-signed or Let's Encrypt). Generates
-# every secret, builds the containers, provisions TLS, prepares the database,
-# and leaves the backend running.
+# Installs any missing prerequisites (Docker, Docker Compose, curl, openssl,
+# git) on Debian/Ubuntu, then asks for the admin account, the deployment type
+# (local or production) and, for production, the HTTPS strategy (self-signed or
+# Let's Encrypt). Generates every secret, builds the containers, provisions TLS,
+# prepares the database, and leaves the backend running.
+#
+# Run as root, or as a user with sudo (needed only to install packages).
 #
 set -euo pipefail
 
