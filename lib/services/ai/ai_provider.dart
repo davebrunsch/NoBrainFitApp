@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:no_brain_fit/services/fitness_api/fitness_api_provider.dart';
 import 'package:no_brain_fit/services/fitness_api/fitness_api_service.dart';
+import 'package:no_brain_fit/services/server/server_ai_service.dart';
 import 'ai_config.dart';
 import 'ai_service.dart';
 import 'claude_service.dart';
@@ -30,11 +31,13 @@ final aiServiceProvider = Provider<AiService?>((ref) {
   final configAsync = ref.watch(aiConfigProvider);
   return configAsync.whenOrNull(
     data: (config) => switch (config.backend) {
+      AiBackend.server when config.serverReady =>
+        ServerAiService(baseUrl: config.serverBaseUrl, token: config.serverToken),
       AiBackend.claude when config.claudeApiKey.isNotEmpty =>
         ClaudeService(apiKey: config.claudeApiKey),
       AiBackend.ollama =>
         OllamaService(baseUrl: config.ollamaBaseUrl, model: config.ollamaModel),
-      _ => null, // Claude selected but no key
+      _ => null, // selected backend not yet configured (no key / not logged in)
     },
   );
 });
@@ -135,8 +138,12 @@ class RagWorkoutNotifier extends AsyncNotifier<WorkoutPlan?> {
       return;
     }
 
-    // Step 1 – Fetch exercises from fitness API (falls back to mock on error).
-    final fitnessApi = ref.read(fitnessApiServiceProvider);
+    // Step 1 – Fetch exercises.
+    // Server backend → curated DB library; otherwise the device-side fitness API.
+    final config = ref.read(aiConfigProvider).value;
+    final fitnessApi = (config != null && config.backend == AiBackend.server && config.serverReady)
+        ? ServerFitnessApiService(baseUrl: config.serverBaseUrl, token: config.serverToken)
+        : ref.read(fitnessApiServiceProvider);
     final eq = FitnessEquipment.fromLabel(equipment);
     List<FitnessApiExercise> exercises;
     try {

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:no_brain_fit/utils/brand.dart';
 import 'package:no_brain_fit/services/ai/ai_config.dart';
 import 'package:no_brain_fit/services/ai/ai_provider.dart';
+import 'package:no_brain_fit/services/server/server_auth_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -15,12 +16,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _apiKeyCtrl   = TextEditingController();
   final _urlCtrl      = TextEditingController();
   final _modelCtrl    = TextEditingController();
+  final _serverUrlCtrl = TextEditingController();
   bool _saving = false;
   bool _obscureKey = true;
 
   @override
   void dispose() {
     _apiKeyCtrl.dispose(); _urlCtrl.dispose(); _modelCtrl.dispose();
+    _serverUrlCtrl.dispose();
     super.dispose();
   }
 
@@ -37,6 +40,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         }
         if (_urlCtrl.text.isEmpty) _urlCtrl.text = config.ollamaBaseUrl;
         if (_modelCtrl.text.isEmpty) _modelCtrl.text = config.ollamaModel;
+        if (_serverUrlCtrl.text.isEmpty) _serverUrlCtrl.text = config.serverBaseUrl;
 
         return Scaffold(
           backgroundColor: Brand.bgVoid,
@@ -76,8 +80,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         const SizedBox(height: Brand.s24),
 
+                        // ── SERVEUR ───────────────────────────────────
+                        _SectionLabel('Serveur NoBrainFit (recommandé)'),
+                        const SizedBox(height: Brand.s8),
+                        _InfoCard(
+                          icon: Icons.cloud_outlined,
+                          color: Brand.lime,
+                          text: 'Le serveur gère l\'IA, les quotas et ton historique.\n'
+                              'Connecte-toi pour générer tes séances et recettes.\n'
+                              'Émulateur Android : l\'IP hôte est 10.0.2.2',
+                        ),
+                        const SizedBox(height: Brand.s12),
+                        _Field(
+                          label: 'URL du serveur',
+                          hint: AiConfig.defaultServerUrl,
+                          ctrl: _serverUrlCtrl,
+                          icon: Icons.dns_rounded,
+                        ),
+                        const SizedBox(height: Brand.s12),
+                        _ServerAuthCard(
+                          config: config,
+                          serverUrlCtrl: _serverUrlCtrl,
+                          onSession: (s) => _save(config.copyWith(
+                            backend: AiBackend.server,
+                            serverBaseUrl: _serverUrlCtrl.text.trim().isNotEmpty
+                                ? _serverUrlCtrl.text.trim()
+                                : AiConfig.defaultServerUrl,
+                            serverToken: s.token,
+                            serverEmail: s.email,
+                          )),
+                          onLogout: () => _save(config.copyWith(serverToken: '', serverEmail: '')),
+                        ),
+                        const SizedBox(height: Brand.s24),
+
                         // ── OLLAMA ────────────────────────────────────
-                        _SectionLabel('Ollama (local · recommandé)'),
+                        _SectionLabel('Ollama (local · avancé)'),
                         const SizedBox(height: Brand.s8),
                         _InfoCard(
                           icon: Icons.info_outline_rounded,
@@ -199,9 +236,11 @@ class _BackendToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(children: [
+      _ToggleBtn(label: 'Serveur', icon: Icons.cloud_rounded, accent: Brand.lime, selected: current == AiBackend.server, onTap: () => onChange(AiBackend.server)),
+      const SizedBox(width: Brand.s8),
       _ToggleBtn(label: 'Ollama', icon: Icons.computer_rounded, accent: Brand.blue, selected: current == AiBackend.ollama, onTap: () => onChange(AiBackend.ollama)),
       const SizedBox(width: Brand.s8),
-      _ToggleBtn(label: 'Claude', icon: Icons.auto_awesome_rounded, accent: Brand.lime, selected: current == AiBackend.claude, onTap: () => onChange(AiBackend.claude)),
+      _ToggleBtn(label: 'Claude', icon: Icons.auto_awesome_rounded, accent: Brand.orange, selected: current == AiBackend.claude, onTap: () => onChange(AiBackend.claude)),
     ]);
   }
 }
@@ -327,5 +366,134 @@ class _IconBtn extends StatelessWidget {
         child: Icon(icon, size: 20, color: Brand.white),
       ),
     );
+  }
+}
+
+/// Login / register against the NoBrainFit server, with connected state.
+class _ServerAuthCard extends StatefulWidget {
+  const _ServerAuthCard({
+    required this.config,
+    required this.serverUrlCtrl,
+    required this.onSession,
+    required this.onLogout,
+  });
+
+  final AiConfig config;
+  final TextEditingController serverUrlCtrl;
+  final void Function(ServerSession) onSession;
+  final VoidCallback onLogout;
+
+  @override
+  State<_ServerAuthCard> createState() => _ServerAuthCardState();
+}
+
+class _ServerAuthCardState extends State<_ServerAuthCard> {
+  final _emailCtrl = TextEditingController();
+  final _passCtrl  = TextEditingController();
+  final _nameCtrl  = TextEditingController();
+  bool _registerMode = false;
+  bool _busy = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose(); _passCtrl.dispose(); _nameCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    setState(() { _busy = true; _error = null; });
+    final baseUrl = widget.serverUrlCtrl.text.trim().isNotEmpty
+        ? widget.serverUrlCtrl.text.trim()
+        : AiConfig.defaultServerUrl;
+    final auth = ServerAuthService(baseUrl: baseUrl);
+    try {
+      final session = _registerMode
+          ? await auth.register(
+              email: _emailCtrl.text.trim(),
+              password: _passCtrl.text,
+              name: _nameCtrl.text.trim(),
+            )
+          : await auth.login(
+              email: _emailCtrl.text.trim(),
+              password: _passCtrl.text,
+            );
+      if (session.token.isEmpty) throw Exception('Réponse serveur invalide.');
+      _passCtrl.clear();
+      if (mounted) widget.onSession(session);
+    } catch (e) {
+      if (mounted) setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.config.serverReady) {
+      return Container(
+        padding: const EdgeInsets.all(Brand.s16),
+        decoration: BoxDecoration(
+          color: Brand.bgCard,
+          borderRadius: BorderRadius.circular(Brand.rChip),
+          border: Border.all(color: Brand.lime.withOpacity(.25)),
+        ),
+        child: Row(children: [
+          const Icon(Icons.check_circle_rounded, size: 18, color: Brand.lime),
+          const SizedBox(width: Brand.s12),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('Connecté', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.white)),
+              Text(widget.config.serverEmail, style: const TextStyle(fontSize: 11, color: Brand.grey2)),
+            ]),
+          ),
+          GestureDetector(
+            onTap: widget.onLogout,
+            child: Text('Déconnexion', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Brand.orange.withOpacity(.9))),
+          ),
+        ]),
+      );
+    }
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      if (_registerMode) ...[
+        _Field(label: 'Nom', hint: 'Ton prénom', ctrl: _nameCtrl, icon: Icons.person_outline_rounded),
+        const SizedBox(height: Brand.s8),
+      ],
+      _Field(label: 'Email', hint: 'toi@exemple.com', ctrl: _emailCtrl, icon: Icons.alternate_email_rounded),
+      const SizedBox(height: Brand.s8),
+      _Field(label: 'Mot de passe', hint: '••••••••', ctrl: _passCtrl, icon: Icons.lock_outline_rounded, obscure: true),
+      if (_error != null) ...[
+        const SizedBox(height: Brand.s8),
+        Text(_error!, style: const TextStyle(fontSize: 12, color: Brand.orange)),
+      ],
+      const SizedBox(height: Brand.s12),
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _busy ? null : _submit,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Brand.lime,
+            foregroundColor: Brand.bgVoid,
+            padding: const EdgeInsets.symmetric(vertical: Brand.s16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Brand.rButton)),
+          ),
+          child: _busy
+              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Brand.bgVoid))
+              : Text(_registerMode ? 'Créer un compte' : 'Se connecter',
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+        ),
+      ),
+      const SizedBox(height: Brand.s8),
+      Center(
+        child: GestureDetector(
+          onTap: _busy ? null : () => setState(() { _registerMode = !_registerMode; _error = null; }),
+          child: Text(
+            _registerMode ? 'J\'ai déjà un compte — Se connecter' : 'Pas de compte ? Créer un compte',
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Brand.grey1),
+          ),
+        ),
+      ),
+    ]);
   }
 }
