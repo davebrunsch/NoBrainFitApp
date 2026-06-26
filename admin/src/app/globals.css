@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+
+  body {
+    @apply bg-void text-snow antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-card-hi rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-grey2; }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+}

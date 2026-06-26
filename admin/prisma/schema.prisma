@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  name         String?
+  avatarUrl    String?
+  role         Role       @default(USER)
+  status       UserStatus @default(ACTIVE)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  subscription    Subscription?
+  workoutSessions WorkoutSession[]
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+// ── Subscriptions & Plans ─────────────────────────────────────────────────────
+
+model Plan {
+  id             String  @id @default(cuid())
+  name           String
+  slug           String  @unique
+  description    String?
+  priceMonthly   Float   @default(0)
+  maxWorkoutsDay Int     @default(3)
+  maxAiCallsDay  Int     @default(10)
+  features       Json    @default("[]")
+  isActive       Boolean @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id        String      @id @default(cuid())
+  userId    String      @unique
+  planId    String
+  status    SubStatus   @default(ACTIVE)
+  startedAt DateTime    @default(now())
+  expiresAt DateTime?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan Plan @relation(fields: [planId], references: [id])
+
+  @@index([status])
+}
+
+enum SubStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+// ── Workout Sessions ──────────────────────────────────────────────────────────
+
+model WorkoutSession {
+  id          String    @id @default(cuid())
+  userId      String
+  type        String    // "classic" | "rag"
+  goal        String?
+  duration    String
+  location    String?
+  equipment   String?
+  exercisesJson Json
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ── Exercise Library ──────────────────────────────────────────────────────────
+
+model Exercise {
+  id         String  @id @default(cuid())
+  name       String
+  type       String  // strength | cardio
+  muscle     String
+  equipment  String  // body_only | dumbbell | barbell | cable | machine
+  difficulty String  // beginner | intermediate | advanced
+  isActive   Boolean @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([equipment])
+  @@index([muscle])
+}
+
+// ── AI Prompts ────────────────────────────────────────────────────────────────
+
+model AiPrompt {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  description String?
+  template    String  @db.Text
+  variables   Json    @default("[]") // ["goal", "duration", "equipment", "exercises"]
+  isActive    Boolean @default(true)
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
+
+// ── App Config (key/value store) ──────────────────────────────────────────────
+
+model AppConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String   @db.Text
+  description String?
+  isSecret    Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+}
+
+// ── API Call Logs ─────────────────────────────────────────────────────────────
+
+model ApiCallLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  provider   String   // ollama | claude | fitness_api
+  endpoint   String
+  statusCode Int
+  durationMs Int
+  errorMsg   String?
+  createdAt  DateTime @default(now())
+
+  @@index([provider])
+  @@index([createdAt])
+}
