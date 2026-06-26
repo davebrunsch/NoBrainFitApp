@@ -39,8 +39,9 @@ async function getUsers(params: SearchParams) {
   return { users, total, page, totalPages: Math.ceil(total / limit) }
 }
 
-export default async function UsersPage({ searchParams }: { searchParams: SearchParams }) {
-  const { users, total, page, totalPages } = await getUsers(searchParams)
+export default async function UsersPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const params = await searchParams
+  const { users, total, page, totalPages } = await getUsers(params)
   const plans = await db.plan.findMany({ where: { isActive: true }, orderBy: { priceMonthly: 'asc' } })
 
   return (
@@ -53,13 +54,13 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
           <form method="GET" className="flex items-center gap-2 flex-1">
             <input
               name="q"
-              defaultValue={searchParams.q}
+              defaultValue={params.q}
               placeholder="Rechercher par email ou nom…"
               className="h-9 flex-1 max-w-xs rounded-lg border border-[rgba(255,255,255,0.08)] bg-card px-3 text-sm text-snow placeholder:text-grey2 focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-2 focus:ring-offset-surface"
             />
             <select
               name="status"
-              defaultValue={searchParams.status ?? ''}
+              defaultValue={params.status ?? ''}
               className="h-9 rounded-lg border border-[rgba(255,255,255,0.08)] bg-card px-2 text-sm text-snow focus:outline-none focus:ring-2 focus:ring-blue"
             >
               <option value="">Tous les statuts</option>
@@ -69,7 +70,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
             </select>
             <select
               name="plan"
-              defaultValue={searchParams.plan ?? ''}
+              defaultValue={params.plan ?? ''}
               className="h-9 rounded-lg border border-[rgba(255,255,255,0.08)] bg-card px-2 text-sm text-snow focus:outline-none focus:ring-2 focus:ring-blue"
             >
               <option value="">Tous les plans</option>
@@ -144,13 +145,13 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
             <span>Page {page} sur {totalPages} · {total} résultats</span>
             <div className="flex items-center gap-2">
               {page > 1 && (
-                <a href={`?page=${page - 1}&q=${searchParams.q ?? ''}&status=${searchParams.status ?? ''}`}
+                <a href={`?page=${page - 1}&q=${params.q ?? ''}&status=${params.status ?? ''}`}
                   className="rounded-lg border border-[rgba(255,255,255,0.07)] bg-card px-3 py-1.5 hover:bg-card-hi transition-colors text-snow">
                   ← Précédent
                 </a>
               )}
               {page < totalPages && (
-                <a href={`?page=${page + 1}&q=${searchParams.q ?? ''}&status=${searchParams.status ?? ''}`}
+                <a href={`?page=${page + 1}&q=${params.q ?? ''}&status=${params.status ?? ''}`}
                   className="rounded-lg border border-[rgba(255,255,255,0.07)] bg-card px-3 py-1.5 hover:bg-card-hi transition-colors text-snow">
                   Suivant →
                 </a>

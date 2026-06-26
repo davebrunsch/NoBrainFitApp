@@ -6,9 +6,10 @@ import { formatDate, formatDateTime } from '@/lib/utils'
 import Link from 'next/link'
 import { ArrowLeft, Mail, Calendar, Dumbbell, Zap } from 'lucide-react'
 
-export default async function UserDetailPage({ params }: { params: { id: string } }) {
+export default async function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const user = await db.user.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       subscription: { include: { plan: true } },
       workoutSessions: { orderBy: { completedAt: 'desc' }, take: 15 },
@@ -16,7 +17,7 @@ export default async function UserDetailPage({ params }: { params: { id: string 
   })
 
   const apiCallLogs = await db.apiCallLog.findMany({
-    where: { userId: params.id },
+    where: { userId: id },
     orderBy: { createdAt: 'desc' },
     take: 20,
   })
