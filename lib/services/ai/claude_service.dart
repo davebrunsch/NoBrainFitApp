@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:no_brain_fit/services/fitness_api/fitness_api_service.dart';
 import 'ai_service.dart';
 import 'ai_config.dart';
 import 'ai_parsers.dart';
@@ -61,5 +62,21 @@ class ClaudeService implements AiService {
       mealSize: mealSize,
       totalKcal: totalKcal,
     ));
+  }
+
+  @override
+  Future<WorkoutPlan> generateRagWorkout({
+    required String goal,
+    required String duration,
+    required String equipment,
+    required List<FitnessApiExercise> exercises,
+  }) async {
+    final raw = await _complete(AiPrompts.ragWorkout(
+      goal: goal,
+      duration: duration,
+      equipment: equipment,
+      exercises: exercises,
+    ));
+    return parseWorkout(raw);
   }
 }

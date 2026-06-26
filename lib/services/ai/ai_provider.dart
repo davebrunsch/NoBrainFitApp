@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:no_brain_fit/services/fitness_api/fitness_api_provider.dart';
+import 'package:no_brain_fit/services/fitness_api/fitness_api_service.dart';
 import 'ai_config.dart';
 import 'ai_service.dart';
 import 'claude_service.dart';
@@ -111,4 +113,50 @@ class NutritionTipNotifier extends AsyncNotifier<String?> {
 
 final nutritionTipProvider = AsyncNotifierProvider<NutritionTipNotifier, String?>(
   NutritionTipNotifier.new,
+);
+
+/// RAG workout generation.
+/// Fetches exercises from the fitness API, then generates a workout
+/// with a strict constraint: only those exercises may be used.
+class RagWorkoutNotifier extends AsyncNotifier<WorkoutPlan?> {
+  @override
+  Future<WorkoutPlan?> build() async => null;
+
+  Future<void> generate({
+    required String goal,
+    required String duration,
+    required String equipment,
+  }) async {
+    state = const AsyncLoading();
+
+    final service = ref.read(aiServiceProvider);
+    if (service == null) {
+      state = AsyncError('Aucun backend AI configuré.', StackTrace.current);
+      return;
+    }
+
+    // Step 1 – Fetch exercises from fitness API (falls back to mock on error).
+    final fitnessApi = ref.read(fitnessApiServiceProvider);
+    final eq = FitnessEquipment.fromLabel(equipment);
+    List<FitnessApiExercise> exercises;
+    try {
+      exercises = await fitnessApi.fetchExercises(eq);
+    } catch (_) {
+      exercises = await const MockFitnessApiService().fetchExercises(eq);
+    }
+
+    // Step 2 – Generate RAG workout via AI.
+    state = await AsyncValue.guard(
+      () => service.generateRagWorkout(
+        goal: goal,
+        duration: duration,
+        equipment: equipment,
+        exercises: exercises,
+      ),
+    );
+  }
+}
+
+final ragWorkoutProvider = AsyncNotifierProvider<RagWorkoutNotifier, WorkoutPlan?>(
+  RagWorkoutNotifier.new,
 );

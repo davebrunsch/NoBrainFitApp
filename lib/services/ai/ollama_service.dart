@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:no_brain_fit/services/fitness_api/fitness_api_service.dart';
 import 'ai_service.dart';
 import 'ai_parsers.dart';
 
@@ -26,10 +27,19 @@ class OllamaService implements AiService {
       'model': model,
       'prompt': prompt,
       'stream': false,
-      'options': {
-        'temperature': 0.7,
-        'num_predict': 1024,
-      },
+      'options': {'temperature': 0.7, 'num_predict': 1024},
+    });
+    return (res.data['response'] as String).trim();
+  }
+
+  // Forces strict JSON output via Ollama's native format parameter.
+  Future<String> _completeJson(String prompt) async {
+    final res = await _dio.post('/api/generate', data: {
+      'model': model,
+      'prompt': prompt,
+      'stream': false,
+      'format': 'json',
+      'options': {'temperature': 0.5, 'num_predict': 2048},
     });
     return (res.data['response'] as String).trim();
   }
@@ -63,5 +73,21 @@ class OllamaService implements AiService {
       mealSize: mealSize,
       totalKcal: totalKcal,
     ));
+  }
+
+  @override
+  Future<WorkoutPlan> generateRagWorkout({
+    required String goal,
+    required String duration,
+    required String equipment,
+    required List<FitnessApiExercise> exercises,
+  }) async {
+    final raw = await _completeJson(AiPrompts.ragWorkout(
+      goal: goal,
+      duration: duration,
+      equipment: equipment,
+      exercises: exercises,
+    ));
+    return parseWorkout(raw);
   }
 }

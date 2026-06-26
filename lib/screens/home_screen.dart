@@ -202,9 +202,9 @@ class _ActionRows extends StatelessWidget {
           icon: Icons.fitness_center_outlined,
           kicker: 'Training',
           title: 'S\'entraîner',
-          sub: '3 séances · Glisse pour personnaliser',
+          sub: 'Glisse pour le programme IA · ou choisir',
           accent: Brand.blue,
-          advancedRoute: '/train',
+          advancedRoute: '/train/rag',
           quickPicks: [
             _QuickPick(
               icon: Icons.bolt_outlined,

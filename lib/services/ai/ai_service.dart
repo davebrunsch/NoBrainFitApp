@@ -1,3 +1,5 @@
+import 'package:no_brain_fit/services/fitness_api/fitness_api_service.dart';
+
 /// Abstract AI service interface.
 /// Both Claude and Ollama backends implement this.
 abstract class AiService {
@@ -7,6 +9,19 @@ abstract class AiService {
   Future<WorkoutPlan> generateWorkout({
     required String duration,
     required String location,
+  });
+
+  /// Generate a RAG workout plan.
+  /// The AI must only use exercises from [exercises] (retrieved from the fitness API).
+  /// [goal]      : e.g. "Perte de poids", "Force", "Hypertrophie"
+  /// [duration]  : e.g. "30 min", "45 min", "60 min"
+  /// [equipment] : e.g. "Haltères", "Salle complète"
+  /// [exercises] : curated list fetched from the fitness API
+  Future<WorkoutPlan> generateRagWorkout({
+    required String goal,
+    required String duration,
+    required String equipment,
+    required List<FitnessApiExercise> exercises,
   });
 
   /// Generate recipe suggestions.
@@ -115,4 +130,33 @@ Tu es un nutritionniste bienveillant. L'utilisateur vient de loguer :
 Donne un conseil court (1-2 phrases max), positif et concret pour la suite de la journée.
 Réponds directement en français, sans introduction, sans formatage.
 ''';
+
+  static String ragWorkout({
+    required String goal,
+    required String duration,
+    required String equipment,
+    required List<FitnessApiExercise> exercises,
+  }) {
+    final list = exercises
+        .map((e) => '{"name":"${e.name}","muscle":"${e.muscle}","equipment":"${e.equipment}"}')
+        .join(',\n    ');
+    return '''
+Tu es un coach sportif expert. Crée un programme de $goal d'une durée de $duration avec $equipment.
+
+Règle ABSOLUE : Tu DOIS construire la séance UNIQUEMENT en piochant dans cette liste d'exercices. Ne propose AUCUN exercice qui n'est pas dans cette liste :
+[
+    $list
+]
+
+Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans explication :
+{
+  "title": "Nom court de la séance (ex: Force · Haltères · 45 min)",
+  "exercises": [
+    {"name": "Nom exact de l'exercice depuis la liste ci-dessus", "detail": "X séries × Y reps · Z s repos"},
+    ...
+  ]
+}
+Génère entre 5 et 8 exercices. Adapte les séries/reps/repos à l'objectif $goal. Sois précis et réaliste.
+''';
+  }
 }
