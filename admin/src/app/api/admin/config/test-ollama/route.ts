@@ -7,10 +7,10 @@ export async function POST() {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { url, model } = await getOllamaConfig()
+  const { baseUrl, model } = await getOllamaConfig()
 
   try {
-    const res = await fetch(`${url}/api/tags`, { signal: AbortSignal.timeout(5000) })
+    const res = await fetch(`${baseUrl}/api/tags`, { signal: AbortSignal.timeout(5000) })
     if (!res.ok) return NextResponse.json({ ok: false, error: `HTTP ${res.status}` })
     const data = await res.json() as { models?: { name: string }[] }
     const models = data.models?.map(m => m.name) ?? []
