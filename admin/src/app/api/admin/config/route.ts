@@ -15,10 +15,40 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body: Record<string, string> = await req.json()
+  const contentType = req.headers.get('content-type') ?? ''
+  const isJson = contentType.includes('application/json')
 
-  await Promise.all(
-    Object.entries(body).map(([key, value]) =>
+  // Accepts three shapes:
+  //   • JSON { entries: [{ key, value }] }     — ApiConfigCard "Sauvegarder"
+  //   • JSON { key: value, ... } (flat record) — generic callers
+  //   • urlencoded key=…&value=…               — BackendSelector native <form>
+  let updates: { key: string; value: string }[] = []
+
+  if (isJson) {
+    const body = await req.json()
+    if (Array.isArray(body?.entries)) {
+      updates = body.entries
+        .filter((e: { key?: unknown }) => typeof e?.key === 'string')
+        .map((e: { key: string; value: unknown }) => ({ key: e.key, value: String(e.value ?? '') }))
+    } else if (body && typeof body === 'object') {
+      updates = Object.entries(body as Record<string, unknown>)
+        .map(([key, value]) => ({ key, value: String(value ?? '') }))
+    }
+  } else {
+    const form = await req.formData()
+    const key = form.get('key')
+    const value = form.get('value')
+    if (typeof key === 'string' && typeof value === 'string') {
+      updates = [{ key, value }]
+    }
+  }
+
+  if (updates.length === 0) {
+    return NextResponse.json({ error: 'No configuration provided' }, { status: 400 })
+  }
+
+  await db.$transaction(
+    updates.map(({ key, value }) =>
       db.appConfig.upsert({
         where: { key },
         create: { key, value },
@@ -27,5 +57,9 @@ export async function POST(req: NextRequest) {
     )
   )
 
+  // A native form submission navigates the browser — send it back to the page.
+  if (!isJson) {
+    return NextResponse.redirect(new URL('/apis', req.url), 303)
+  }
   return NextResponse.json({ ok: true })
 }

@@ -51,8 +51,15 @@ export function ApiConfigCard({ title, description, icon, accentClass, testEndpo
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
       })
-      const data = await res.json()
-      setTestRes({ ok: res.ok, msg: data.message ?? (res.ok ? 'Connexion réussie' : 'Erreur de connexion') })
+      const data = await res.json().catch(() => ({}))
+      // Test routes reply with HTTP 200 even on failure, carrying { ok, error }.
+      const ok = res.ok && data.ok === true
+      const msg = ok
+        ? (data.modelFound === false
+            ? `Connecté — modèle « ${data.model} » introuvable sur le serveur`
+            : 'Connexion réussie')
+        : (data.error ?? 'Erreur de connexion')
+      setTestRes({ ok, msg })
     } catch {
       setTestRes({ ok: false, msg: 'Impossible de joindre le service' })
     }

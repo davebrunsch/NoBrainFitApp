@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
   const { goal, duration, equipment, exercises } = await req.json()
 
-  const backend = await getConfig('AI_BACKEND')
+  const backend = await getConfig('app.ai_backend')
   let workoutJson: string
 
   if (backend === 'claude') {
@@ -51,8 +51,8 @@ export async function POST(req: NextRequest) {
     const data = await res.json() as { content: { text: string }[] }
     workoutJson = data.content[0]?.text ?? '{}'
   } else {
-    const { url, model } = await getOllamaConfig()
-    const res = await fetch(`${url}/api/generate`, {
+    const { baseUrl, model } = await getOllamaConfig()
+    const res = await fetch(`${baseUrl}/api/generate`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
