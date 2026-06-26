@@ -179,7 +179,7 @@ class _ExerciseCard extends StatelessWidget {
               ),
               child: Text(
                 '${done.length} / ${exercises.length}',
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Brand.blue, letterSpacing: .04),
+                style: Brand.mono(size: 11, weight: FontWeight.w700, color: Brand.blue, letterSpacing: .04),
               ),
             ),
           ]),
@@ -220,7 +220,7 @@ class _ExerciseRow extends StatelessWidget {
             ),
             child: Text(
               index.toString().padLeft(2, '0'),
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Brand.blue),
+              style: Brand.mono(size: 11, weight: FontWeight.w700, color: Brand.blue),
             ),
           ),
           const SizedBox(width: Brand.s12),

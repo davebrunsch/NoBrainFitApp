@@ -22,6 +22,26 @@ abstract final class Brand {
   static const Color border  = Color(0x11FFFFFF); // 7%
   static const Color border2 = Color(0x1FFFFFFF); // 12%
 
+  // ── Typefaces ────────────────────────────────────────────────
+  static const String fontHead = 'SpaceGrotesk'; // Display & UI (primaire)
+  static const String fontMono = 'SpaceMono';    // Données & valeurs (secondaire)
+
+  /// Monospace style for data readouts — values, statistics, counters.
+  /// Mirrors the charte's `.t-mono` token (Space Mono).
+  static TextStyle mono({
+    double size = 13,
+    FontWeight weight = FontWeight.w700,
+    Color color = white,
+    double letterSpacing = 0,
+  }) =>
+      TextStyle(
+        fontFamily: fontMono,
+        fontSize: size,
+        fontWeight: weight,
+        color: color,
+        letterSpacing: letterSpacing,
+      );
+
   // ── Spacing (base-4) ─────────────────────────────────────────
   static const double s4  = 4;
   static const double s8  = 8;

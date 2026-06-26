@@ -132,7 +132,7 @@ class _NeonBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(Brand.rChip),
         border: Border.all(color: color.withOpacity(.25)),
       ),
-      child: Text(text, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color, letterSpacing: .04)),
+      child: Text(text, style: Brand.mono(size: 11, weight: FontWeight.w700, color: color, letterSpacing: .04)),
     );
   }
 }
@@ -145,7 +145,7 @@ class _MacroStat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, letterSpacing: -.5, color: color)),
+      Text(value, style: Brand.mono(size: 20, weight: FontWeight.w700, color: color, letterSpacing: -.5)),
       const SizedBox(height: 3),
       Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .12, color: Brand.grey2)),
     ]);
@@ -170,9 +170,9 @@ class _KcalBar extends StatelessWidget {
       ),
       const SizedBox(height: Brand.s8),
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        const Text('0', style: TextStyle(fontSize: 11, color: Brand.grey2)),
-        Text('${(filled * 100).round()} %', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Brand.lime)),
-        const Text('2000 kcal', style: TextStyle(fontSize: 11, color: Brand.grey2)),
+        Text('0', style: Brand.mono(size: 11, weight: FontWeight.w400, color: Brand.grey2)),
+        Text('${(filled * 100).round()} %', style: Brand.mono(size: 11, weight: FontWeight.w700, color: Brand.lime)),
+        Text('2000 kcal', style: Brand.mono(size: 11, weight: FontWeight.w400, color: Brand.grey2)),
       ]),
     ]);
   }
