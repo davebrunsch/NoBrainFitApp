@@ -86,6 +86,9 @@ async function main() {
     { key: 'app.maintenance_mode',     value: 'false',                        description: 'Mode maintenance (désactive l\'app)', isSecret: false },
     { key: 'app.default_plan',         value: 'free',                         description: 'Plan par défaut à l\'inscription',   isSecret: false },
     { key: 'app.rag_exercises_count',  value: '20',                           description: 'Nb d\'exercices envoyés au prompt RAG', isSecret: false },
+    { key: 'ssl.mode',                 value: process.env.SSL_MODE   ?? '',    description: 'Mode SSL (self-signed|letsencrypt)',  isSecret: false },
+    { key: 'ssl.domain',               value: process.env.SSL_DOMAIN ?? '',    description: 'Domaine du certificat HTTPS',         isSecret: false },
+    { key: 'ssl.email',                value: process.env.SSL_EMAIL  ?? '',    description: 'Email de contact Let\'s Encrypt',     isSecret: false },
   ]
 
   for (const cfg of configs) {

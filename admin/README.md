@@ -31,9 +31,10 @@ Le script :
 
 | Commande | Rôle |
 |----------|------|
-| `bash scripts/setup.sh`  | Installation initiale (interactive, idempotente) |
+| `bash scripts/setup.sh`  | Installation initiale (interactive, local ou production+HTTPS) |
 | `bash scripts/update.sh` | `git pull` + rebuild + migration + redémarrage |
 | `bash scripts/backup.sh` | Dump PostgreSQL compressé (rétention 30 jours) |
+| `bash scripts/ssl.sh`    | Gestion des certificats (`status` / `renew` / `request`) |
 
 ## Commandes Docker utiles
 
@@ -57,13 +58,44 @@ Le service `migrate` est un conteneur éphémère qui synchronise le schéma Pri
 (`prisma db push`) puis lance le seed. Le service `admin` n'attend que sa
 réussite avant de démarrer.
 
-## Déploiement VPS (production)
+## Déploiement VPS (production) + HTTPS
 
-Voir `docker-compose.prod.yml` (ajoute Nginx en reverse-proxy avec TLS et
-rate-limiting). Place tes certificats dans `nginx/ssl/` puis :
+`bash scripts/setup.sh` propose un mode **Production** qui démarre Nginx en
+reverse-proxy avec TLS, rate-limiting et gestion automatique des certificats.
+Choisis ton domaine puis le type de certificat :
+
+- **Auto-signé** — immédiat, avertissement navigateur (usage interne / test).
+- **Let's Encrypt** — gratuit et reconnu. Le domaine doit pointer vers le
+  serveur et les ports **80/443** doivent être ouverts. L'émission se fait
+  automatiquement au premier démarrage (le panel sert d'abord un certificat
+  auto-signé, puis bascule sur le certificat Let's Encrypt une fois émis).
+
+### Cycle de vie des certificats
+
+Tout est géré sans accès au socket Docker, via des volumes partagés et un agent
+`certbot` :
+
+```
+ssl-init ─▶ génère un cert auto-signé + prépare les volumes (uid 1001)
+nginx    ─▶ recharge à chaud quand /control/reload change (cert remplacé)
+certbot  ─▶ traite les demandes (/control/letsencrypt.request.json)
+            et renouvelle automatiquement 2×/jour
+admin    ─▶ panel « Système → Certificats SSL »
+```
+
+Depuis le panel tu peux à tout moment :
+
+- voir le certificat courant (émetteur, domaines, expiration, jours restants) ;
+- **demander / renouveler** un certificat Let's Encrypt ;
+- **téléverser** un certificat personnalisé (PEM cert + clé, validés) ;
+- **régénérer** un certificat auto-signé.
+
+En ligne de commande :
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d
+bash scripts/ssl.sh status                       # état du certificat
+bash scripts/ssl.sh renew                        # forcer un renouvellement
+bash scripts/ssl.sh request mondomaine.com me@x.fr   # émettre/renouveler
 ```
 
 ## Configuration des API IA

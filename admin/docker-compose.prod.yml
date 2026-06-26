@@ -14,6 +14,7 @@ services:
       timeout: 5s
       retries: 10
 
+  # Prepares schema + seeds initial data, then exits.
   migrate:
     build:
       context: .
@@ -27,6 +28,25 @@ services:
       ADMIN_EMAIL:    ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       ADMIN_NAME:     ${ADMIN_NAME:-Admin}
+      SSL_MODE:       ${SSL_MODE:-}
+      SSL_DOMAIN:     ${SSL_DOMAIN:-}
+      SSL_EMAIL:      ${SSL_EMAIL:-}
+    restart: "no"
+
+  # Prepares the SSL volumes (permissions + self-signed bootstrap), then exits.
+  ssl-init:
+    image: alpine:3.20
+    command: ["/bin/sh", "/ssl-init.sh"]
+    environment:
+      SSL_MODE:    ${SSL_MODE:-self-signed}
+      SSL_DOMAIN:  ${SSL_DOMAIN:-localhost}
+      SSL_EMAIL:   ${SSL_EMAIL:-}
+      SSL_STAGING: ${SSL_STAGING:-false}
+    volumes:
+      - ./scripts/ssl-init.sh:/ssl-init.sh:ro
+      - ssl_certs:/certs
+      - ssl_control:/control
+      - certbot_www:/var/www/certbot
     restart: "no"
 
   admin:
@@ -40,11 +60,18 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+      ssl-init:
+        condition: service_completed_successfully
     environment:
       DATABASE_URL:    postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       NEXTAUTH_URL:    ${NEXTAUTH_URL}
       APP_API_TOKEN:   ${APP_API_TOKEN}
+      SSL_CERT_DIR:    /certs
+      SSL_CONTROL_DIR: /control
+    volumes:
+      - ssl_certs:/certs
+      - ssl_control:/control
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 10s
@@ -56,16 +83,42 @@ services:
     image: nginx:alpine
     restart: always
     depends_on:
-      - admin
+      ssl-init:
+        condition: service_completed_successfully
+      admin:
+        condition: service_started
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/proxy_params:/etc/nginx/proxy_params:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/entrypoint.sh:/entrypoint.sh:ro
+      - ssl_certs:/etc/nginx/ssl:ro
+      - ssl_control:/control:ro
+      - certbot_www:/var/www/certbot:ro
       - nginx_cache:/var/cache/nginx
+
+  # Let's Encrypt agent: issues on demand (job files) and auto-renews.
+  certbot:
+    image: certbot/certbot:latest
+    restart: always
+    depends_on:
+      ssl-init:
+        condition: service_completed_successfully
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    volumes:
+      - ./certbot/entrypoint.sh:/entrypoint.sh:ro
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+      - ssl_certs:/certs
+      - ssl_control:/control
 
 volumes:
   pgdata:
   nginx_cache:
+  ssl_certs:
+  ssl_control:
+  certbot_conf:
+  certbot_www:

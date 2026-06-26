@@ -5,7 +5,7 @@ import { signOut } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Users, CreditCard, Dumbbell, Settings,
-  Zap, LogOut, ChevronRight, BookOpen, Sliders,
+  Zap, LogOut, ChevronRight, BookOpen, Sliders, ShieldCheck,
 } from 'lucide-react'
 
 const NAV = [
@@ -33,8 +33,9 @@ const NAV = [
   {
     section: 'Système',
     items: [
-      { href: '/apis',     label: 'APIs & Clés',    icon: Sliders  },
-      { href: '/settings', label: 'Paramètres',     icon: Settings },
+      { href: '/apis',         label: 'APIs & Clés',    icon: Sliders     },
+      { href: '/certificates', label: 'Certificats SSL', icon: ShieldCheck },
+      { href: '/settings',     label: 'Paramètres',     icon: Settings    },
     ],
   },
 ]
