@@ -359,7 +359,6 @@ class _ActionRowState extends State<_ActionRow> {
 
 class _QuickSheet extends StatelessWidget {
   const _QuickSheet({
-    super.key,
     required this.title,
     required this.icon,
     required this.accent,
@@ -439,7 +438,7 @@ class _QuickSheet extends StatelessWidget {
 }
 
 class _QuickOption extends StatefulWidget {
-  const _QuickOption({super.key, required this.pick, required this.accent});
+  const _QuickOption({required this.pick, required this.accent});
   final _QuickPick pick;
   final Color accent;
 
