@@ -50,6 +50,8 @@ class AppTheme {
             textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'SpaceGrotesk'),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Brand.rButton)),
             padding: const EdgeInsets.symmetric(vertical: 15),
+            elevation: 0,
+            overlayColor: Brand.bgVoid.withOpacity(.08),
           ),
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
@@ -63,5 +65,14 @@ class AppTheme {
         ),
         dividerTheme: DividerThemeData(color: Brand.border, thickness: 1, space: 0),
         iconTheme: IconThemeData(color: Brand.grey2, size: 20),
+        splashColor: Brand.border,
+        highlightColor: Brand.border,
+        bottomSheetTheme: BottomSheetThemeData(
+          backgroundColor: Brand.bgCard,
+          surfaceTintColor: Colors.transparent,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(Brand.rSheet)),
+          ),
+        ),
       );
 }

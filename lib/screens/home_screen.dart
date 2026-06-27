@@ -109,6 +109,7 @@ class _StatStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
+        gradient: Brand.cardGradient(),
         border: Border.all(color: Brand.border),
         borderRadius: BorderRadius.circular(Brand.rCard),
       ),
@@ -303,9 +304,10 @@ class _ActionRowState extends State<_ActionRow> {
           duration: const Duration(milliseconds: 100),
           child: Container(
             decoration: BoxDecoration(
-              color: _pressed ? Brand.bgCardHi : Brand.bgCard,
+              gradient: Brand.cardGradient(_pressed ? Brand.bgCardHi : Brand.bgCard),
               borderRadius: BorderRadius.circular(Brand.rRow),
-              border: Border.all(color: _pressed ? Brand.border2 : Brand.border),
+              border: Border.all(color: _pressed ? widget.accent.withOpacity(.35) : Brand.border),
+              boxShadow: _pressed ? Brand.accentGlow(widget.accent, opacity: .18) : null,
             ),
             padding: const EdgeInsets.symmetric(horizontal: Brand.s20),
             child: Row(
@@ -313,9 +315,9 @@ class _ActionRowState extends State<_ActionRow> {
                 Container(
                   width: 46, height: 46,
                   decoration: BoxDecoration(
-                    color: widget.accent.withOpacity(.10),
+                    gradient: Brand.accentTile(widget.accent),
                     borderRadius: BorderRadius.circular(Brand.rCard),
-                    border: Border.all(color: widget.accent.withOpacity(.2)),
+                    border: Border.all(color: widget.accent.withOpacity(.25)),
                   ),
                   child: Icon(widget.icon, size: 22, color: widget.accent),
                 ),
