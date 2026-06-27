@@ -42,8 +42,29 @@ class _TopBar extends StatelessWidget {
       children: [
         const TriStrikeWordmark(markSize: 26),
         const Spacer(),
+        _LibraryButton(),
+        const SizedBox(width: Brand.s8),
         _AvatarButton(),
       ],
+    );
+  }
+}
+
+class _LibraryButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/library'),
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: Brand.bgCard,
+          shape: BoxShape.circle,
+          border: Border.all(color: Brand.border2),
+        ),
+        child: const Icon(Icons.bookmark_border_rounded, size: 18, color: Brand.grey1),
+      ),
     );
   }
 }

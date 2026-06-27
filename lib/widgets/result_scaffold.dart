@@ -12,12 +12,14 @@ class ResultScaffold extends StatelessWidget {
     required this.primaryLabel,
     required this.onPrimary,
     required this.children,
+    this.action,
   });
 
   final Color accent;
   final String kicker, title, sub, primaryLabel;
   final VoidCallback onHome, onPrimary;
   final List<Widget> children;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +31,12 @@ class ResultScaffold extends StatelessWidget {
             // Top nav
             Padding(
               padding: const EdgeInsets.fromLTRB(Brand.s20, Brand.s16, Brand.s20, 0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: _HomeButton(onTap: onHome),
+              child: Row(
+                children: [
+                  _HomeButton(onTap: onHome),
+                  const Spacer(),
+                  if (action != null) action!,
+                ],
               ),
             ),
             // Scrollable content

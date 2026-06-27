@@ -5,6 +5,7 @@ import 'package:no_brain_fit/services/ai/ai_config.dart';
 import 'package:no_brain_fit/services/ai/ai_provider.dart';
 import 'package:no_brain_fit/services/server/server_auth_service.dart';
 import 'package:no_brain_fit/services/server/server_subscription_service.dart';
+import 'package:no_brain_fit/services/library/training_prefs.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -189,6 +190,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               : const Text('Enregistrer', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                           ),
                         ),
+                        const SizedBox(height: Brand.s32),
+
+                        // ── SÉANCE D'ENTRAÎNEMENT ─────────────────────
+                        _SectionLabel('Séance d\'entraînement'),
+                        const SizedBox(height: Brand.s8),
+                        const _TrainingPrefsCard(),
                         const SizedBox(height: Brand.s20),
                       ],
                     ),
@@ -545,6 +552,114 @@ class _SubscriptionLineState extends State<_SubscriptionLine> {
           ),
         ]);
       },
+    );
+  }
+}
+
+/// Preferences for the guided workout session (rest, haptics, sound).
+class _TrainingPrefsCard extends StatefulWidget {
+  const _TrainingPrefsCard();
+
+  @override
+  State<_TrainingPrefsCard> createState() => _TrainingPrefsCardState();
+}
+
+class _TrainingPrefsCardState extends State<_TrainingPrefsCard> {
+  TrainingPrefs _prefs = TrainingPrefs.defaults;
+  bool _loaded = false;
+
+  static const _restOptions = [30, 45, 60, 90, 120];
+
+  @override
+  void initState() {
+    super.initState();
+    TrainingPrefs.load().then((p) {
+      if (mounted) setState(() { _prefs = p; _loaded = true; });
+    });
+  }
+
+  Future<void> _update(TrainingPrefs next) async {
+    setState(() => _prefs = next);
+    await next.save();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded) {
+      return Container(
+        height: 64,
+        decoration: BoxDecoration(color: Brand.bgCard, borderRadius: BorderRadius.circular(Brand.rCard), border: Border.all(color: Brand.border)),
+        child: const Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Brand.blue))),
+      );
+    }
+    return Container(
+      padding: const EdgeInsets.all(Brand.s16),
+      decoration: BoxDecoration(color: Brand.bgCard, borderRadius: BorderRadius.circular(Brand.rCard), border: Border.all(color: Brand.border)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Text('Repos par défaut', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.white)),
+        const SizedBox(height: 2),
+        const Text('Utilisé quand un exercice ne précise pas de temps de repos.', style: TextStyle(fontSize: 11, color: Brand.grey2)),
+        const SizedBox(height: Brand.s12),
+        Wrap(spacing: 6, runSpacing: 6, children: _restOptions.map((sec) {
+          final sel = _prefs.defaultRestSec == sec;
+          return GestureDetector(
+            onTap: () => _update(_prefs.copyWith(defaultRestSec: sec)),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(
+                color: sel ? Brand.blue.withOpacity(.12) : Brand.bgCardHi,
+                borderRadius: BorderRadius.circular(Brand.rChip),
+                border: Border.all(color: sel ? Brand.blue : Brand.border2),
+              ),
+              child: Text('${sec}s', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: sel ? Brand.blue : Brand.grey1)),
+            ),
+          );
+        }).toList()),
+        const SizedBox(height: Brand.s16),
+        const Divider(height: 1, color: Brand.border),
+        _ToggleRow(
+          label: 'Vibration',
+          sub: 'À la fin d\'une série et du repos',
+          value: _prefs.vibrate,
+          onChanged: (v) => _update(_prefs.copyWith(vibrate: v)),
+        ),
+        _ToggleRow(
+          label: 'Son',
+          sub: 'Bip à la fin du temps de repos',
+          value: _prefs.sound,
+          onChanged: (v) => _update(_prefs.copyWith(sound: v)),
+        ),
+      ]),
+    );
+  }
+}
+
+class _ToggleRow extends StatelessWidget {
+  const _ToggleRow({required this.label, required this.sub, required this.value, required this.onChanged});
+  final String label, sub;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: Brand.s12),
+      child: Row(children: [
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Brand.white)),
+            Text(sub, style: const TextStyle(fontSize: 11, color: Brand.grey2)),
+          ]),
+        ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: Brand.bgVoid,
+          activeTrackColor: Brand.blue,
+          inactiveThumbColor: Brand.grey1,
+          inactiveTrackColor: Brand.bgCardHi,
+        ),
+      ]),
     );
   }
 }

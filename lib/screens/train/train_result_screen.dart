@@ -5,6 +5,7 @@ import 'package:no_brain_fit/services/ai/ai_provider.dart';
 import 'package:no_brain_fit/services/ai/ai_service.dart';
 import 'package:no_brain_fit/utils/brand.dart';
 import 'package:no_brain_fit/widgets/result_scaffold.dart';
+import 'package:no_brain_fit/widgets/save_workout_button.dart';
 import 'package:no_brain_fit/screens/train/active_workout_screen.dart';
 
 class TrainResultScreen extends ConsumerStatefulWidget {
@@ -64,8 +65,11 @@ class _TrainResultScreenState extends ConsumerState<TrainResultScreen> {
           ),
           doneCount: _done.length,
           totalCount: plan.exercises.length,
+          action: SaveWorkoutButton(plan: plan, type: 'Classique'),
           onStart: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => ActiveWorkoutScreen(plan: plan, accent: Brand.blue)),
+            MaterialPageRoute(
+              builder: (_) => ActiveWorkoutScreen(plan: plan, accent: Brand.blue, workoutType: 'Classique'),
+            ),
           ),
         );
       },
@@ -79,6 +83,7 @@ class _TrainResultScreenState extends ConsumerState<TrainResultScreen> {
     int doneCount = 0,
     int totalCount = 0,
     VoidCallback? onStart,
+    Widget? action,
   }) {
     return ResultScaffold(
       accent: Brand.blue,
@@ -88,6 +93,7 @@ class _TrainResultScreenState extends ConsumerState<TrainResultScreen> {
       onHome: () => context.go('/'),
       primaryLabel: '▶  Démarrer',
       onPrimary: onStart ?? () {},
+      action: action,
       children: [child],
     );
   }

@@ -3,25 +3,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:no_brain_fit/services/ai/ai_service.dart';
+import 'package:no_brain_fit/services/library/library_models.dart';
+import 'package:no_brain_fit/services/library/library_service.dart';
+import 'package:no_brain_fit/services/library/training_prefs.dart';
 import 'package:no_brain_fit/utils/brand.dart';
+import 'package:no_brain_fit/utils/workout_parse.dart';
+import 'package:no_brain_fit/widgets/exercise_detail_sheet.dart';
 
 /// Full-screen guided workout: one exercise at a time, set-by-set, with a
 /// counted-down rest timer between sets and a summary at the end.
 class ActiveWorkoutScreen extends StatefulWidget {
-  const ActiveWorkoutScreen({super.key, required this.plan, this.accent = Brand.blue});
+  const ActiveWorkoutScreen({
+    super.key,
+    required this.plan,
+    this.accent = Brand.blue,
+    this.workoutType = 'Séance',
+  });
 
   final WorkoutPlan plan;
   final Color accent;
+  final String workoutType;
 
   @override
   State<ActiveWorkoutScreen> createState() => _ActiveWorkoutScreenState();
 }
 
 class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
-  late final List<_SetPlan> _items = widget.plan.exercises.map(_SetPlan.parse).toList();
+  late final List<_SetPlan> _items = widget.plan.exercises.map(_SetPlan.new).toList();
   late final int _totalSets = _items.fold(0, (sum, e) => sum + e.sets);
   final DateTime _startedAt = DateTime.now();
+  final LibraryService _library = LibraryService();
 
+  TrainingPrefs _prefs = TrainingPrefs.defaults;
   int _exIndex = 0;
   int _setNumber = 1;
   int _completedSets = 0;
@@ -36,10 +49,18 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   bool get _isLastExercise => _exIndex >= _items.length - 1;
   bool get _isLastSet => _setNumber >= _current.sets;
 
+  int _restSecFor(_SetPlan e) => e.restSec ?? _prefs.defaultRestSec;
+
   @override
   void initState() {
     super.initState();
+    _loadPrefs();
     if (_items.isEmpty) _finish();
+  }
+
+  Future<void> _loadPrefs() async {
+    final p = await TrainingPrefs.load();
+    if (mounted) setState(() => _prefs = p);
   }
 
   @override
@@ -49,13 +70,13 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   }
 
   void _onSetDone() {
-    HapticFeedback.mediumImpact();
+    if (_prefs.vibrate) HapticFeedback.mediumImpact();
     setState(() => _completedSets++);
     if (_isLastSet && _isLastExercise) {
       _finish();
       return;
     }
-    _startRest(_current.restSec);
+    _startRest(_restSecFor(_current));
   }
 
   void _startRest(int seconds) {
@@ -72,6 +93,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (_restRemaining <= 1) {
         t.cancel();
+        _notifyRestEnd();
         _advance();
       } else {
         setState(() => _restRemaining--);
@@ -79,9 +101,13 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
     });
   }
 
+  void _notifyRestEnd() {
+    if (_prefs.vibrate) HapticFeedback.mediumImpact();
+    if (_prefs.sound) SystemSound.play(SystemSoundType.alert);
+  }
+
   void _advance() {
     _timer?.cancel();
-    HapticFeedback.selectionClick();
     setState(() {
       _resting = false;
       if (_setNumber < _current.sets) {
@@ -110,11 +136,23 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
 
   void _finish() {
     _timer?.cancel();
+    final elapsed = DateTime.now().difference(_startedAt);
     setState(() {
       _finished = true;
       _resting = false;
-      _elapsed = DateTime.now().difference(_startedAt);
+      _elapsed = elapsed;
     });
+    if (_completedSets > 0) {
+      _library.addHistory(WorkoutHistoryEntry(
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        title: widget.plan.title,
+        type: widget.workoutType,
+        date: DateTime.now(),
+        durationSec: elapsed.inSeconds,
+        exercisesCount: _items.length,
+        setsCompleted: _completedSets,
+      ));
+    }
   }
 
   Future<void> _confirmQuit() async {
@@ -160,9 +198,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                       accent: widget.accent,
                       onClose: _confirmQuit,
                     ),
-                    Expanded(
-                      child: _resting ? _buildRest() : _buildActiveSet(),
-                    ),
+                    Expanded(child: _resting ? _buildRest() : _buildActiveSet()),
                   ],
                 ),
         ),
@@ -181,13 +217,25 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
           Text('SÉRIE $_setNumber / ${ex.sets}',
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: .18, color: widget.accent)),
           const SizedBox(height: Brand.s8),
-          Text(ex.name,
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w700, letterSpacing: -1, color: Brand.white)),
+          GestureDetector(
+            onTap: () => showExerciseDetailSheet(context, ex.exercise, accent: widget.accent),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Expanded(
+                child: Text(ex.name,
+                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w700, letterSpacing: -1, color: Brand.white)),
+              ),
+              const SizedBox(width: Brand.s8),
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Icon(Icons.info_outline_rounded, size: 20, color: widget.accent),
+              ),
+            ]),
+          ),
           const SizedBox(height: Brand.s16),
           Row(children: [
             if (ex.reps.isNotEmpty) _Pill(label: '${ex.reps} reps', accent: widget.accent),
             if (ex.reps.isNotEmpty) const SizedBox(width: Brand.s8),
-            _Pill(label: '${ex.restSec}s repos', accent: widget.accent),
+            _Pill(label: '${_restSecFor(ex)}s repos', accent: widget.accent),
           ]),
           const SizedBox(height: Brand.s12),
           Text(ex.detail, style: const TextStyle(fontSize: 13, color: Brand.grey1)),
@@ -244,10 +292,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                   valueColor: AlwaysStoppedAnimation(widget.accent),
                 ),
               ),
-              Text(
-                '$_restRemaining',
-                style: Brand.mono(size: 64, weight: FontWeight.w700, color: Brand.white),
-              ),
+              Text('$_restRemaining', style: Brand.mono(size: 64, weight: FontWeight.w700, color: Brand.white)),
             ]),
           ),
           const SizedBox(height: Brand.s24),
@@ -255,10 +300,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
           const Spacer(flex: 2),
           Row(children: [
             Expanded(
-              child: OutlinedButton(
-                onPressed: _addRest,
-                child: const Text('+15 s'),
-              ),
+              child: OutlinedButton(onPressed: _addRest, child: const Text('+15 s')),
             ),
             const SizedBox(width: Brand.s12),
             Expanded(
@@ -284,40 +326,16 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
 // ── Parsed exercise ──────────────────────────────────────────────────────────
 
 class _SetPlan {
-  _SetPlan({required this.name, required this.detail, required this.sets, required this.reps, required this.restSec});
+  _SetPlan(this.exercise) : _info = WorkoutSetInfo.parse(exercise.detail);
 
-  final String name;
-  final String detail;
-  final String reps;
-  final int sets;
-  final int restSec;
+  final Exercise exercise;
+  final WorkoutSetInfo _info;
 
-  /// Best-effort parse of the AI `detail` string, e.g.
-  /// "3 × 12 reps · 60 s repos" or "4 séries × 10 reps · 90 s repos".
-  factory _SetPlan.parse(Exercise e) {
-    final d = e.detail;
-
-    int sets = 3;
-    final setsM = RegExp(r'(\d+)\s*(?:×|x|s[ée]ries?|sets?)', caseSensitive: false).firstMatch(d)
-        ?? RegExp(r'(\d+)').firstMatch(d);
-    if (setsM != null) sets = int.tryParse(setsM.group(1)!) ?? 3;
-
-    int rest = 60;
-    final restMatches = RegExp(r'(\d+)\s*s(?![a-z])', caseSensitive: false).allMatches(d).toList();
-    if (restMatches.isNotEmpty) rest = int.tryParse(restMatches.last.group(1)!) ?? 60;
-
-    String reps = '';
-    final repsM = RegExp(r'(\d+(?:\s*[-à]\s*\d+)?)\s*reps?', caseSensitive: false).firstMatch(d);
-    if (repsM != null) reps = repsM.group(1)!.trim();
-
-    return _SetPlan(
-      name: e.name,
-      detail: d,
-      sets: sets.clamp(1, 12),
-      reps: reps,
-      restSec: rest.clamp(0, 600),
-    );
-  }
+  String get name => exercise.name;
+  String get detail => exercise.detail;
+  int get sets => _info.sets;
+  String get reps => _info.reps;
+  int? get restSec => _info.restSec;
 }
 
 // ── Sub-widgets ──────────────────────────────────────────────────────────────
@@ -415,8 +433,7 @@ class _SummaryView extends StatelessWidget {
           const Text('Séance terminée', textAlign: TextAlign.center,
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, letterSpacing: -1, color: Brand.white)),
           const SizedBox(height: Brand.s8),
-          const Text('Beau travail. 💪', textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Brand.grey1)),
+          const Text('Beau travail. 💪', textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Brand.grey1)),
           const SizedBox(height: Brand.s32),
           Row(children: [
             _Stat(value: '$exercises', label: 'Exercices', accent: accent),
