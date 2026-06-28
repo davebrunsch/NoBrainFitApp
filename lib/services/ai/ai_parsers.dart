@@ -26,6 +26,17 @@ RecipeSuggestions parseRecipes(String raw) {
 
 /// Extracts a JSON object from a raw LLM completion.
 /// Handles ```json fenced blocks and any prose surrounding the object.
+FoodEstimate parseFoodEstimate(String raw) {
+  final json = jsonDecode(extractJson(raw)) as Map<String, dynamic>;
+  return FoodEstimate(
+    name:     _asString(json['name']),
+    kcal:     _asInt(json['kcal']),
+    proteinG: _asInt(json['prot_g']),
+    carbsG:   _asInt(json['carbs_g']),
+    fatG:     _asInt(json['fat_g']),
+  );
+}
+
 String extractJson(String raw) {
   var s = raw.trim();
   final fence = RegExp(r'```(?:json)?\s*([\s\S]*?)```');

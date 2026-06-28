@@ -171,6 +171,17 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans explication :
 Donne un conseil court (1-2 phrases max), positif et concret pour la suite de la journée.
 Réponds directement en français, sans introduction, sans formatage.`,
     },
+    {
+      slug: 'nutrition_estimate',
+      name: 'Estimation nutritionnelle',
+      description: 'Estime kcal + macros d\'un aliment décrit en texte. Variables : {description}',
+      variables: ['description'],
+      template: `Tu es un nutritionniste. Estime les valeurs nutritionnelles TOTALES de ce que l'utilisateur a mangé : "{description}".
+
+Réponds UNIQUEMENT avec un objet JSON valide, sans markdown :
+{"name":"nom court de l'aliment ou du repas","kcal":0,"prot_g":0,"carbs_g":0,"fat_g":0}
+Valeurs entières correspondant à la quantité décrite (pas par 100g).`,
+    },
   ]
 
   for (const prompt of prompts) {

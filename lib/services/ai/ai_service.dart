@@ -41,6 +41,10 @@ abstract class AiService {
     required String mealSize,
     required int totalKcal,
   });
+
+  /// Estimate the nutrition of a free-text food description.
+  /// [description] : e.g. "150g de poulet, un bol de riz".
+  Future<FoodEstimate> estimateFood({required String description});
 }
 
 // ── Data models ───────────────────────────────────────────────────────────────
@@ -74,6 +78,22 @@ class Recipe {
   final int timeMin;
   final int kcal;
   final int protG;
+}
+
+/// AI-estimated nutrition for a food description.
+class FoodEstimate {
+  const FoodEstimate({
+    required this.name,
+    required this.kcal,
+    required this.proteinG,
+    required this.carbsG,
+    required this.fatG,
+  });
+  final String name;
+  final int kcal;
+  final int proteinG;
+  final int carbsG;
+  final int fatG;
 }
 
 // ── Prompt helpers ────────────────────────────────────────────────────────────
@@ -129,6 +149,20 @@ Tu es un nutritionniste bienveillant. L'utilisateur vient de loguer :
 
 Donne un conseil court (1-2 phrases max), positif et concret pour la suite de la journée.
 Réponds directement en français, sans introduction, sans formatage.
+''';
+
+  static String foodEstimate({required String description}) => '''
+Tu es un nutritionniste. Estime les valeurs nutritionnelles TOTALES de ce que l'utilisateur a mangé : "$description".
+
+Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans explication :
+{
+  "name": "nom court de l'aliment ou du repas",
+  "kcal": 0,
+  "prot_g": 0,
+  "carbs_g": 0,
+  "fat_g": 0
+}
+Valeurs entières correspondant à la quantité décrite (pas par 100g).
 ''';
 
   static String ragWorkout({

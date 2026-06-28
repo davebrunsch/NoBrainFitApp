@@ -65,6 +65,12 @@ class ClaudeService implements AiService {
   }
 
   @override
+  Future<FoodEstimate> estimateFood({required String description}) async {
+    final raw = await _complete(AiPrompts.foodEstimate(description: description));
+    return parseFoodEstimate(raw);
+  }
+
+  @override
   Future<WorkoutPlan> generateRagWorkout({
     required String goal,
     required String duration,
