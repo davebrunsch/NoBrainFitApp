@@ -4,8 +4,8 @@ abstract final class Brand {
   // ── Backgrounds ──────────────────────────────────────────────
   static const Color bgVoid    = Color(0xFF08080C);
   static const Color bgSurface = Color(0xFF111115);
-  static const Color bgCard    = Color(0xFF141418);
-  static const Color bgCardHi  = Color(0xFF1A1A20);
+  static const Color bgCard    = Color(0xFF16161C); // charte §02
+  static const Color bgCardHi  = Color(0xFF1C1C24);
 
   // ── Accents (one per pillar) ──────────────────────────────────
   static const Color lime   = Color(0xFFCCFF00); // Nutrition
@@ -19,8 +19,8 @@ abstract final class Brand {
   static const Color grey3  = Color(0xFF2A2A32);
 
   // ── Borders ──────────────────────────────────────────────────
-  static const Color border  = Color(0x11FFFFFF); // 7%
-  static const Color border2 = Color(0x1FFFFFFF); // 12%
+  static const Color border  = Color(0x12FFFFFF); // 7%  (charte)
+  static const Color border2 = Color(0x24FFFFFF); // 14% (charte)
 
   // ── Typefaces ────────────────────────────────────────────────
   static const String fontHead = 'SpaceGrotesk'; // Display & UI (primaire)
@@ -72,6 +72,34 @@ abstract final class Brand {
     SectionType.train => blue,
     SectionType.cook  => orange,
   };
+
+  // ── Visual richness ──────────────────────────────────────────
+  /// Subtle top-to-bottom card gradient — adds depth without noise.
+  static LinearGradient cardGradient([Color base = bgCard]) => LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color.alphaBlend(Colors.white.withOpacity(.018), base),
+          base,
+        ],
+      );
+
+  /// Accent-tinted tile gradient used behind pillar icons.
+  static LinearGradient accentTile(Color accent) => LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [accent.withOpacity(.18), accent.withOpacity(.06)],
+      );
+
+  /// Soft accent glow for elevated / focused surfaces.
+  static List<BoxShadow> accentGlow(Color accent, {double opacity = .14, double blur = 22, double spread = -6}) => [
+        BoxShadow(
+          color: accent.withOpacity(opacity),
+          blurRadius: blur,
+          spreadRadius: spread,
+          offset: const Offset(0, 6),
+        ),
+      ];
 }
 
 enum SectionType { eat, train, cook }
