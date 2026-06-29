@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:no_brain_fit/utils/brand.dart';
 import 'package:no_brain_fit/screens/home_screen.dart';
 import 'package:no_brain_fit/screens/auth/auth_screen.dart';
 import 'package:no_brain_fit/screens/onboarding/onboarding_flow.dart';
@@ -18,9 +19,9 @@ class _Splash extends StatelessWidget {
   const _Splash();
   @override
   Widget build(BuildContext context) => const ColoredBox(
-        color: Color(0xFF08080C),
+        color: Brand.bgVoid,
         child: Center(
-          child: CircularProgressIndicator(color: Color(0xFFCCFF00)),
+          child: CircularProgressIndicator(color: Brand.lume),
         ),
       );
 }
