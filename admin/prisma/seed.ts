@@ -41,7 +41,8 @@ async function main() {
       priceMonthly: 0,
       maxWorkoutsDay: 3,
       maxAiCallsDay: 10,
-      features: ['3 séances/jour', '10 appels IA/jour', 'Exercices de base'],
+      // Feature keys — must match admin/src/lib/features.ts
+      features: ['classic_workout', 'nutrition_ai'],
     },
     {
       name: 'Pro',
@@ -50,7 +51,7 @@ async function main() {
       priceMonthly: 9.99,
       maxWorkoutsDay: 20,
       maxAiCallsDay: 100,
-      features: ['20 séances/jour', '100 appels IA/jour', 'Programme RAG', 'Historique 30 jours'],
+      features: ['classic_workout', 'rag_workout', 'nutrition_ai', 'cook_module', 'history_full'],
     },
     {
       name: 'Premium',
@@ -59,7 +60,7 @@ async function main() {
       priceMonthly: 19.99,
       maxWorkoutsDay: -1,
       maxAiCallsDay: -1,
-      features: ['Séances illimitées', 'IA illimitée', 'Priorité serveur', 'Historique complet', 'Support prioritaire'],
+      features: ['classic_workout', 'rag_workout', 'nutrition_ai', 'cook_module', 'barcode_scan', 'history_full', 'priority_support'],
     },
   ]
 

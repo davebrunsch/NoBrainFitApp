@@ -1,4 +1,6 @@
+import { NextResponse } from 'next/server'
 import { db } from './db'
+import { DEFAULT_FREE_FEATURES, sanitizeFeatures } from './features'
 
 export interface ResolvedPlan {
   planId: string | null
@@ -9,6 +11,7 @@ export interface ResolvedPlan {
   maxAiCallsDay: number
   priceMonthly: number
   expiresAt: Date | null
+  features: string[]
 }
 
 // Limits applied to users without an active paid subscription.
@@ -27,7 +30,7 @@ export async function resolveSubscription(userId: string): Promise<ResolvedPlan>
   if (!sub) {
     return {
       planId: null, planName: 'Free', planSlug: 'free', status: 'NONE',
-      ...FREE, priceMonthly: 0, expiresAt: null,
+      ...FREE, priceMonthly: 0, expiresAt: null, features: DEFAULT_FREE_FEATURES,
     }
   }
 
@@ -47,5 +50,24 @@ export async function resolveSubscription(userId: string): Promise<ResolvedPlan>
     maxAiCallsDay:  active ? sub.plan.maxAiCallsDay : FREE.maxAiCallsDay,
     priceMonthly:   active ? sub.plan.priceMonthly : 0,
     expiresAt:      sub.expiresAt,
+    features:       active ? sanitizeFeatures(sub.plan.features) : DEFAULT_FREE_FEATURES,
   }
+}
+
+/** True when the user's effective plan grants [feature]. */
+export async function hasFeature(userId: string, feature: string): Promise<boolean> {
+  const plan = await resolveSubscription(userId)
+  return plan.features.includes(feature)
+}
+
+/**
+ * Enforces that the user's plan includes [feature]. Returns a ready-to-send
+ * 403 response when it doesn't, or null when the request may proceed.
+ */
+export async function featureGuard(userId: string, feature: string): Promise<NextResponse | null> {
+  if (await hasFeature(userId, feature)) return null
+  return NextResponse.json(
+    { error: 'Cette fonctionnalité n\'est pas incluse dans ton abonnement.', feature },
+    { status: 403 },
+  )
 }
