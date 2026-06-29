@@ -154,11 +154,22 @@ Génère entre 4 et 6 exercices adaptés au lieu et à la durée. Sois précis e
 Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans explication :
 {
   "recipes": [
-    {"name": "Nom de la recette", "time_min": 20, "kcal": 480, "prot_g": 35}
+    {"name": "Nom de la recette", "time_min": 20, "kcal": 480, "prot_g": 35, "carbs_g": 45, "fat_g": 18}
   ],
   "shopping_list": ["Ingrédient · quantité", ...]
 }
-3 recettes variées. Liste de courses consolidée pour les 3 recettes.`,
+3 recettes variées. Valeurs nutritionnelles par portion. Liste de courses consolidée pour les 3 recettes.`,
+    },
+    {
+      slug: 'recipe_detail',
+      name: 'Détail de recette',
+      description: 'Ingrédients + étapes d\'une recette. Variables : {name}, {portions}',
+      variables: ['name', 'portions'],
+      template: `Tu es un chef cuisinier. Donne la recette complète de "{name}" pour {portions}.
+
+Réponds UNIQUEMENT avec un objet JSON valide, sans markdown :
+{"ingredients": ["Ingrédient · quantité", ...], "steps": ["Étape 1…", "Étape 2…", ...]}
+Ingrédients avec quantités adaptées au nombre de personnes. 5 à 8 étapes claires.`,
     },
     {
       slug: 'nutrition_tip',

@@ -45,6 +45,12 @@ abstract class AiService {
   /// Estimate the nutrition of a free-text food description.
   /// [description] : e.g. "150g de poulet, un bol de riz".
   Future<FoodEstimate> estimateFood({required String description});
+
+  /// Generate the full detail (ingredients + steps) for a named recipe.
+  Future<RecipeDetail> generateRecipeDetail({
+    required String name,
+    required String portions,
+  });
 }
 
 // ── Data models ───────────────────────────────────────────────────────────────
@@ -73,11 +79,22 @@ class Recipe {
     required this.timeMin,
     required this.kcal,
     required this.protG,
+    this.carbsG = 0,
+    this.fatG = 0,
   });
   final String name;
   final int timeMin;
   final int kcal;
   final int protG;
+  final int carbsG;
+  final int fatG;
+}
+
+/// Full recipe: ingredients + step-by-step instructions.
+class RecipeDetail {
+  const RecipeDetail({required this.ingredients, required this.steps});
+  final List<String> ingredients;
+  final List<String> steps;
 }
 
 /// AI-estimated nutrition for a food description.
@@ -127,7 +144,9 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans explication :
       "name": "Nom de la recette",
       "time_min": 20,
       "kcal": 480,
-      "prot_g": 35
+      "prot_g": 35,
+      "carbs_g": 45,
+      "fat_g": 18
     }
   ],
   "shopping_list": [
@@ -135,7 +154,18 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans explication :
     ...
   ]
 }
-3 recettes variées (protéinées, équilibrées, rapides). Liste de courses consolidée pour les 3 recettes.
+3 recettes variées (protéinées, équilibrées, rapides). Valeurs nutritionnelles par portion. Liste de courses consolidée pour les 3 recettes.
+''';
+
+  static String recipeDetail({required String name, required String portions}) => '''
+Tu es un chef cuisinier. Donne la recette complète de "$name" pour $portions.
+
+Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans explication :
+{
+  "ingredients": ["Ingrédient · quantité", ...],
+  "steps": ["Étape 1…", "Étape 2…", ...]
+}
+Ingrédients avec quantités adaptées au nombre de personnes. Étapes claires et numérotées (5 à 8 étapes).
 ''';
 
   static String nutritionTip({
