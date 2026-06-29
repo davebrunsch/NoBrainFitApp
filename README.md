@@ -24,6 +24,25 @@ NoBrainFit repose sur une philosophie simple : éliminer toute friction entre l'
 
 ## Fonctionnalités
 
+### Démarrage — Compte + profil
+À la première ouverture, l'app est verrouillée derrière deux étapes :
+1. **Connexion / création de compte** — écran dédié branché sur `POST /api/app/auth` (token JWT stocké localement).
+2. **Questionnaire de profil** — onboarding en plusieurs étapes pour construire le contexte de l'utilisateur :
+   - Mensurations : sexe, âge, taille, poids (+ poids cible optionnel)
+   - Niveau d'expérience (Débutant / Intermédiaire / Confirmé)
+   - Mode de vie (Sédentaire → Très actif)
+   - Objectif (Perte de gras / Muscle / Recomposition / Forme / Performance)
+   - Fréquence d'entraînement (1–7 séances/sem)
+   - Matériel à disposition + abonnement en salle
+
+Le profil est stocké **localement** (`SharedPreferences`) et sert de contexte
+partout. Métriques dérivées calculées à la volée : **IMC**, **métabolisme de
+base** (Mifflin-St Jeor), **dépense énergétique** et **cible calorique** selon
+l'objectif. Modifiable à tout moment depuis Paramètres → *Mon profil*.
+
+Le routage (`GoRouter`) applique la règle :
+`non connecté → /auth` · `connecté sans profil → /onboarding` · sinon l'app.
+
 ### Manger — Log en 2 gestes
 1. Type de repas (Petit-déjeuner / Déjeuner / Dîner / Collation)
 2. Taille de portion (Léger ~350 kcal / Normal ~600 / Copieux ~900) ou **scan de code-barres**
