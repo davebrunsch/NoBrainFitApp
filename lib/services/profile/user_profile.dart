@@ -218,6 +218,43 @@ class UserProfile {
   static T _parse<T extends Enum>(List<T> values, String? raw, T fallback) =>
       values.firstWhere((e) => e.name == raw, orElse: () => fallback);
 
+  // ── JSON (server sync) ───────────────────────────────────────
+  // Field names mirror the back-end `User` columns / `/api/app/profile`.
+  Map<String, dynamic> toJson() => {
+        'profileCompleted': completed,
+        'sex': sex.name,
+        'age': age,
+        'heightCm': heightCm,
+        'weightKg': weightKg,
+        'targetWeightKg': targetWeightKg,
+        'fitnessLevel': level.name,
+        'lifestyle': lifestyle.name,
+        'goal': goal.name,
+        'daysPerWeek': daysPerWeek,
+        'equipment': equipment.name,
+        'gymMember': gymMember,
+      };
+
+  /// Builds a profile from the server payload, tolerating missing/null
+  /// fields (a freshly-registered user has an empty profile).
+  factory UserProfile.fromJson(Map<String, dynamic> j) {
+    num? num_(String k) => j[k] as num?;
+    return UserProfile(
+      completed: j['profileCompleted'] == true,
+      sex: _parse(Sex.values, j['sex'] as String?, empty.sex),
+      age: num_('age')?.toInt() ?? empty.age,
+      heightCm: num_('heightCm')?.toInt() ?? empty.heightCm,
+      weightKg: num_('weightKg')?.toDouble() ?? empty.weightKg,
+      targetWeightKg: num_('targetWeightKg')?.toDouble() ?? empty.targetWeightKg,
+      level: _parse(FitnessLevel.values, j['fitnessLevel'] as String?, empty.level),
+      lifestyle: _parse(Lifestyle.values, j['lifestyle'] as String?, empty.lifestyle),
+      goal: _parse(Goal.values, j['goal'] as String?, empty.goal),
+      daysPerWeek: num_('daysPerWeek')?.toInt() ?? empty.daysPerWeek,
+      equipment: _parse(Equipment.values, j['equipment'] as String?, empty.equipment),
+      gymMember: j['gymMember'] as bool? ?? empty.gymMember,
+    );
+  }
+
   static Future<UserProfile> load() async {
     final p = await SharedPreferences.getInstance();
     return UserProfile(

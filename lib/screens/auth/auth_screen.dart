@@ -5,6 +5,8 @@ import 'package:no_brain_fit/widgets/tri_strike_logo.dart';
 import 'package:no_brain_fit/services/ai/ai_config.dart';
 import 'package:no_brain_fit/services/ai/ai_provider.dart';
 import 'package:no_brain_fit/services/server/server_auth_service.dart';
+import 'package:no_brain_fit/services/server/server_profile_service.dart';
+import 'package:no_brain_fit/services/profile/profile_provider.dart';
 
 /// Startup gate — the user must log in or create an account before reaching
 /// the app. On success the session token is stored in [AiConfig] and the
@@ -70,6 +72,20 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           : await auth.login(email: email, password: pass);
       if (session.token.isEmpty) {
         throw Exception('Réponse serveur invalide.');
+      }
+      // Adopt the server-side profile (if any) before the gate flips, so a
+      // returning user lands straight in the app instead of redoing onboarding.
+      try {
+        final remote = await ServerProfileService(
+                baseUrl: baseUrl, token: session.token)
+            .fetch();
+        // Only adopt a completed server profile — never clobber a profile the
+        // user may have finished offline with an empty server copy.
+        if (remote != null && remote.completed) {
+          await ref.read(userProfileProvider.notifier).adopt(remote);
+        }
+      } catch (_) {
+        // Offline / no profile yet → keep whatever is stored locally.
       }
       await ref.read(aiConfigProvider.notifier).save(config.copyWith(
             backend: AiBackend.server,

@@ -64,6 +64,27 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
             <InfoRow icon={<Zap className="h-3.5 w-3.5" />} label="Appels API" value={`${apiCallLogs.length}`} />
           </div>
 
+          {/* Fitness profile */}
+          <div className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-card p-5 space-y-3">
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-grey2">Profil fitness</h3>
+            {user.profileCompleted ? (
+              <>
+                <InfoRow label="Objectif" value={GOAL_LABELS[user.goal ?? ''] ?? '—'} />
+                <InfoRow label="Niveau" value={LEVEL_LABELS[user.fitnessLevel ?? ''] ?? '—'} />
+                <InfoRow label="Mode de vie" value={LIFESTYLE_LABELS[user.lifestyle ?? ''] ?? '—'} />
+                <InfoRow label="Fréquence" value={user.daysPerWeek ? `${user.daysPerWeek} séances/sem` : '—'} />
+                <InfoRow label="Matériel" value={EQUIPMENT_LABELS[user.equipment ?? ''] ?? '—'} />
+                <InfoRow label="Salle de sport" value={user.gymMember == null ? '—' : user.gymMember ? 'Oui' : 'Non'} />
+                <InfoRow label="Mensurations" value={fmtMeasurements(user)} />
+                {user.targetWeightKg ? (
+                  <InfoRow label="Poids cible" value={`${Math.round(user.targetWeightKg)} kg`} />
+                ) : null}
+              </>
+            ) : (
+              <p className="text-[12px] text-grey2">Profil non complété</p>
+            )}
+          </div>
+
           {/* Subscription */}
           <div className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-card p-5">
             <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-grey2">Abonnement</h3>
@@ -156,13 +177,53 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   )
 }
 
-function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function InfoRow({ icon, label, value }: { icon?: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-3">
       <div className="flex items-center gap-1.5 text-[11px] text-grey2">
         {icon} {label}
       </div>
-      <span className="text-[12px] text-snow">{value}</span>
+      <span className="text-[12px] text-snow text-right">{value}</span>
     </div>
   )
+}
+
+const SEX_LABELS: Record<string, string> = { male: 'Homme', female: 'Femme' }
+const GOAL_LABELS: Record<string, string> = {
+  loseFat: 'Perdre du gras',
+  buildMuscle: 'Prendre du muscle',
+  recomposition: 'Recomposition',
+  maintain: 'Rester en forme',
+  performance: 'Performer',
+}
+const LEVEL_LABELS: Record<string, string> = {
+  beginner: 'Débutant',
+  intermediate: 'Intermédiaire',
+  advanced: 'Confirmé',
+}
+const LIFESTYLE_LABELS: Record<string, string> = {
+  sedentary: 'Sédentaire',
+  light: 'Peu actif',
+  active: 'Actif',
+  veryActive: 'Très actif',
+}
+const EQUIPMENT_LABELS: Record<string, string> = {
+  bodyweight: 'Poids de corps',
+  dumbbells: 'Haltères',
+  machines: 'Machines guidées',
+  fullGym: 'Salle complète',
+}
+
+function fmtMeasurements(u: {
+  sex: string | null
+  age: number | null
+  heightCm: number | null
+  weightKg: number | null
+}): string {
+  const parts: string[] = []
+  if (u.sex) parts.push(SEX_LABELS[u.sex] ?? u.sex)
+  if (u.age) parts.push(`${u.age} ans`)
+  if (u.heightCm) parts.push(`${u.heightCm} cm`)
+  if (u.weightKg) parts.push(`${Math.round(u.weightKg)} kg`)
+  return parts.length ? parts.join(' · ') : '—'
 }

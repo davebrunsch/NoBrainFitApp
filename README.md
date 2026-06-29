@@ -35,10 +35,15 @@ NoBrainFit repose sur une philosophie simple : éliminer toute friction entre l'
    - Fréquence d'entraînement (1–7 séances/sem)
    - Matériel à disposition + abonnement en salle
 
-Le profil est stocké **localement** (`SharedPreferences`) et sert de contexte
-partout. Métriques dérivées calculées à la volée : **IMC**, **métabolisme de
-base** (Mifflin-St Jeor), **dépense énergétique** et **cible calorique** selon
-l'objectif. Modifiable à tout moment depuis Paramètres → *Mon profil*.
+Le profil est stocké **localement** (`SharedPreferences`, source de vérité pour
+l'UI) **et synchronisé avec le serveur** (`GET`/`PUT /api/app/profile`,
+authentifié par le JWT de l'app) — il suit donc l'utilisateur d'un appareil à
+l'autre. À la connexion, l'app récupère le profil distant ; à chaque
+enregistrement, elle le repousse (best-effort). Métriques dérivées calculées à
+la volée : **IMC**, **métabolisme de base** (Mifflin-St Jeor), **dépense
+énergétique** et **cible calorique** selon l'objectif. Modifiable à tout moment
+depuis Paramètres → *Mon profil*, et visible côté admin sur la fiche
+utilisateur.
 
 Le routage (`GoRouter`) applique la règle :
 `non connecté → /auth` · `connecté sans profil → /onboarding` · sinon l'app.
