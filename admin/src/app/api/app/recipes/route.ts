@@ -3,11 +3,15 @@ import { authAppUser } from '@/lib/app-auth'
 import { renderPrompt } from '@/lib/prompts'
 import { generateText, extractJson, AiError } from '@/lib/ai'
 import { quotaGuard } from '@/lib/quota'
+import { featureGuard } from '@/lib/subscription'
 
 /** Recipe suggestions + consolidated shopping list. */
 export async function POST(req: NextRequest) {
   const user = await authAppUser(req)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const denied = await featureGuard(user.id, 'cook_module')
+  if (denied) return denied
 
   const limited = await quotaGuard(user.id, ['ai'])
   if (limited) return limited

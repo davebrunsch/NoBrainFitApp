@@ -69,6 +69,22 @@ Le routage (`GoRouter`) applique la règle :
 - Liste de courses auto-générée
 - Suivi par cases à cocher
 
+### Abonnements & fonctionnalités (back-end)
+La console admin gère les **plans d'abonnement** (CRUD) et, pour chacun, les
+**fonctionnalités incluses** :
+- Catalogue de features centralisé (`admin/src/lib/features.ts`) : `classic_workout`,
+  `rag_workout`, `nutrition_ai`, `cook_module`, `barcode_scan`, `history_full`,
+  `priority_support`.
+- Écran **Abonnements → Plans** : créer / éditer / activer / supprimer un plan,
+  régler prix et quotas (séances & appels IA par jour, `-1` = illimité) et
+  **cocher les fonctionnalités** débloquées.
+- Le plan effectif d'un utilisateur (quotas + features) est résolu côté serveur
+  (`resolveSubscription`), en tenant compte de l'expiration ; les utilisateurs
+  sans abonnement actif retombent sur le palier gratuit.
+- Les endpoints applicatifs sont **gardés par feature** (`featureGuard`) : p. ex.
+  `/api/app/workout` exige `rag_workout`, `/api/app/recipes` exige `cook_module`.
+  L'app reçoit ses entitlements via `GET /api/app/subscription` (`features`).
+
 ### Paramètres — Double backend IA
 Bascule entre deux moteurs IA :
 - **Claude (Anthropic)** — API cloud, clé personnalisée

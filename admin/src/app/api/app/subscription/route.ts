@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
       priceMonthly: plan.priceMonthly,
       expiresAt: plan.expiresAt,
     },
+    features: plan.features,
     limits: { workoutsPerDay: plan.maxWorkoutsDay, aiCallsPerDay: plan.maxAiCallsDay },
     usage: {
       workouts: workoutsUsed,

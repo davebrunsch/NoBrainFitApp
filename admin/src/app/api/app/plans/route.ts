@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { authAppUser } from '@/lib/app-auth'
+import { sanitizeFeatures, featureLabel } from '@/lib/features'
 
 /** Lists the active subscription plans the user can choose from. */
 export async function GET(req: NextRequest) {
@@ -13,15 +14,19 @@ export async function GET(req: NextRequest) {
   })
 
   return NextResponse.json({
-    plans: plans.map(p => ({
-      id: p.id,
-      name: p.name,
-      slug: p.slug,
-      description: p.description,
-      priceMonthly: p.priceMonthly,
-      maxWorkoutsDay: p.maxWorkoutsDay,
-      maxAiCallsDay: p.maxAiCallsDay,
-      features: Array.isArray(p.features) ? p.features : [],
-    })),
+    plans: plans.map(p => {
+      const features = sanitizeFeatures(p.features)
+      return {
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        description: p.description,
+        priceMonthly: p.priceMonthly,
+        maxWorkoutsDay: p.maxWorkoutsDay,
+        maxAiCallsDay: p.maxAiCallsDay,
+        features, // machine-readable keys
+        featureLabels: features.map(featureLabel), // human-readable
+      }
+    }),
   })
 }
