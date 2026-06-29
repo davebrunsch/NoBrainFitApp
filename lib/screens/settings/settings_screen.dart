@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:no_brain_fit/utils/brand.dart';
 import 'package:no_brain_fit/services/ai/ai_config.dart';
 import 'package:no_brain_fit/services/ai/ai_provider.dart';
 import 'package:no_brain_fit/services/server/server_auth_service.dart';
 import 'package:no_brain_fit/services/server/server_subscription_service.dart';
 import 'package:no_brain_fit/services/library/training_prefs.dart';
+import 'package:no_brain_fit/services/profile/profile_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -111,8 +113,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             serverToken: s.token,
                             serverEmail: s.email,
                           )),
-                          onLogout: () => _save(config.copyWith(serverToken: '', serverEmail: '')),
+                          onLogout: () async {
+                            // Clearing the token gates the app back to /auth;
+                            // wipe the profile so a new account starts fresh.
+                            await ref.read(userProfileProvider.notifier).reset();
+                            await _save(config.copyWith(serverToken: '', serverEmail: ''));
+                          },
                         ),
+                        const SizedBox(height: Brand.s24),
+
+                        // ── PROFIL ────────────────────────────────────
+                        _SectionLabel('Mon profil'),
+                        const SizedBox(height: Brand.s8),
+                        const _ProfileCard(),
                         const SizedBox(height: Brand.s24),
 
                         // ── OLLAMA ────────────────────────────────────
@@ -552,6 +565,143 @@ class _SubscriptionLineState extends State<_SubscriptionLine> {
           ),
         ]);
       },
+    );
+  }
+}
+
+/// Compact summary of the user's fitness profile with an edit shortcut.
+class _ProfileCard extends ConsumerWidget {
+  const _ProfileCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(userProfileProvider);
+    return async.maybeWhen(
+      orElse: () => Container(
+        height: 64,
+        decoration: BoxDecoration(
+          color: Brand.bgCard,
+          borderRadius: BorderRadius.circular(Brand.rCard),
+          border: Border.all(color: Brand.border),
+        ),
+        child: const Center(
+            child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: Brand.lime))),
+      ),
+      data: (p) {
+        if (!p.completed) {
+          return GestureDetector(
+            onTap: () => context.push('/onboarding'),
+            child: Container(
+              padding: const EdgeInsets.all(Brand.s16),
+              decoration: BoxDecoration(
+                color: Brand.bgCard,
+                borderRadius: BorderRadius.circular(Brand.rCard),
+                border: Border.all(color: Brand.lime.withOpacity(.25)),
+              ),
+              child: Row(children: [
+                const Icon(Icons.assignment_outlined,
+                    size: 18, color: Brand.lime),
+                const SizedBox(width: Brand.s12),
+                const Expanded(
+                  child: Text('Complète ton profil',
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Brand.white)),
+                ),
+                const Icon(Icons.chevron_right_rounded,
+                    size: 20, color: Brand.grey2),
+              ]),
+            ),
+          );
+        }
+        return Container(
+          padding: const EdgeInsets.all(Brand.s16),
+          decoration: BoxDecoration(
+            color: Brand.bgCard,
+            borderRadius: BorderRadius.circular(Brand.rCard),
+            border: Border.all(color: Brand.border),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(p.goal.label,
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Brand.white)),
+                    const SizedBox(height: 2),
+                    Text(
+                        '${p.level.label} · ${p.daysPerWeek}x/sem · ${p.equipment.label}',
+                        style: const TextStyle(fontSize: 11.5, color: Brand.grey2)),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () => context.push('/onboarding'),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: Brand.s12, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: Brand.lime.withOpacity(.1),
+                    borderRadius: BorderRadius.circular(Brand.rChip),
+                    border: Border.all(color: Brand.lime.withOpacity(.3)),
+                  ),
+                  child: const Text('Modifier',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Brand.lime)),
+                ),
+              ),
+            ]),
+            const SizedBox(height: Brand.s12),
+            const Divider(height: 1, color: Brand.border),
+            const SizedBox(height: Brand.s12),
+            Row(children: [
+              _ProfileStat(
+                  value: '${p.weightKg.round()}', unit: 'kg', label: 'POIDS'),
+              _ProfileStat(
+                  value: p.bmi.toStringAsFixed(1), unit: 'IMC', label: 'INDICE'),
+              _ProfileStat(
+                  value: '${p.dailyCalorieTarget}',
+                  unit: 'kcal',
+                  label: 'CIBLE/J'),
+            ]),
+          ]),
+        );
+      },
+    );
+  }
+}
+
+class _ProfileStat extends StatelessWidget {
+  const _ProfileStat(
+      {required this.value, required this.unit, required this.label});
+  final String value, unit, label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(children: [
+        Text(label,
+            style: const TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                letterSpacing: .18,
+                color: Brand.grey2)),
+        const SizedBox(height: 4),
+        Text(value,
+            style: Brand.mono(size: 18, weight: FontWeight.w700, color: Brand.white)),
+        Text(unit, style: const TextStyle(fontSize: 10, color: Brand.grey2)),
+      ]),
     );
   }
 }

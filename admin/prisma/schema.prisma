@@ -20,6 +20,21 @@ model User {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
+  // ── Fitness profile (captured during app onboarding) ──────────
+  // Enum-like values stored as strings, matching the app's enum names.
+  profileCompleted Boolean @default(false)
+  sex              String? // "male" | "female"
+  age              Int?
+  heightCm         Int?
+  weightKg         Float?
+  targetWeightKg   Float? // 0 / null when no target set
+  fitnessLevel     String? // "beginner" | "intermediate" | "advanced"
+  lifestyle        String? // "sedentary" | "light" | "active" | "veryActive"
+  goal             String? // "loseFat" | "buildMuscle" | "recomposition" | "maintain" | "performance"
+  daysPerWeek      Int?
+  equipment        String? // "bodyweight" | "dumbbells" | "machines" | "fullGym"
+  gymMember        Boolean?
+
   subscription    Subscription?
   workoutSessions WorkoutSession[]
 

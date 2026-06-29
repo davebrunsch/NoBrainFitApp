@@ -7,12 +7,19 @@ class ServerSubscription {
     required this.status,
     required this.workoutsRemaining,
     required this.aiCallsRemaining,
+    this.features = const [],
   });
 
   final String planName;
   final String status;
   final int workoutsRemaining; // -1 = unlimited
   final int aiCallsRemaining;  // -1 = unlimited
+
+  /// Feature keys granted by the active plan (see admin/src/lib/features.ts).
+  final List<String> features;
+
+  /// Whether the active plan unlocks [feature].
+  bool can(String feature) => features.contains(feature);
 }
 
 /// Reads `GET /api/app/subscription` (plan + today's usage).
@@ -34,11 +41,13 @@ class ServerSubscriptionService {
     final data = res.data as Map<String, dynamic>;
     final plan = (data['plan'] as Map<String, dynamic>?) ?? const {};
     final usage = (data['usage'] as Map<String, dynamic>?) ?? const {};
+    final features = (data['features'] as List?)?.whereType<String>().toList() ?? const <String>[];
     return ServerSubscription(
       planName: plan['name'] as String? ?? 'Free',
       status: plan['status'] as String? ?? 'NONE',
       workoutsRemaining: (usage['workoutsRemaining'] as num?)?.toInt() ?? 0,
       aiCallsRemaining: (usage['aiCallsRemaining'] as num?)?.toInt() ?? 0,
+      features: features,
     );
   }
 }

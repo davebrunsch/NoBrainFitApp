@@ -41,7 +41,8 @@ async function main() {
       priceMonthly: 0,
       maxWorkoutsDay: 3,
       maxAiCallsDay: 10,
-      features: ['3 séances/jour', '10 appels IA/jour', 'Exercices de base'],
+      // Feature keys — must match admin/src/lib/features.ts
+      features: ['classic_workout', 'nutrition_ai'],
     },
     {
       name: 'Pro',
@@ -50,7 +51,7 @@ async function main() {
       priceMonthly: 9.99,
       maxWorkoutsDay: 20,
       maxAiCallsDay: 100,
-      features: ['20 séances/jour', '100 appels IA/jour', 'Programme RAG', 'Historique 30 jours'],
+      features: ['classic_workout', 'rag_workout', 'nutrition_ai', 'cook_module', 'history_full'],
     },
     {
       name: 'Premium',
@@ -59,7 +60,7 @@ async function main() {
       priceMonthly: 19.99,
       maxWorkoutsDay: -1,
       maxAiCallsDay: -1,
-      features: ['Séances illimitées', 'IA illimitée', 'Priorité serveur', 'Historique complet', 'Support prioritaire'],
+      features: ['classic_workout', 'rag_workout', 'nutrition_ai', 'cook_module', 'barcode_scan', 'history_full', 'priority_support'],
     },
   ]
 
@@ -153,11 +154,22 @@ Génère entre 4 et 6 exercices adaptés au lieu et à la durée. Sois précis e
 Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans explication :
 {
   "recipes": [
-    {"name": "Nom de la recette", "time_min": 20, "kcal": 480, "prot_g": 35}
+    {"name": "Nom de la recette", "time_min": 20, "kcal": 480, "prot_g": 35, "carbs_g": 45, "fat_g": 18}
   ],
   "shopping_list": ["Ingrédient · quantité", ...]
 }
-3 recettes variées. Liste de courses consolidée pour les 3 recettes.`,
+3 recettes variées. Valeurs nutritionnelles par portion. Liste de courses consolidée pour les 3 recettes.`,
+    },
+    {
+      slug: 'recipe_detail',
+      name: 'Détail de recette',
+      description: 'Ingrédients + étapes d\'une recette. Variables : {name}, {portions}',
+      variables: ['name', 'portions'],
+      template: `Tu es un chef cuisinier. Donne la recette complète de "{name}" pour {portions}.
+
+Réponds UNIQUEMENT avec un objet JSON valide, sans markdown :
+{"ingredients": ["Ingrédient · quantité", ...], "steps": ["Étape 1…", "Étape 2…", ...]}
+Ingrédients avec quantités adaptées au nombre de personnes. 5 à 8 étapes claires.`,
     },
     {
       slug: 'nutrition_tip',
@@ -170,6 +182,17 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans explication :
 
 Donne un conseil court (1-2 phrases max), positif et concret pour la suite de la journée.
 Réponds directement en français, sans introduction, sans formatage.`,
+    },
+    {
+      slug: 'nutrition_estimate',
+      name: 'Estimation nutritionnelle',
+      description: 'Estime kcal + macros d\'un aliment décrit en texte. Variables : {description}',
+      variables: ['description'],
+      template: `Tu es un nutritionniste. Estime les valeurs nutritionnelles TOTALES de ce que l'utilisateur a mangé : "{description}".
+
+Réponds UNIQUEMENT avec un objet JSON valide, sans markdown :
+{"name":"nom court de l'aliment ou du repas","kcal":0,"prot_g":0,"carbs_g":0,"fat_g":0}
+Valeurs entières correspondant à la quantité décrite (pas par 100g).`,
     },
   ]
 

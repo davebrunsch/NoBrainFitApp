@@ -86,6 +86,20 @@ class ServerAiService implements AiService {
     final data = _unwrap(res);
     return (data['tip'] as String? ?? '').trim();
   }
+
+  @override
+  Future<FoodEstimate> estimateFood({required String description}) async {
+    final res = await _dio.post('/api/app/nutrition-estimate', data: {'description': description});
+    final data = _unwrap(res);
+    return parseFoodEstimate(jsonEncode(data));
+  }
+
+  @override
+  Future<RecipeDetail> generateRecipeDetail({required String name, required String portions}) async {
+    final res = await _dio.post('/api/app/recipe-detail', data: {'name': name, 'portions': portions});
+    final data = _unwrap(res);
+    return parseRecipeDetail(jsonEncode(data));
+  }
 }
 
 /// Fitness exercise source backed by the server's curated DB library.

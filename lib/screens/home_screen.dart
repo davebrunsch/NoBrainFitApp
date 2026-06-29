@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:no_brain_fit/utils/brand.dart';
 import 'package:no_brain_fit/widgets/tri_strike_logo.dart';
-import 'package:no_brain_fit/screens/eat/eat_result_screen.dart';
 import 'package:no_brain_fit/screens/train/train_result_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -194,29 +193,9 @@ class _ActionRows extends StatelessWidget {
           icon: Icons.restaurant_outlined,
           kicker: 'Nutrition',
           title: 'Manger',
-          sub: '3 repas · Glisse pour personnaliser',
+          sub: 'Suivi des calories & macros',
           accent: Brand.lime,
           advancedRoute: '/eat',
-          quickPicks: [
-            _QuickPick(
-              icon: Icons.wb_sunny_outlined,
-              label: 'Petit-déjeuner',
-              sub: 'Léger · ~350 kcal',
-              destination: () => const EatResultScreen(mealType: 'Petit-déjeuner', mealSize: 'Léger'),
-            ),
-            _QuickPick(
-              icon: Icons.wb_cloudy_outlined,
-              label: 'Déjeuner',
-              sub: 'Normal · ~600 kcal',
-              destination: () => const EatResultScreen(mealType: 'Déjeuner', mealSize: 'Normal'),
-            ),
-            _QuickPick(
-              icon: Icons.nightlight_outlined,
-              label: 'Dîner',
-              sub: 'Normal · ~600 kcal',
-              destination: () => const EatResultScreen(mealType: 'Dîner', mealSize: 'Normal'),
-            ),
-          ],
         ),
         const SizedBox(height: Brand.s12),
         _ActionRow(

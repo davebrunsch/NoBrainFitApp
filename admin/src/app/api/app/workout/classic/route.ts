@@ -5,11 +5,15 @@ import { authAppUser } from '@/lib/app-auth'
 import { renderPrompt } from '@/lib/prompts'
 import { generateText, extractJson, AiError } from '@/lib/ai'
 import { quotaGuard } from '@/lib/quota'
+import { featureGuard } from '@/lib/subscription'
 
 /** Classic workout: free generation from a duration + location. */
 export async function POST(req: NextRequest) {
   const user = await authAppUser(req)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const denied = await featureGuard(user.id, 'classic_workout')
+  if (denied) return denied
 
   const limited = await quotaGuard(user.id, ['workout', 'ai'])
   if (limited) return limited

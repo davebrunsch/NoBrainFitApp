@@ -17,6 +17,8 @@ RecipeSuggestions parseRecipes(String raw) {
     timeMin: _asInt(r['time_min']),
     kcal:    _asInt(r['kcal']),
     protG:   _asInt(r['prot_g']),
+    carbsG:  _asInt(r['carbs_g']),
+    fatG:    _asInt(r['fat_g']),
   )).toList();
   final shopping = (json['shopping_list'] as List? ?? const [])
       .map(_asString)
@@ -26,6 +28,25 @@ RecipeSuggestions parseRecipes(String raw) {
 
 /// Extracts a JSON object from a raw LLM completion.
 /// Handles ```json fenced blocks and any prose surrounding the object.
+FoodEstimate parseFoodEstimate(String raw) {
+  final json = jsonDecode(extractJson(raw)) as Map<String, dynamic>;
+  return FoodEstimate(
+    name:     _asString(json['name']),
+    kcal:     _asInt(json['kcal']),
+    proteinG: _asInt(json['prot_g']),
+    carbsG:   _asInt(json['carbs_g']),
+    fatG:     _asInt(json['fat_g']),
+  );
+}
+
+RecipeDetail parseRecipeDetail(String raw) {
+  final json = jsonDecode(extractJson(raw)) as Map<String, dynamic>;
+  return RecipeDetail(
+    ingredients: (json['ingredients'] as List? ?? const []).map(_asString).toList(),
+    steps:       (json['steps'] as List? ?? const []).map(_asString).toList(),
+  );
+}
+
 String extractJson(String raw) {
   var s = raw.trim();
   final fence = RegExp(r'```(?:json)?\s*([\s\S]*?)```');

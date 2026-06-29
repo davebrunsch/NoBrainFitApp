@@ -24,6 +24,30 @@ NoBrainFit repose sur une philosophie simple : éliminer toute friction entre l'
 
 ## Fonctionnalités
 
+### Démarrage — Compte + profil
+À la première ouverture, l'app est verrouillée derrière deux étapes :
+1. **Connexion / création de compte** — écran dédié branché sur `POST /api/app/auth` (token JWT stocké localement).
+2. **Questionnaire de profil** — onboarding en plusieurs étapes pour construire le contexte de l'utilisateur :
+   - Mensurations : sexe, âge, taille, poids (+ poids cible optionnel)
+   - Niveau d'expérience (Débutant / Intermédiaire / Confirmé)
+   - Mode de vie (Sédentaire → Très actif)
+   - Objectif (Perte de gras / Muscle / Recomposition / Forme / Performance)
+   - Fréquence d'entraînement (1–7 séances/sem)
+   - Matériel à disposition + abonnement en salle
+
+Le profil est stocké **localement** (`SharedPreferences`, source de vérité pour
+l'UI) **et synchronisé avec le serveur** (`GET`/`PUT /api/app/profile`,
+authentifié par le JWT de l'app) — il suit donc l'utilisateur d'un appareil à
+l'autre. À la connexion, l'app récupère le profil distant ; à chaque
+enregistrement, elle le repousse (best-effort). Métriques dérivées calculées à
+la volée : **IMC**, **métabolisme de base** (Mifflin-St Jeor), **dépense
+énergétique** et **cible calorique** selon l'objectif. Modifiable à tout moment
+depuis Paramètres → *Mon profil*, et visible côté admin sur la fiche
+utilisateur.
+
+Le routage (`GoRouter`) applique la règle :
+`non connecté → /auth` · `connecté sans profil → /onboarding` · sinon l'app.
+
 ### Manger — Log en 2 gestes
 1. Type de repas (Petit-déjeuner / Déjeuner / Dîner / Collation)
 2. Taille de portion (Léger ~350 kcal / Normal ~600 / Copieux ~900) ou **scan de code-barres**
@@ -44,6 +68,22 @@ NoBrainFit repose sur une philosophie simple : éliminer toute friction entre l'
 - 3 recettes avec temps, calories et protéines
 - Liste de courses auto-générée
 - Suivi par cases à cocher
+
+### Abonnements & fonctionnalités (back-end)
+La console admin gère les **plans d'abonnement** (CRUD) et, pour chacun, les
+**fonctionnalités incluses** :
+- Catalogue de features centralisé (`admin/src/lib/features.ts`) : `classic_workout`,
+  `rag_workout`, `nutrition_ai`, `cook_module`, `barcode_scan`, `history_full`,
+  `priority_support`.
+- Écran **Abonnements → Plans** : créer / éditer / activer / supprimer un plan,
+  régler prix et quotas (séances & appels IA par jour, `-1` = illimité) et
+  **cocher les fonctionnalités** débloquées.
+- Le plan effectif d'un utilisateur (quotas + features) est résolu côté serveur
+  (`resolveSubscription`), en tenant compte de l'expiration ; les utilisateurs
+  sans abonnement actif retombent sur le palier gratuit.
+- Les endpoints applicatifs sont **gardés par feature** (`featureGuard`) : p. ex.
+  `/api/app/workout` exige `rag_workout`, `/api/app/recipes` exige `cook_module`.
+  L'app reçoit ses entitlements via `GET /api/app/subscription` (`features`).
 
 ### Paramètres — Double backend IA
 Bascule entre deux moteurs IA :
