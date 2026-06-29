@@ -82,6 +82,12 @@ class OllamaService implements AiService {
   }
 
   @override
+  Future<RecipeDetail> generateRecipeDetail({required String name, required String portions}) async {
+    final raw = await _completeJson(AiPrompts.recipeDetail(name: name, portions: portions));
+    return parseRecipeDetail(raw);
+  }
+
+  @override
   Future<WorkoutPlan> generateRagWorkout({
     required String goal,
     required String duration,
