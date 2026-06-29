@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:no_brain_fit/utils/brand.dart';
 
-/// The NoBrainFit "Tri-Strike" logo mark.
-/// Three angled geometric bars — one per pillar (Nutrition / Training / Cuisine).
+/// The NoBrainFit "Tri-Strike" logo mark — « taillé net » (charte V2.0).
+/// Three angled bars with sharp edges (index d'un cadran). A single Lume
+/// accent leads; steel (Acier / Titane) carries the rest.
 class TriStrikeMark extends StatelessWidget {
   const TriStrikeMark({super.key, this.size = 32});
 
@@ -30,7 +31,7 @@ class _TriStrikePainter extends CustomPainter {
 
       final barW = w * 0.72;
       final barH = h * 0.14;
-      final rx    = barH / 2;
+      final rx    = barH * 0.14; // arêtes vives (charte : rx 1.5 / h 11)
       final angle = -18 * 3.14159265 / 180;
 
       final rect = RRect.fromRectAndRadius(
@@ -50,9 +51,9 @@ class _TriStrikePainter extends CustomPainter {
       canvas.restore();
     }
 
-    drawBar(Brand.lime,   h * 0.23);
-    drawBar(Brand.blue,   h * 0.50);
-    drawBar(Brand.orange, h * 0.77);
+    drawBar(Brand.lume,   h * 0.23); // accent Lume
+    drawBar(Brand.acier,  h * 0.50); // acier
+    drawBar(Brand.titane, h * 0.77); // titane
   }
 
   @override
@@ -91,7 +92,7 @@ class TriStrikeWordmark extends StatelessWidget {
                   fontFamily: 'SpaceGrotesk',
                   fontSize: markSize * 0.62,
                   fontWeight: FontWeight.w700,
-                  color: Brand.lime,
+                  color: Brand.lume,
                   letterSpacing: -0.4,
                 ),
               ),

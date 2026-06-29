@@ -336,11 +336,12 @@ class _ActionRowState extends State<_ActionRow> {
                 Container(
                   width: 46, height: 46,
                   decoration: BoxDecoration(
-                    gradient: Brand.accentTile(widget.accent),
+                    // Icône en acier au repos ; le Lume ne marque que l'état actif.
+                    gradient: _pressed ? Brand.accentTile(widget.accent) : Brand.steelTile(),
                     borderRadius: BorderRadius.circular(Brand.rCard),
-                    border: Border.all(color: widget.accent.withOpacity(.25)),
+                    border: Border.all(color: _pressed ? widget.accent.withOpacity(.4) : Brand.border2),
                   ),
-                  child: Icon(widget.icon, size: 22, color: widget.accent),
+                  child: Icon(widget.icon, size: 22, color: _pressed ? widget.accent : Brand.titane),
                 ),
                 const SizedBox(width: Brand.s16),
                 Expanded(
@@ -350,7 +351,7 @@ class _ActionRowState extends State<_ActionRow> {
                     children: [
                       Text(
                         widget.kicker.toUpperCase(),
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .16, color: widget.accent),
+                        style: const TextStyle(fontFamily: Brand.fontMono, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .16, color: Brand.grey1),
                       ),
                       const SizedBox(height: 3),
                       Text(widget.title, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w600, letterSpacing: -.4, color: Brand.white)),
@@ -359,9 +360,10 @@ class _ActionRowState extends State<_ActionRow> {
                     ],
                   ),
                 ),
+                // Index numérique en Lume — distingue les piliers (charte V2.0).
                 Text(
                   widget.index,
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: .1, color: Brand.grey2),
+                  style: Brand.mono(size: 12, weight: FontWeight.w700, color: Brand.lume, letterSpacing: .1),
                 ),
                 const SizedBox(width: Brand.s8),
                 Icon(
