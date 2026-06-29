@@ -8,9 +8,10 @@ class AppTheme {
         fontFamily: 'SpaceGrotesk',
         scaffoldBackgroundColor: Brand.bgVoid,
         colorScheme: ColorScheme.dark(
-          primary:    Brand.lime,
-          secondary:  Brand.blue,
-          tertiary:   Brand.orange,
+          primary:    Brand.lume,   // accent unique
+          onPrimary:  Brand.bgVoid, // texte foncé sur Lume
+          secondary:  Brand.acier,
+          tertiary:   Brand.titane,
           surface:    Brand.bgCard,
           onSurface:  Brand.white,
           outline:    Brand.border,
@@ -45,7 +46,7 @@ class AppTheme {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Brand.lime,
+            backgroundColor: Brand.lume,
             foregroundColor: Brand.bgVoid,
             textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'SpaceGrotesk'),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Brand.rButton)),

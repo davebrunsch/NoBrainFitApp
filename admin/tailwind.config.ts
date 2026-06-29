@@ -11,31 +11,39 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // NoBrainFit brand
-        void:    '#08080C',
-        surface: '#111115',
-        card:    '#141418',
-        'card-hi': '#1A1A20',
+        // NoBrainFit — charte V2.0 « Instrument System »
+        // Fond d'acier, un seul accent (le Lume), zéro bruit.
+        void:    '#0B0B0F',
+        surface: '#101015',
+        card:    '#16161B',
+        'card-hi': '#1C1C22',
         border:  'rgba(255,255,255,0.07)',
-        'border-hi': 'rgba(255,255,255,0.12)',
-        snow:    '#F5F5F7',
-        grey1:   '#9898A8',
-        grey2:   '#56565F',
-        blue:    '#3D8EFF',
-        lime:    '#CCFF00',
-        orange:  '#FF5C2B',
+        'border-hi': 'rgba(255,255,255,0.14)',
+        snow:    '#F2F2F4', // White Ice
+        grey1:   '#9A9AA4', // Silver
+        grey2:   '#55555E', // Graphite
+        // Acier — le reste vit en niveaux d'acier
+        acier:    '#D8D8DE',
+        titane:   '#86868F',
+        graphite: '#55555E',
+        // Accent unique « Lume » — blue/lime sont des alias rétro-compat
+        lume:    '#C4ED4A',
+        blue:    '#C4ED4A',
+        lime:    '#C4ED4A',
+        // Rouge fonctionnel — états destructifs / erreurs
+        orange:  '#FF6B6B',
         // Semantic
-        primary:   { DEFAULT: '#3D8EFF', foreground: '#08080C' },
-        secondary: { DEFAULT: '#1A1A20', foreground: '#F5F5F7' },
-        muted:     { DEFAULT: '#141418', foreground: '#9898A8' },
-        accent:    { DEFAULT: '#1A1A20', foreground: '#F5F5F7' },
-        destructive: { DEFAULT: '#FF5C2B', foreground: '#F5F5F7' },
-        success:   { DEFAULT: '#22C55E', foreground: '#08080C' },
-        background: '#08080C',
-        foreground: '#F5F5F7',
-        popover:   { DEFAULT: '#1A1A20', foreground: '#F5F5F7' },
-        input:     '#1A1A20',
-        ring:      '#3D8EFF',
+        primary:   { DEFAULT: '#C4ED4A', foreground: '#0B0B0F' },
+        secondary: { DEFAULT: '#1C1C22', foreground: '#F2F2F4' },
+        muted:     { DEFAULT: '#16161B', foreground: '#9A9AA4' },
+        accent:    { DEFAULT: '#1C1C22', foreground: '#F2F2F4' },
+        destructive: { DEFAULT: '#FF6B6B', foreground: '#0B0B0F' },
+        success:   { DEFAULT: '#22C55E', foreground: '#0B0B0F' },
+        background: '#0B0B0F',
+        foreground: '#F2F2F4',
+        popover:   { DEFAULT: '#1C1C22', foreground: '#F2F2F4' },
+        input:     '#1C1C22',
+        ring:      '#C4ED4A',
       },
       borderRadius: {
         DEFAULT: '0.5rem',
