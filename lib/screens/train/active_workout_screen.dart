@@ -357,7 +357,7 @@ class _TopBar extends StatelessWidget {
           Row(children: [
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: Brand.grey2)),
+                Text(label, style: Brand.labelMono),
                 const SizedBox(height: 2),
                 Text(title, maxLines: 1, overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: Brand.white)),

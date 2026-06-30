@@ -102,10 +102,7 @@ class _HeroText extends StatelessWidget {
       children: [
         Text(
           label.toUpperCase(),
-          style: const TextStyle(
-            fontSize: 10, fontWeight: FontWeight.w700,
-            letterSpacing: .18, color: Brand.grey2,
-          ),
+          style: Brand.labelMono,
         ),
         const SizedBox(height: Brand.s8),
         RichText(

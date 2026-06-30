@@ -101,7 +101,7 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
                 ),
                 const SizedBox(width: Brand.s12),
                 const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('NUTRITION', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: Brand.grey2)),
+                  Text('NUTRITION', style: Brand.labelMono),
                   Text('Ajouter un aliment', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, letterSpacing: -.3, color: Brand.white)),
                 ]),
               ]),
@@ -110,7 +110,7 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(Brand.s20, Brand.s24, Brand.s20, Brand.s20),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('REPAS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: Brand.grey2)),
+                  const Text('REPAS', style: Brand.labelMono),
                   const SizedBox(height: Brand.s8),
                   Wrap(spacing: 6, runSpacing: 6, children: _meals.map((m) {
                     final sel = _mealType == m;
@@ -128,7 +128,7 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
                     );
                   }).toList()),
                   const SizedBox(height: Brand.s20),
-                  const Text('DÉCRIS CE QUE TU AS MANGÉ', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: Brand.grey2)),
+                  const Text('DÉCRIS CE QUE TU AS MANGÉ', style: Brand.labelMono),
                   const SizedBox(height: Brand.s8),
                   TextField(
                     controller: _descCtrl,
@@ -162,7 +162,7 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
                     Text(_error!, style: const TextStyle(fontSize: 12, color: Brand.orange)),
                   ],
                   const SizedBox(height: Brand.s20),
-                  const Text('VALEURS (MODIFIABLES)', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: Brand.grey2)),
+                  const Text('VALEURS (MODIFIABLES)', style: Brand.labelMono),
                   const SizedBox(height: Brand.s8),
                   _NumField(label: 'Nom', ctrl: _nameCtrl, isText: true),
                   const SizedBox(height: Brand.s8),

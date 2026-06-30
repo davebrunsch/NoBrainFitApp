@@ -77,7 +77,7 @@ class _NutritionDashboardState extends State<NutritionDashboard> {
               ),
               const SizedBox(width: Brand.s12),
               const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('NUTRITION', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: Brand.grey2)),
+                Text('NUTRITION', style: Brand.labelMono),
                 Text('Aujourd\'hui', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, letterSpacing: -.3, color: Brand.white)),
               ]),
               const Spacer(),
@@ -111,7 +111,7 @@ class _NutritionDashboardState extends State<NutritionDashboard> {
       child: Padding(
         padding: const EdgeInsets.all(Brand.s24),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(Icons.flag_outlined, size: 44, color: Brand.lime),
+          const Icon(Icons.flag_outlined, size: 44, color: Brand.titane),
           const SizedBox(height: Brand.s16),
           const Text('Définis ton objectif', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Brand.white)),
           const SizedBox(height: Brand.s8),

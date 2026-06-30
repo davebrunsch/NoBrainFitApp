@@ -43,7 +43,7 @@ class FlowScaffold extends StatelessWidget {
                     children: [
                       Text(
                         sup.toUpperCase(),
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: accent),
+                        style: Brand.mono(size: 10, weight: FontWeight.w700, color: accent, letterSpacing: 1.4),
                       ),
                       Text(title, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w600, letterSpacing: -.3, color: Brand.white)),
                     ],
@@ -77,7 +77,7 @@ class FlowScaffold extends StatelessWidget {
                   Expanded(
                     child: Text(question, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, letterSpacing: -.5, color: Brand.white)),
                   ),
-                  Text(stepLabel, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: .1, color: Brand.grey2)),
+                  Text(stepLabel, style: Brand.mono(size: 11, weight: FontWeight.w700, color: Brand.grey1, letterSpacing: .5)),
                 ],
               ),
             ),

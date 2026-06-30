@@ -80,7 +80,7 @@ class _OptionRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: selected ? accent.withOpacity(.4) : Brand.border),
               ),
-              child: Icon(choice.icon, size: 20, color: selected ? accent : Brand.grey2),
+              child: Icon(choice.icon, size: 20, color: selected ? accent : Brand.titane),
             ),
             const SizedBox(width: Brand.s12),
             Expanded(
@@ -89,7 +89,7 @@ class _OptionRow extends StatelessWidget {
                 children: [
                   Text(
                     choice.label,
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: -.2, color: selected ? Brand.white : Brand.white),
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: -.2, color: Brand.white),
                   ),
                   if (choice.sub != null) ...[
                     const SizedBox(height: 2),
