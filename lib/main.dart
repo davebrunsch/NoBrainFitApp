@@ -13,16 +13,16 @@ void main() async {
   runApp(const ProviderScope(child: NoBrainFitApp()));
 }
 
-class NoBrainFitApp extends StatelessWidget {
+class NoBrainFitApp extends ConsumerWidget {
   const NoBrainFitApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: 'NoBrainFit',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
-      routerConfig: appRouter,
+      routerConfig: ref.watch(routerProvider),
     );
   }
 }

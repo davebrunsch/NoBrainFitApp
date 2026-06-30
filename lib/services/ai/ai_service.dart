@@ -41,6 +41,16 @@ abstract class AiService {
     required String mealSize,
     required int totalKcal,
   });
+
+  /// Estimate the nutrition of a free-text food description.
+  /// [description] : e.g. "150g de poulet, un bol de riz".
+  Future<FoodEstimate> estimateFood({required String description});
+
+  /// Generate the full detail (ingredients + steps) for a named recipe.
+  Future<RecipeDetail> generateRecipeDetail({
+    required String name,
+    required String portions,
+  });
 }
 
 // ── Data models ───────────────────────────────────────────────────────────────
@@ -69,11 +79,38 @@ class Recipe {
     required this.timeMin,
     required this.kcal,
     required this.protG,
+    this.carbsG = 0,
+    this.fatG = 0,
   });
   final String name;
   final int timeMin;
   final int kcal;
   final int protG;
+  final int carbsG;
+  final int fatG;
+}
+
+/// Full recipe: ingredients + step-by-step instructions.
+class RecipeDetail {
+  const RecipeDetail({required this.ingredients, required this.steps});
+  final List<String> ingredients;
+  final List<String> steps;
+}
+
+/// AI-estimated nutrition for a food description.
+class FoodEstimate {
+  const FoodEstimate({
+    required this.name,
+    required this.kcal,
+    required this.proteinG,
+    required this.carbsG,
+    required this.fatG,
+  });
+  final String name;
+  final int kcal;
+  final int proteinG;
+  final int carbsG;
+  final int fatG;
 }
 
 // ── Prompt helpers ────────────────────────────────────────────────────────────
@@ -107,7 +144,9 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans explication :
       "name": "Nom de la recette",
       "time_min": 20,
       "kcal": 480,
-      "prot_g": 35
+      "prot_g": 35,
+      "carbs_g": 45,
+      "fat_g": 18
     }
   ],
   "shopping_list": [
@@ -115,7 +154,18 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans explication :
     ...
   ]
 }
-3 recettes variées (protéinées, équilibrées, rapides). Liste de courses consolidée pour les 3 recettes.
+3 recettes variées (protéinées, équilibrées, rapides). Valeurs nutritionnelles par portion. Liste de courses consolidée pour les 3 recettes.
+''';
+
+  static String recipeDetail({required String name, required String portions}) => '''
+Tu es un chef cuisinier. Donne la recette complète de "$name" pour $portions.
+
+Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans explication :
+{
+  "ingredients": ["Ingrédient · quantité", ...],
+  "steps": ["Étape 1…", "Étape 2…", ...]
+}
+Ingrédients avec quantités adaptées au nombre de personnes. Étapes claires et numérotées (5 à 8 étapes).
 ''';
 
   static String nutritionTip({
@@ -129,6 +179,20 @@ Tu es un nutritionniste bienveillant. L'utilisateur vient de loguer :
 
 Donne un conseil court (1-2 phrases max), positif et concret pour la suite de la journée.
 Réponds directement en français, sans introduction, sans formatage.
+''';
+
+  static String foodEstimate({required String description}) => '''
+Tu es un nutritionniste. Estime les valeurs nutritionnelles TOTALES de ce que l'utilisateur a mangé : "$description".
+
+Réponds UNIQUEMENT avec un objet JSON valide, sans markdown, sans explication :
+{
+  "name": "nom court de l'aliment ou du repas",
+  "kcal": 0,
+  "prot_g": 0,
+  "carbs_g": 0,
+  "fat_g": 0
+}
+Valeurs entières correspondant à la quantité décrite (pas par 100g).
 ''';
 
   static String ragWorkout({

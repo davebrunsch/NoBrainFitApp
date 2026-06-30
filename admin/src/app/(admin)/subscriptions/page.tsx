@@ -112,7 +112,7 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-[13px] text-snow">{sub.plan.name}</span>
-                    <div className="text-[11px] text-grey2">{formatPrice(sub.plan.priceMonthly)}</div>
+                    <div className="text-[11px] text-grey2">{sub.plan.priceMonthly === 0 ? 'Gratuit' : `${sub.plan.priceMonthly.toFixed(2)}€/mois`}</div>
                   </td>
                   <td className="px-4 py-3">
                     <SubStatusBadge status={sub.status} />

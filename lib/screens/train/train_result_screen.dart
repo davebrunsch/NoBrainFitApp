@@ -5,6 +5,8 @@ import 'package:no_brain_fit/services/ai/ai_provider.dart';
 import 'package:no_brain_fit/services/ai/ai_service.dart';
 import 'package:no_brain_fit/utils/brand.dart';
 import 'package:no_brain_fit/widgets/result_scaffold.dart';
+import 'package:no_brain_fit/widgets/save_workout_button.dart';
+import 'package:no_brain_fit/screens/train/active_workout_screen.dart';
 
 class TrainResultScreen extends ConsumerStatefulWidget {
   const TrainResultScreen({super.key, required this.duration, required this.location});
@@ -63,6 +65,12 @@ class _TrainResultScreenState extends ConsumerState<TrainResultScreen> {
           ),
           doneCount: _done.length,
           totalCount: plan.exercises.length,
+          action: SaveWorkoutButton(plan: plan, type: 'Classique'),
+          onStart: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => ActiveWorkoutScreen(plan: plan, accent: Brand.blue, workoutType: 'Classique'),
+            ),
+          ),
         );
       },
     );
@@ -74,6 +82,8 @@ class _TrainResultScreenState extends ConsumerState<TrainResultScreen> {
     required Widget child,
     int doneCount = 0,
     int totalCount = 0,
+    VoidCallback? onStart,
+    Widget? action,
   }) {
     return ResultScaffold(
       accent: Brand.blue,
@@ -82,7 +92,8 @@ class _TrainResultScreenState extends ConsumerState<TrainResultScreen> {
       sub: sub,
       onHome: () => context.go('/'),
       primaryLabel: '▶  Démarrer',
-      onPrimary: () {},
+      onPrimary: onStart ?? () {},
+      action: action,
       children: [child],
     );
   }
@@ -179,7 +190,7 @@ class _ExerciseCard extends StatelessWidget {
               ),
               child: Text(
                 '${done.length} / ${exercises.length}',
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Brand.blue, letterSpacing: .04),
+                style: Brand.mono(size: 11, weight: FontWeight.w700, color: Brand.blue, letterSpacing: .04),
               ),
             ),
           ]),
@@ -220,7 +231,7 @@ class _ExerciseRow extends StatelessWidget {
             ),
             child: Text(
               index.toString().padLeft(2, '0'),
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Brand.blue),
+              style: Brand.mono(size: 11, weight: FontWeight.w700, color: Brand.blue),
             ),
           ),
           const SizedBox(width: Brand.s12),

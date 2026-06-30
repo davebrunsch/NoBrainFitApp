@@ -5,6 +5,9 @@ import 'package:no_brain_fit/services/ai/ai_provider.dart';
 import 'package:no_brain_fit/services/ai/ai_service.dart';
 import 'package:no_brain_fit/utils/brand.dart';
 import 'package:no_brain_fit/widgets/result_scaffold.dart';
+import 'package:no_brain_fit/screens/cook/recipe_detail_screen.dart';
+import 'package:no_brain_fit/screens/cook/shopping_list_screen.dart';
+import 'package:no_brain_fit/services/cook/shopping_list_service.dart';
 
 class CookResultScreen extends ConsumerStatefulWidget {
   const CookResultScreen({super.key, required this.effort, required this.portions});
@@ -50,19 +53,42 @@ class _CookResultScreenState extends ConsumerState<CookResultScreen> {
             : suggestions.recipes.map((r) => r.timeMin).reduce((a, b) => a + b) ~/ suggestions.recipes.length;
         return _buildShell(
           sub: '~$avgTime min · ${widget.portions}',
+          onPrimary: suggestions.recipes.isEmpty ? null : () => _openRecipe(suggestions.recipes.first),
           child: _RecipesContent(
             suggestions: suggestions,
             checked: _checked,
             onToggle: (i) => setState(() {
               _checked.contains(i) ? _checked.remove(i) : _checked.add(i);
             }),
+            onOpenRecipe: _openRecipe,
+            onAddToList: () => _addToList(suggestions.shoppingList),
+            onOpenList: _openList,
           ),
         );
       },
     );
   }
 
-  Widget _buildShell({required String sub, required Widget child}) {
+  void _openRecipe(Recipe r) => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => RecipeDetailScreen(recipe: r, portions: widget.portions)),
+      );
+
+  void _openList() => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const ShoppingListScreen()),
+      );
+
+  Future<void> _addToList(List<String> items) async {
+    final added = await ShoppingListService().addAll(items);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(added > 0 ? '$added articles ajoutés à ta liste' : 'Déjà dans ta liste'),
+      backgroundColor: Brand.bgCard,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Brand.rChip)),
+    ));
+  }
+
+  Widget _buildShell({required String sub, required Widget child, VoidCallback? onPrimary}) {
     return ResultScaffold(
       accent: Brand.orange,
       kicker: 'Cuisine · Sélection du soir',
@@ -70,7 +96,7 @@ class _CookResultScreenState extends ConsumerState<CookResultScreen> {
       sub: sub,
       onHome: () => context.go('/'),
       primaryLabel: 'Voir la recette',
-      onPrimary: () {},
+      onPrimary: onPrimary ?? () {},
       children: [child],
     );
   }
@@ -138,10 +164,20 @@ class _ErrorCard extends StatelessWidget {
 }
 
 class _RecipesContent extends StatelessWidget {
-  const _RecipesContent({required this.suggestions, required this.checked, required this.onToggle});
+  const _RecipesContent({
+    required this.suggestions,
+    required this.checked,
+    required this.onToggle,
+    required this.onOpenRecipe,
+    required this.onAddToList,
+    required this.onOpenList,
+  });
   final RecipeSuggestions suggestions;
   final Set<int> checked;
   final void Function(int) onToggle;
+  final void Function(Recipe) onOpenRecipe;
+  final VoidCallback onAddToList;
+  final VoidCallback onOpenList;
 
   @override
   Widget build(BuildContext context) {
@@ -149,22 +185,43 @@ class _RecipesContent extends StatelessWidget {
       children: [
         ...suggestions.recipes.map((r) => Padding(
           padding: const EdgeInsets.only(bottom: Brand.s8),
-          child: _RecipeRow(recipe: r),
+          child: _RecipeRow(recipe: r, onTap: () => onOpenRecipe(r)),
         )),
         const SizedBox(height: Brand.s4),
         _ShoppingList(items: suggestions.shoppingList, checked: checked, onToggle: onToggle),
+        const SizedBox(height: Brand.s8),
+        Row(children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: onAddToList,
+              icon: const Icon(Icons.add_shopping_cart_outlined, size: 16),
+              label: const Text('Ajouter à ma liste'),
+            ),
+          ),
+          const SizedBox(width: Brand.s8),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: onOpenList,
+              icon: const Icon(Icons.list_alt_rounded, size: 16),
+              label: const Text('Ma liste'),
+            ),
+          ),
+        ]),
       ],
     );
   }
 }
 
 class _RecipeRow extends StatelessWidget {
-  const _RecipeRow({required this.recipe});
+  const _RecipeRow({required this.recipe, required this.onTap});
   final Recipe recipe;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       padding: const EdgeInsets.symmetric(horizontal: Brand.s12, vertical: Brand.s12),
       decoration: BoxDecoration(
         color: Brand.bgCard,
@@ -175,11 +232,11 @@ class _RecipeRow extends StatelessWidget {
         Container(
           width: 50, height: 50,
           decoration: BoxDecoration(
-            color: Brand.orange.withOpacity(.10),
+            color: Brand.bgCardHi,
             borderRadius: BorderRadius.circular(Brand.rChip),
-            border: Border.all(color: Brand.orange.withOpacity(.2)),
+            border: Border.all(color: Brand.border2),
           ),
-          child: const Icon(Icons.restaurant_outlined, size: 22, color: Brand.orange),
+          child: const Icon(Icons.restaurant_outlined, size: 22, color: Brand.titane),
         ),
         const SizedBox(width: Brand.s12),
         Expanded(
@@ -197,6 +254,7 @@ class _RecipeRow extends StatelessWidget {
         ),
         const Icon(Icons.chevron_right_rounded, size: 18, color: Brand.grey2),
       ]),
+      ),
     );
   }
 }
@@ -213,7 +271,7 @@ class _Tag extends StatelessWidget {
         color: Brand.border,
         borderRadius: BorderRadius.circular(Brand.rTag),
       ),
-      child: Text(text, style: const TextStyle(fontSize: 10, color: Brand.grey1)),
+      child: Text(text, style: Brand.mono(size: 10, weight: FontWeight.w400, color: Brand.grey1)),
     );
   }
 }
@@ -248,7 +306,7 @@ class _ShoppingList extends StatelessWidget {
               ),
               child: Text(
                 '${items.length} articles',
-                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Brand.orange),
+                style: Brand.mono(size: 10, weight: FontWeight.w700, color: Brand.orange),
               ),
             ),
           ]),

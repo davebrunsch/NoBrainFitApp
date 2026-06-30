@@ -15,8 +15,8 @@ const EQUIPMENT_MAP: Record<string, string> = {
 const MUSCLE_COLORS: Record<string, string> = {
   chest:       'bg-[#3D8EFF]/10 text-[#3D8EFF] border-[#3D8EFF]/20',
   lats:        'bg-[#8B5CF6]/10 text-[#8B5CF6] border-[#8B5CF6]/20',
-  quads:       'bg-lime/10 text-lime border-lime/20',
-  hamstrings:  'bg-orange/10 text-orange border-orange/20',
+  quads:       'bg-[#84CC16]/10 text-[#84CC16] border-[#84CC16]/20',
+  hamstrings:  'bg-[#FB923C]/10 text-[#FB923C] border-[#FB923C]/20',
   shoulders:   'bg-[#EC4899]/10 text-[#EC4899] border-[#EC4899]/20',
   biceps:      'bg-[#06B6D4]/10 text-[#06B6D4] border-[#06B6D4]/20',
   triceps:     'bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20',

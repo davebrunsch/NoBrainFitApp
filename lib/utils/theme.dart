@@ -8,9 +8,10 @@ class AppTheme {
         fontFamily: 'SpaceGrotesk',
         scaffoldBackgroundColor: Brand.bgVoid,
         colorScheme: ColorScheme.dark(
-          primary:    Brand.lime,
-          secondary:  Brand.blue,
-          tertiary:   Brand.orange,
+          primary:    Brand.lume,   // accent unique
+          onPrimary:  Brand.bgVoid, // texte foncé sur Lume
+          secondary:  Brand.acier,
+          tertiary:   Brand.titane,
           surface:    Brand.bgCard,
           onSurface:  Brand.white,
           outline:    Brand.border,
@@ -45,11 +46,13 @@ class AppTheme {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Brand.lime,
+            backgroundColor: Brand.lume,
             foregroundColor: Brand.bgVoid,
             textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'SpaceGrotesk'),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Brand.rButton)),
             padding: const EdgeInsets.symmetric(vertical: 15),
+            elevation: 0,
+            overlayColor: Brand.bgVoid.withOpacity(.08),
           ),
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
@@ -63,5 +66,14 @@ class AppTheme {
         ),
         dividerTheme: DividerThemeData(color: Brand.border, thickness: 1, space: 0),
         iconTheme: IconThemeData(color: Brand.grey2, size: 20),
+        splashColor: Brand.border,
+        highlightColor: Brand.border,
+        bottomSheetTheme: BottomSheetThemeData(
+          backgroundColor: Brand.bgCard,
+          surfaceTintColor: Colors.transparent,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(Brand.rSheet)),
+          ),
+        ),
       );
 }

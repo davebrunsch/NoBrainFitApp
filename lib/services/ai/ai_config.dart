@@ -1,8 +1,10 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Which AI backend is active.
-enum AiBackend { claude, ollama }
+/// - [claude] / [ollama] : the device calls the model directly (advanced mode).
+/// - [server]            : the app calls the NoBrainFit back-end, which holds
+///                         the keys, enforces quotas and stores history.
+enum AiBackend { claude, ollama, server }
 
 /// Runtime-mutable configuration stored in SharedPreferences.
 class AiConfig {
@@ -11,18 +13,30 @@ class AiConfig {
     required this.claudeApiKey,
     required this.ollamaBaseUrl,
     required this.ollamaModel,
+    required this.serverBaseUrl,
+    required this.serverToken,
+    required this.serverEmail,
   });
 
   final AiBackend backend;
   final String claudeApiKey;
   final String ollamaBaseUrl;
   final String ollamaModel;
+  final String serverBaseUrl;
+  final String serverToken;
+  final String serverEmail;
+
+  /// True when the server backend is selected and the user is authenticated.
+  bool get serverReady => serverToken.isNotEmpty;
 
   // ── Keys ─────────────────────────────────────────────────────
-  static const _kBackend    = 'ai_backend';
-  static const _kApiKey     = 'claude_api_key';
-  static const _kOllamaUrl  = 'ollama_base_url';
+  static const _kBackend     = 'ai_backend';
+  static const _kApiKey      = 'claude_api_key';
+  static const _kOllamaUrl   = 'ollama_base_url';
   static const _kOllamaModel = 'ollama_model';
+  static const _kServerUrl   = 'server_base_url';
+  static const _kServerToken = 'server_token';
+  static const _kServerEmail = 'server_email';
 
   // ── Defaults ─────────────────────────────────────────────────
   // On Android emulator, host machine localhost = 10.0.2.2.
@@ -30,31 +44,47 @@ class AiConfig {
   static const defaultOllamaUrl   = 'http://10.0.2.2:11434';
   static const defaultOllamaModel = 'llama3.2';
   static const defaultClaudeModel = 'claude-haiku-4-5-20251001';
+  static const defaultServerUrl   = 'http://10.0.2.2:3000';
 
   static AiConfig get defaults => const AiConfig(
-    backend: AiBackend.ollama,
+    backend: AiBackend.server,
     claudeApiKey: '',
     ollamaBaseUrl: defaultOllamaUrl,
     ollamaModel: defaultOllamaModel,
+    serverBaseUrl: defaultServerUrl,
+    serverToken: '',
+    serverEmail: '',
   );
+
+  static AiBackend _parseBackend(String? raw) => switch (raw) {
+        'claude' => AiBackend.claude,
+        'ollama' => AiBackend.ollama,
+        _ => AiBackend.server,
+      };
 
   // ── Persistence ───────────────────────────────────────────────
   static Future<AiConfig> load() async {
     final p = await SharedPreferences.getInstance();
     return AiConfig(
-      backend:      p.getString(_kBackend) == 'claude' ? AiBackend.claude : AiBackend.ollama,
-      claudeApiKey: p.getString(_kApiKey)     ?? '',
-      ollamaBaseUrl: p.getString(_kOllamaUrl) ?? defaultOllamaUrl,
-      ollamaModel:  p.getString(_kOllamaModel) ?? defaultOllamaModel,
+      backend:       _parseBackend(p.getString(_kBackend)),
+      claudeApiKey:  p.getString(_kApiKey)      ?? '',
+      ollamaBaseUrl: p.getString(_kOllamaUrl)   ?? defaultOllamaUrl,
+      ollamaModel:   p.getString(_kOllamaModel) ?? defaultOllamaModel,
+      serverBaseUrl: p.getString(_kServerUrl)   ?? defaultServerUrl,
+      serverToken:   p.getString(_kServerToken) ?? '',
+      serverEmail:   p.getString(_kServerEmail) ?? '',
     );
   }
 
   Future<void> save() async {
     final p = await SharedPreferences.getInstance();
-    await p.setString(_kBackend,     backend == AiBackend.claude ? 'claude' : 'ollama');
+    await p.setString(_kBackend,     backend.name);
     await p.setString(_kApiKey,      claudeApiKey);
     await p.setString(_kOllamaUrl,   ollamaBaseUrl);
     await p.setString(_kOllamaModel, ollamaModel);
+    await p.setString(_kServerUrl,   serverBaseUrl);
+    await p.setString(_kServerToken, serverToken);
+    await p.setString(_kServerEmail, serverEmail);
   }
 
   AiConfig copyWith({
@@ -62,10 +92,16 @@ class AiConfig {
     String? claudeApiKey,
     String? ollamaBaseUrl,
     String? ollamaModel,
+    String? serverBaseUrl,
+    String? serverToken,
+    String? serverEmail,
   }) => AiConfig(
     backend:       backend       ?? this.backend,
     claudeApiKey:  claudeApiKey  ?? this.claudeApiKey,
     ollamaBaseUrl: ollamaBaseUrl ?? this.ollamaBaseUrl,
     ollamaModel:   ollamaModel   ?? this.ollamaModel,
+    serverBaseUrl: serverBaseUrl ?? this.serverBaseUrl,
+    serverToken:   serverToken   ?? this.serverToken,
+    serverEmail:   serverEmail   ?? this.serverEmail,
   );
 }

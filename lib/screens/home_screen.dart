@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:no_brain_fit/utils/brand.dart';
 import 'package:no_brain_fit/widgets/tri_strike_logo.dart';
-import 'package:no_brain_fit/screens/eat/eat_result_screen.dart';
 import 'package:no_brain_fit/screens/train/train_result_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -42,8 +41,29 @@ class _TopBar extends StatelessWidget {
       children: [
         const TriStrikeWordmark(markSize: 26),
         const Spacer(),
+        _LibraryButton(),
+        const SizedBox(width: Brand.s8),
         _AvatarButton(),
       ],
+    );
+  }
+}
+
+class _LibraryButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/library'),
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: Brand.bgCard,
+          shape: BoxShape.circle,
+          border: Border.all(color: Brand.border2),
+        ),
+        child: const Icon(Icons.bookmark_border_rounded, size: 18, color: Brand.grey1),
+      ),
     );
   }
 }
@@ -82,10 +102,7 @@ class _HeroText extends StatelessWidget {
       children: [
         Text(
           label.toUpperCase(),
-          style: const TextStyle(
-            fontSize: 10, fontWeight: FontWeight.w700,
-            letterSpacing: .18, color: Brand.grey2,
-          ),
+          style: Brand.labelMono,
         ),
         const SizedBox(height: Brand.s8),
         RichText(
@@ -109,6 +126,7 @@ class _StatStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
+        gradient: Brand.cardGradient(),
         border: Border.all(color: Brand.border),
         borderRadius: BorderRadius.circular(Brand.rCard),
       ),
@@ -138,7 +156,7 @@ class _StatCell extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(value, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, letterSpacing: -.5, color: valueColor ?? Brand.white)),
+            Text(value, style: Brand.mono(size: 17, weight: FontWeight.w700, color: valueColor ?? Brand.white, letterSpacing: -.5)),
             const SizedBox(height: 3),
             Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .12, color: Brand.grey2)),
           ],
@@ -172,29 +190,9 @@ class _ActionRows extends StatelessWidget {
           icon: Icons.restaurant_outlined,
           kicker: 'Nutrition',
           title: 'Manger',
-          sub: '3 repas · Glisse pour personnaliser',
+          sub: 'Suivi des calories & macros',
           accent: Brand.lime,
           advancedRoute: '/eat',
-          quickPicks: [
-            _QuickPick(
-              icon: Icons.wb_sunny_outlined,
-              label: 'Petit-déjeuner',
-              sub: 'Léger · ~350 kcal',
-              destination: () => const EatResultScreen(mealType: 'Petit-déjeuner', mealSize: 'Léger'),
-            ),
-            _QuickPick(
-              icon: Icons.wb_cloudy_outlined,
-              label: 'Déjeuner',
-              sub: 'Normal · ~600 kcal',
-              destination: () => const EatResultScreen(mealType: 'Déjeuner', mealSize: 'Normal'),
-            ),
-            _QuickPick(
-              icon: Icons.nightlight_outlined,
-              label: 'Dîner',
-              sub: 'Normal · ~600 kcal',
-              destination: () => const EatResultScreen(mealType: 'Dîner', mealSize: 'Normal'),
-            ),
-          ],
         ),
         const SizedBox(height: Brand.s12),
         _ActionRow(
@@ -303,9 +301,10 @@ class _ActionRowState extends State<_ActionRow> {
           duration: const Duration(milliseconds: 100),
           child: Container(
             decoration: BoxDecoration(
-              color: _pressed ? Brand.bgCardHi : Brand.bgCard,
+              gradient: Brand.cardGradient(_pressed ? Brand.bgCardHi : Brand.bgCard),
               borderRadius: BorderRadius.circular(Brand.rRow),
-              border: Border.all(color: _pressed ? Brand.border2 : Brand.border),
+              border: Border.all(color: _pressed ? widget.accent.withOpacity(.35) : Brand.border),
+              boxShadow: _pressed ? Brand.accentGlow(widget.accent, opacity: .18) : null,
             ),
             padding: const EdgeInsets.symmetric(horizontal: Brand.s20),
             child: Row(
@@ -313,11 +312,12 @@ class _ActionRowState extends State<_ActionRow> {
                 Container(
                   width: 46, height: 46,
                   decoration: BoxDecoration(
-                    color: widget.accent.withOpacity(.10),
+                    // Icône en acier au repos ; le Lume ne marque que l'état actif.
+                    gradient: _pressed ? Brand.accentTile(widget.accent) : Brand.steelTile(),
                     borderRadius: BorderRadius.circular(Brand.rCard),
-                    border: Border.all(color: widget.accent.withOpacity(.2)),
+                    border: Border.all(color: _pressed ? widget.accent.withOpacity(.4) : Brand.border2),
                   ),
-                  child: Icon(widget.icon, size: 22, color: widget.accent),
+                  child: Icon(widget.icon, size: 22, color: _pressed ? widget.accent : Brand.titane),
                 ),
                 const SizedBox(width: Brand.s16),
                 Expanded(
@@ -327,7 +327,7 @@ class _ActionRowState extends State<_ActionRow> {
                     children: [
                       Text(
                         widget.kicker.toUpperCase(),
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .16, color: widget.accent),
+                        style: const TextStyle(fontFamily: Brand.fontMono, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .16, color: Brand.grey1),
                       ),
                       const SizedBox(height: 3),
                       Text(widget.title, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w600, letterSpacing: -.4, color: Brand.white)),
@@ -336,9 +336,10 @@ class _ActionRowState extends State<_ActionRow> {
                     ],
                   ),
                 ),
+                // Index numérique en Lume — distingue les piliers (charte V2.0).
                 Text(
                   widget.index,
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: .1, color: Brand.grey2),
+                  style: Brand.mono(size: 12, weight: FontWeight.w700, color: Brand.lume, letterSpacing: .1),
                 ),
                 const SizedBox(width: Brand.s8),
                 Icon(
@@ -359,7 +360,6 @@ class _ActionRowState extends State<_ActionRow> {
 
 class _QuickSheet extends StatelessWidget {
   const _QuickSheet({
-    super.key,
     required this.title,
     required this.icon,
     required this.accent,
@@ -439,7 +439,7 @@ class _QuickSheet extends StatelessWidget {
 }
 
 class _QuickOption extends StatefulWidget {
-  const _QuickOption({super.key, required this.pick, required this.accent});
+  const _QuickOption({required this.pick, required this.accent});
   final _QuickPick pick;
   final Color accent;
 
