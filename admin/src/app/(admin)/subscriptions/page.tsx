@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { SubscriptionActions } from './subscription-actions'
+import { NewSubscriptionButton } from './new-subscription-button'
 
 interface SearchParams { status?: string; plan?: string }
 
@@ -41,10 +42,13 @@ export default async function SubscriptionsPage({ searchParams }: { searchParams
         title="Abonnements"
         description={`${active} actifs · ${expired} expirés · ${cancelled} annulés`}
         actions={
-          <Link href="/subscriptions/plans"
-            className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-card-hi px-4 py-2 text-[13px] font-medium text-grey1 hover:text-snow transition-colors">
-            Gérer les plans →
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/subscriptions/plans"
+              className="rounded-lg border border-[rgba(255,255,255,0.08)] bg-card-hi px-4 py-2 text-[13px] font-medium text-grey1 hover:text-snow transition-colors">
+              Gérer les plans →
+            </Link>
+            <NewSubscriptionButton plans={plans.map(p => ({ id: p.id, name: p.name }))} />
+          </div>
         }
       />
 
