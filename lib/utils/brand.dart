@@ -53,6 +53,15 @@ abstract final class Brand {
         letterSpacing: letterSpacing,
       );
 
+  /// Section label — Space Mono, uppercase tracking (charte `.t-label`).
+  static const TextStyle labelMono = TextStyle(
+    fontFamily: fontMono,
+    fontSize: 10,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 1.2,
+    color: grey2,
+  );
+
   // ── Spacing (base-4) ─────────────────────────────────────────
   static const double s4  = 4;
   static const double s8  = 8;

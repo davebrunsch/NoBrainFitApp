@@ -58,7 +58,7 @@ class _NutritionGoalScreenState extends State<NutritionGoalScreen> {
                 ),
                 const SizedBox(width: Brand.s12),
                 const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('NUTRITION', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: Brand.grey2)),
+                  Text('NUTRITION', style: Brand.labelMono),
                   Text('Ton objectif', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, letterSpacing: -.3, color: Brand.white)),
                 ]),
               ]),
@@ -67,14 +67,14 @@ class _NutritionGoalScreenState extends State<NutritionGoalScreen> {
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(Brand.s20, Brand.s24, Brand.s20, Brand.s20),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('OBJECTIF', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: Brand.grey2)),
+                  const Text('OBJECTIF', style: Brand.labelMono),
                   const SizedBox(height: Brand.s8),
                   ...NutritionGoal.values.map((g) => Padding(
                         padding: const EdgeInsets.only(bottom: Brand.s8),
                         child: _GoalTile(goal: g, selected: _goal == g, onTap: () => setState(() => _goal = g)),
                       )),
                   const SizedBox(height: Brand.s16),
-                  const Text('POIDS (KG)', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: Brand.grey2)),
+                  const Text('POIDS (KG)', style: Brand.labelMono),
                   const SizedBox(height: Brand.s8),
                   TextField(
                     controller: _weightCtrl,
@@ -94,7 +94,7 @@ class _NutritionGoalScreenState extends State<NutritionGoalScreen> {
                     ),
                   ),
                   const SizedBox(height: Brand.s24),
-                  const Text('TES CIBLES JOURNALIÈRES', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: Brand.grey2)),
+                  const Text('TES CIBLES JOURNALIÈRES', style: Brand.labelMono),
                   const SizedBox(height: Brand.s8),
                   Container(
                     padding: const EdgeInsets.all(Brand.s16),

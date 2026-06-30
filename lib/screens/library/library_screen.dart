@@ -84,7 +84,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ),
                 const SizedBox(width: Brand.s12),
                 const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('BIBLIOTHÈQUE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: Brand.grey2)),
+                  Text('BIBLIOTHÈQUE', style: Brand.labelMono),
                   Text('Tes séances', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, letterSpacing: -.3, color: Brand.white)),
                 ]),
                 const Spacer(),

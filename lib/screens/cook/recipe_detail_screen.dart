@@ -84,7 +84,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
                 ),
               ),
               const SizedBox(width: Brand.s12),
-              const Text('RECETTE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: Brand.grey2)),
+              const Text('RECETTE', style: Brand.labelMono),
             ]),
           ),
           Expanded(

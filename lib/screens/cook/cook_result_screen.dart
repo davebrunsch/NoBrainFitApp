@@ -232,11 +232,11 @@ class _RecipeRow extends StatelessWidget {
         Container(
           width: 50, height: 50,
           decoration: BoxDecoration(
-            color: Brand.orange.withOpacity(.10),
+            color: Brand.bgCardHi,
             borderRadius: BorderRadius.circular(Brand.rChip),
-            border: Border.all(color: Brand.orange.withOpacity(.2)),
+            border: Border.all(color: Brand.border2),
           ),
-          child: const Icon(Icons.restaurant_outlined, size: 22, color: Brand.orange),
+          child: const Icon(Icons.restaurant_outlined, size: 22, color: Brand.titane),
         ),
         const SizedBox(width: Brand.s12),
         Expanded(

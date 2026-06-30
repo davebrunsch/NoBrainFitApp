@@ -49,7 +49,7 @@ class ResultScaffold extends StatelessWidget {
                     // Kicker
                     Text(
                       kicker.toUpperCase(),
-                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: .18, color: accent),
+                      style: Brand.mono(size: 10, weight: FontWeight.w700, color: accent, letterSpacing: 1.4),
                     ),
                     const SizedBox(height: Brand.s8),
                     // Title
