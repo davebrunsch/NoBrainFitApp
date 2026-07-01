@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug-only override of ../../main/res/xml/network_security_config.xml.
+  Gradle merges this one in for debug builds only (release keeps the
+  strict, domain-limited config), so it's safe to allow cleartext (HTTP)
+  to any host here: it lets the "Testing" backend URL in the auth screen
+  point at a temporary/staging server that isn't behind HTTPS yet,
+  without ever weakening the shipped release build.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>
