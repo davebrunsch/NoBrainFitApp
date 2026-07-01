@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:no_brain_fit/utils/brand.dart';
@@ -302,28 +303,59 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     const SizedBox(height: Brand.s24),
                     const Divider(height: 1, color: Brand.border),
                     const SizedBox(height: Brand.s12),
-                    // Advanced — server URL (for self-hosters / emulator)
-                    GestureDetector(
-                      onTap: () =>
-                          setState(() => _showAdvanced = !_showAdvanced),
-                      child: Row(
+                    // Debug builds: an explicit "Testing" checkbox to point
+                    // registration/login at a temporary dev backend — debug
+                    // builds also relax Android's cleartext (HTTP) network
+                    // policy, so this can be a plain http:// URL. Release
+                    // builds keep the discreet "Réglages serveur" toggle for
+                    // self-hosters (HTTPS only there).
+                    if (kDebugMode)
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                              _showAdvanced
-                                  ? Icons.expand_less_rounded
-                                  : Icons.expand_more_rounded,
-                              size: 16,
-                              color: Brand.grey2),
+                          Checkbox(
+                            value: _showAdvanced,
+                            activeColor: Brand.lime,
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            onChanged: (v) =>
+                                setState(() => _showAdvanced = v ?? false),
+                          ),
                           const SizedBox(width: 4),
-                          const Text('Réglages serveur',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Brand.grey2)),
+                          GestureDetector(
+                            onTap: () => setState(
+                                () => _showAdvanced = !_showAdvanced),
+                            child: const Text('Testing (backend temporaire)',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Brand.grey2)),
+                          ),
                         ],
+                      )
+                    else
+                      GestureDetector(
+                        onTap: () =>
+                            setState(() => _showAdvanced = !_showAdvanced),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                                _showAdvanced
+                                    ? Icons.expand_less_rounded
+                                    : Icons.expand_more_rounded,
+                                size: 16,
+                                color: Brand.grey2),
+                            const SizedBox(width: 4),
+                            const Text('Réglages serveur',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Brand.grey2)),
+                          ],
+                        ),
                       ),
-                    ),
                     if (_showAdvanced) ...[
                       const SizedBox(height: Brand.s12),
                       _AuthField(
