@@ -112,6 +112,9 @@ class NutritionTipNotifier extends AsyncNotifier<String?> {
       ),
     );
   }
+
+  /// Dismisses the current tip (e.g. after the user closes the banner).
+  void clear() => state = const AsyncData(null);
 }
 
 final nutritionTipProvider = AsyncNotifierProvider<NutritionTipNotifier, String?>(
@@ -141,14 +144,22 @@ class RagWorkoutNotifier extends AsyncNotifier<WorkoutPlan?> {
     // Step 1 – Fetch exercises.
     // Server backend → curated DB library; otherwise the device-side fitness API.
     final config = ref.read(aiConfigProvider).value;
-    final fitnessApi = (config != null && config.backend == AiBackend.server && config.serverReady)
+    final isServerBacked = config != null && config.backend == AiBackend.server && config.serverReady;
+    final fitnessApi = isServerBacked
         ? ServerFitnessApiService(baseUrl: config.serverBaseUrl, token: config.serverToken)
         : ref.read(fitnessApiServiceProvider);
     final eq = FitnessEquipment.fromLabel(equipment);
     List<FitnessApiExercise> exercises;
     try {
       exercises = await fitnessApi.fetchExercises(eq);
-    } catch (_) {
+    } catch (e, st) {
+      if (isServerBacked) {
+        // A failure fetching the curated server library (expired session,
+        // network) must surface as an error, not silently swap in the
+        // unrelated bundled mock exercise pool.
+        state = AsyncError(e, st);
+        return;
+      }
       exercises = await const MockFitnessApiService().fetchExercises(eq);
     }
 

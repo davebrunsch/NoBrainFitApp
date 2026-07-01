@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:no_brain_fit/services/library/library_models.dart';
+import 'package:no_brain_fit/services/library/library_service.dart';
+import 'package:no_brain_fit/services/nutrition/nutrition_service.dart';
 import 'package:no_brain_fit/utils/brand.dart';
+import 'package:no_brain_fit/utils/router.dart';
 import 'package:no_brain_fit/widgets/tri_strike_logo.dart';
 import 'package:no_brain_fit/screens/train/train_result_screen.dart';
 
@@ -119,8 +123,80 @@ class _HeroText extends StatelessWidget {
   }
 }
 
-class _StatStrip extends StatelessWidget {
+class _StatStrip extends StatefulWidget {
   const _StatStrip();
+
+  @override
+  State<_StatStrip> createState() => _StatStripState();
+}
+
+class _StatStripState extends State<_StatStrip> with RouteAware {
+  final _nutrition = NutritionService();
+  final _library = LibraryService();
+
+  int _kcal = 0;
+  bool _trainedToday = false;
+  int _streak = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) routeObserver.subscribe(this, route);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() => _load();
+
+  static bool _sameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  int _computeStreak(List<WorkoutHistoryEntry> history) {
+    if (history.isEmpty) return 0;
+    final days = history.map((e) => DateTime(e.date.year, e.date.month, e.date.day)).toSet();
+    final today = DateTime.now();
+    var day = DateTime(today.year, today.month, today.day);
+    if (!days.contains(day)) day = day.subtract(const Duration(days: 1));
+    var streak = 0;
+    while (days.contains(day)) {
+      streak++;
+      day = day.subtract(const Duration(days: 1));
+    }
+    return streak;
+  }
+
+  static String _formatKcal(int value) {
+    final digits = value.toString();
+    final buf = StringBuffer();
+    for (var i = 0; i < digits.length; i++) {
+      if (i > 0 && (digits.length - i) % 3 == 0) buf.write(' ');
+      buf.write(digits[i]);
+    }
+    return buf.toString();
+  }
+
+  Future<void> _load() async {
+    final totals = await _nutrition.totalsForDay(DateTime.now());
+    final history = await _library.history();
+    if (!mounted) return;
+    setState(() {
+      _kcal = totals.kcal;
+      _trainedToday = history.any((e) => _sameDay(e.date, DateTime.now()));
+      _streak = _computeStreak(history);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,9 +208,9 @@ class _StatStrip extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _StatCell(value: '1 240', label: 'kcal', valueColor: Brand.lime, isLast: false),
-          _StatCell(value: 'Repos', label: 'Séance', isLast: false),
-          _StatCell(value: 'J · 5', label: 'Streak', isLast: true),
+          _StatCell(value: _formatKcal(_kcal), label: 'kcal', valueColor: Brand.lime, isLast: false),
+          _StatCell(value: _trainedToday ? 'Fait' : 'Repos', label: 'Séance', isLast: false),
+          _StatCell(value: 'J · $_streak', label: 'Streak', isLast: true),
         ],
       ),
     );

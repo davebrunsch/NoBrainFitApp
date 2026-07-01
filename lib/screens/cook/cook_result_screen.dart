@@ -19,6 +19,7 @@ class CookResultScreen extends ConsumerStatefulWidget {
 
 class _CookResultScreenState extends ConsumerState<CookResultScreen> {
   final Set<int> _checked = {};
+  Recipe? _lastViewed;
 
   @override
   void initState() {
@@ -53,7 +54,9 @@ class _CookResultScreenState extends ConsumerState<CookResultScreen> {
             : suggestions.recipes.map((r) => r.timeMin).reduce((a, b) => a + b) ~/ suggestions.recipes.length;
         return _buildShell(
           sub: '~$avgTime min · ${widget.portions}',
-          onPrimary: suggestions.recipes.isEmpty ? null : () => _openRecipe(suggestions.recipes.first),
+          onPrimary: suggestions.recipes.isEmpty
+              ? null
+              : () => _openRecipe(_lastViewed ?? suggestions.recipes.first),
           child: _RecipesContent(
             suggestions: suggestions,
             checked: _checked,
@@ -69,9 +72,12 @@ class _CookResultScreenState extends ConsumerState<CookResultScreen> {
     );
   }
 
-  void _openRecipe(Recipe r) => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => RecipeDetailScreen(recipe: r, portions: widget.portions)),
-      );
+  void _openRecipe(Recipe r) {
+    setState(() => _lastViewed = r);
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => RecipeDetailScreen(recipe: r, portions: widget.portions)),
+    );
+  }
 
   void _openList() => Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => const ShoppingListScreen()),

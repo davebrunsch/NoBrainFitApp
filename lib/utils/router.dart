@@ -14,6 +14,10 @@ import 'package:no_brain_fit/screens/library/library_screen.dart';
 import 'package:no_brain_fit/services/ai/ai_provider.dart';
 import 'package:no_brain_fit/services/profile/profile_provider.dart';
 
+/// Lets screens (e.g. the home stat strip) refresh themselves when the user
+/// navigates back to them from a pushed route, without a full shell/rebuild.
+final routeObserver = RouteObserver<PageRoute>();
+
 /// Splash shown while auth/profile state is still loading from disk.
 class _Splash extends StatelessWidget {
   const _Splash();
@@ -42,6 +46,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     refreshListenable: refresh,
+    observers: [routeObserver],
     redirect: (context, state) {
       final config = ref.read(aiConfigProvider);
       final profile = ref.read(userProfileProvider);

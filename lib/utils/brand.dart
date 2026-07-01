@@ -87,11 +87,6 @@ abstract final class Brand {
   static Color blueAlpha(double opacity)   => lume.withOpacity(opacity);
   static Color orangeAlpha(double opacity) => lume.withOpacity(opacity);
 
-  // ── Section accent ────────────────────────────────────────────
-  // Les piliers ne sont plus codés par couleur (charte V2.0) — ils
-  // se distinguent par leur index numérique. L'accent reste le Lume.
-  static Color accentFor(SectionType type) => lume;
-
   // ── Visual richness ──────────────────────────────────────────
   /// Subtle top-to-bottom card gradient — adds depth without noise.
   static LinearGradient cardGradient([Color base = bgCard]) => LinearGradient(
@@ -128,5 +123,3 @@ abstract final class Brand {
         ),
       ];
 }
-
-enum SectionType { eat, train, cook }

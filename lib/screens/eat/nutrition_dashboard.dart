@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:no_brain_fit/screens/eat/log_food_screen.dart';
 import 'package:no_brain_fit/screens/eat/nutrition_goal_screen.dart';
+import 'package:no_brain_fit/services/ai/ai_provider.dart';
 import 'package:no_brain_fit/services/nutrition/nutrition_models.dart';
 import 'package:no_brain_fit/services/nutrition/nutrition_service.dart';
 import 'package:no_brain_fit/utils/brand.dart';
 
 /// The "Manger" hub: daily macro tracking vs goal-based targets.
-class NutritionDashboard extends StatefulWidget {
+class NutritionDashboard extends ConsumerStatefulWidget {
   const NutritionDashboard({super.key});
 
   @override
-  State<NutritionDashboard> createState() => _NutritionDashboardState();
+  ConsumerState<NutritionDashboard> createState() => _NutritionDashboardState();
 }
 
-class _NutritionDashboardState extends State<NutritionDashboard> {
+class _NutritionDashboardState extends ConsumerState<NutritionDashboard> {
   final NutritionService _service = NutritionService();
   bool _loading = true;
   NutritionProfile _profile = NutritionProfile.defaults;
@@ -42,16 +44,31 @@ class _NutritionDashboardState extends State<NutritionDashboard> {
     if (changed == true) _load();
   }
 
+  static String _sizeLabel(int kcal) {
+    if (kcal < 300) return 'Léger';
+    if (kcal > 700) return 'Copieux';
+    return 'Normal';
+  }
+
   Future<void> _openLog() async {
     final added = await Navigator.of(context).push<bool>(
       MaterialPageRoute(builder: (_) => const LogFoodScreen()),
     );
-    if (added == true) _load();
+    if (added == true) {
+      await _load();
+      if (!mounted || _today.isEmpty) return;
+      final last = _today.first;
+      ref.read(nutritionTipProvider.notifier).generate(
+            mealType: last.mealType,
+            mealSize: _sizeLabel(last.kcal),
+            totalKcal: _totals.kcal,
+          );
+    }
   }
 
   Future<void> _delete(String id) async {
     await _service.remove(id);
-    _load();
+    await _load();
   }
 
   @override
@@ -176,6 +193,7 @@ class _NutritionDashboardState extends State<NutritionDashboard> {
           ]),
         ),
         const SizedBox(height: Brand.s12),
+        const _NutritionTipBanner(),
         // Macro bars
         Container(
           padding: const EdgeInsets.all(Brand.s16),
@@ -236,6 +254,48 @@ class _MacroBar extends StatelessWidget {
         ),
       ),
     ]);
+  }
+}
+
+/// Short AI tip shown after logging a meal. Silently absent when no backend
+/// is configured, still loading, or already dismissed.
+class _NutritionTipBanner extends ConsumerWidget {
+  const _NutritionTipBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tipAsync = ref.watch(nutritionTipProvider);
+    return tipAsync.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.only(bottom: Brand.s12),
+        child: SizedBox(height: 14, width: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Brand.lime)),
+      ),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (tip) {
+        if (tip == null || tip.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(bottom: Brand.s12),
+          child: Container(
+            padding: const EdgeInsets.all(Brand.s12),
+            decoration: BoxDecoration(
+              color: Brand.lime.withOpacity(.08),
+              borderRadius: BorderRadius.circular(Brand.rChip),
+              border: Border.all(color: Brand.lime.withOpacity(.2)),
+            ),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Icon(Icons.auto_awesome_rounded, size: 16, color: Brand.lime),
+              const SizedBox(width: Brand.s8),
+              Expanded(child: Text(tip, style: const TextStyle(fontSize: 12, color: Brand.grey1, height: 1.4))),
+              const SizedBox(width: Brand.s8),
+              GestureDetector(
+                onTap: () => ref.read(nutritionTipProvider.notifier).clear(),
+                child: const Icon(Icons.close_rounded, size: 14, color: Brand.grey2),
+              ),
+            ]),
+          ),
+        );
+      },
+    );
   }
 }
 

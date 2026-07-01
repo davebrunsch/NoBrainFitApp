@@ -11,10 +11,11 @@ const intOrUndef = (v: unknown) => {
 }
 
 /** Updates a plan (partial). Pass any subset of editable fields. */
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const { id } = await params
   const body = await req.json()
 
   const data: {
@@ -39,16 +40,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (body.features !== undefined) data.features = sanitizeFeatures(body.features)
   if (typeof body.isActive === 'boolean') data.isActive = body.isActive
 
-  const plan = await db.plan.update({ where: { id: params.id }, data })
+  const plan = await db.plan.update({ where: { id }, data })
   return NextResponse.json({ plan })
 }
 
 /** Deletes a plan. Refused when subscriptions still reference it. */
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const count = await db.subscription.count({ where: { planId: params.id } })
+  const { id } = await params
+  const count = await db.subscription.count({ where: { planId: id } })
   if (count > 0) {
     return NextResponse.json(
       { error: `Impossible : ${count} abonnement(s) utilisent ce plan. Désactive-le plutôt.` },
@@ -56,6 +58,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     )
   }
 
-  await db.plan.delete({ where: { id: params.id } })
+  await db.plan.delete({ where: { id } })
   return NextResponse.json({ ok: true })
 }
