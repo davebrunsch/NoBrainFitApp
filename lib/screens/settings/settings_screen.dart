@@ -82,6 +82,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           current: config.backend,
                           onChange: (b) => _save(config.copyWith(backend: b)),
                         ),
+                        if (config.backend == AiBackend.demo) ...[
+                          const SizedBox(height: Brand.s12),
+                          _InfoCard(
+                            icon: Icons.play_circle_outline_rounded,
+                            color: Brand.grey1,
+                            text: 'Mode démo actif : données simulées, aucune connexion requise.',
+                          ),
+                          const SizedBox(height: Brand.s8),
+                          GestureDetector(
+                            onTap: () => ref.read(aiConfigProvider.notifier).exitDemoMode(),
+                            child: const Text('Quitter le mode démo',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Brand.grey1)),
+                          ),
+                        ],
                         const SizedBox(height: Brand.s24),
 
                         // ── SERVEUR ───────────────────────────────────
@@ -262,6 +276,8 @@ class _BackendToggle extends StatelessWidget {
       _ToggleBtn(label: 'Ollama', icon: Icons.computer_rounded, accent: Brand.blue, selected: current == AiBackend.ollama, onTap: () => onChange(AiBackend.ollama)),
       const SizedBox(width: Brand.s8),
       _ToggleBtn(label: 'Claude', icon: Icons.auto_awesome_rounded, accent: Brand.orange, selected: current == AiBackend.claude, onTap: () => onChange(AiBackend.claude)),
+      const SizedBox(width: Brand.s8),
+      _ToggleBtn(label: 'Démo', icon: Icons.play_circle_outline_rounded, accent: Brand.grey1, selected: current == AiBackend.demo, onTap: () => onChange(AiBackend.demo)),
     ]);
   }
 }

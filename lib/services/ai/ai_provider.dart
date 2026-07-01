@@ -5,6 +5,7 @@ import 'package:no_brain_fit/services/server/server_ai_service.dart';
 import 'ai_config.dart';
 import 'ai_service.dart';
 import 'claude_service.dart';
+import 'demo_ai_service.dart';
 import 'ollama_service.dart';
 
 // ── Config state ──────────────────────────────────────────────────────────────
@@ -17,6 +18,12 @@ class AiConfigNotifier extends AsyncNotifier<AiConfig> {
     await config.save();
     state = AsyncData(config);
   }
+
+  /// Switches to demo mode: no backend, no login, canned local data.
+  Future<void> enterDemoMode() => save(state.requireValue.copyWith(backend: AiBackend.demo));
+
+  /// Leaves demo mode, back to the (unconfigured) server backend.
+  Future<void> exitDemoMode() => save(state.requireValue.copyWith(backend: AiBackend.server));
 }
 
 final aiConfigProvider = AsyncNotifierProvider<AiConfigNotifier, AiConfig>(
@@ -31,6 +38,7 @@ final aiServiceProvider = Provider<AiService?>((ref) {
   final configAsync = ref.watch(aiConfigProvider);
   return configAsync.whenOrNull(
     data: (config) => switch (config.backend) {
+      AiBackend.demo => const DemoAiService(),
       AiBackend.server when config.serverReady =>
         ServerAiService(baseUrl: config.serverBaseUrl, token: config.serverToken),
       AiBackend.claude when config.claudeApiKey.isNotEmpty =>

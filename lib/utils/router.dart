@@ -56,7 +56,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         return state.matchedLocation == '/splash' ? null : '/splash';
       }
 
-      final loggedIn = config.requireValue.serverReady;
+      final loggedIn = config.requireValue.serverReady || config.requireValue.isDemo;
       final onboarded = profile.requireValue.completed;
       final loc = state.matchedLocation;
 

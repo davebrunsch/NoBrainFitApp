@@ -4,7 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// - [claude] / [ollama] : the device calls the model directly (advanced mode).
 /// - [server]            : the app calls the NoBrainFit back-end, which holds
 ///                         the keys, enforces quotas and stores history.
-enum AiBackend { claude, ollama, server }
+/// - [demo]              : no network at all — canned local responses, so the
+///                         app can be shown off without any backend running.
+enum AiBackend { claude, ollama, server, demo }
 
 /// Runtime-mutable configuration stored in SharedPreferences.
 class AiConfig {
@@ -28,6 +30,9 @@ class AiConfig {
 
   /// True when the server backend is selected and the user is authenticated.
   bool get serverReady => serverToken.isNotEmpty;
+
+  /// True when running in demo mode (no backend required).
+  bool get isDemo => backend == AiBackend.demo;
 
   // ── Keys ─────────────────────────────────────────────────────
   static const _kBackend     = 'ai_backend';
@@ -59,6 +64,7 @@ class AiConfig {
   static AiBackend _parseBackend(String? raw) => switch (raw) {
         'claude' => AiBackend.claude,
         'ollama' => AiBackend.ollama,
+        'demo' => AiBackend.demo,
         _ => AiBackend.server,
       };
 

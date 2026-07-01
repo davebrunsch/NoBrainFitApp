@@ -7,6 +7,7 @@ import 'package:no_brain_fit/services/ai/ai_provider.dart';
 import 'package:no_brain_fit/services/server/server_auth_service.dart';
 import 'package:no_brain_fit/services/server/server_profile_service.dart';
 import 'package:no_brain_fit/services/profile/profile_provider.dart';
+import 'package:no_brain_fit/services/profile/user_profile.dart';
 
 /// Startup gate — the user must log in or create an account before reaching
 /// the app. On success the session token is stored in [AiConfig] and the
@@ -101,6 +102,30 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// Skips auth entirely: seeds a completed demo profile and switches the AI
+  /// backend to [AiBackend.demo] (canned local data, no network). Lets the
+  /// app be shown off end to end without any backend running.
+  Future<void> _enterDemo() async {
+    setState(() { _busy = true; _error = null; });
+    const demoProfile = UserProfile(
+      completed: true,
+      sex: Sex.male,
+      age: 29,
+      heightCm: 178,
+      weightKg: 78,
+      targetWeightKg: 72,
+      level: FitnessLevel.intermediate,
+      lifestyle: Lifestyle.active,
+      goal: Goal.recomposition,
+      daysPerWeek: 4,
+      equipment: Equipment.dumbbells,
+      gymMember: false,
+    );
+    await ref.read(userProfileProvider.notifier).adopt(demoProfile);
+    await ref.read(aiConfigProvider.notifier).enterDemoMode();
+    // The router redirect takes over from here.
   }
 
   @override
@@ -254,6 +279,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                               ),
                             ],
                           ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: Brand.s24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _busy ? null : _enterDemo,
+                        icon: const Icon(Icons.play_circle_outline_rounded, size: 18, color: Brand.grey1),
+                        label: const Text('Essayer en mode démo (sans backend)'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Brand.grey1,
+                          side: BorderSide(color: Brand.border2),
+                          padding: const EdgeInsets.symmetric(vertical: Brand.s16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Brand.rButton)),
                         ),
                       ),
                     ),
