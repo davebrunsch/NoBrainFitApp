@@ -286,7 +286,9 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                 width: 200,
                 height: 200,
                 child: CircularProgressIndicator(
-                  value: _restTotal == 0 ? 0 : _restRemaining / _restTotal,
+                  // "+15 s" can push the remaining time past the initial
+                  // total — clamp so the ring never overflows.
+                  value: _restTotal == 0 ? 0 : (_restRemaining / _restTotal).clamp(0.0, 1.0),
                   strokeWidth: 6,
                   backgroundColor: Brand.bgCard,
                   valueColor: AlwaysStoppedAnimation(widget.accent),
@@ -398,9 +400,9 @@ class _Pill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: accent.withOpacity(.12),
+        color: accent.withValues(alpha: .12),
         borderRadius: BorderRadius.circular(Brand.rChip),
-        border: Border.all(color: accent.withOpacity(.25)),
+        border: Border.all(color: accent.withValues(alpha: .25)),
       ),
       child: Text(label, style: Brand.mono(size: 12, weight: FontWeight.w700, color: accent)),
     );

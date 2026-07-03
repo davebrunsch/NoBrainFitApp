@@ -146,7 +146,7 @@ class _ErrorCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Brand.bgCard,
         borderRadius: BorderRadius.circular(Brand.rCard),
-        border: Border.all(color: Brand.orange.withOpacity(.3)),
+        border: Border.all(color: Brand.orange.withValues(alpha: .3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,9 +306,9 @@ class _ShoppingList extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: Brand.orange.withOpacity(.12),
+                color: Brand.orange.withValues(alpha: .12),
                 borderRadius: BorderRadius.circular(Brand.rChip),
-                border: Border.all(color: Brand.orange.withOpacity(.25)),
+                border: Border.all(color: Brand.orange.withValues(alpha: .25)),
               ),
               child: Text(
                 '${items.length} articles',

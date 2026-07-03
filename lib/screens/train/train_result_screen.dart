@@ -137,7 +137,7 @@ class _ErrorCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Brand.bgCard,
         borderRadius: BorderRadius.circular(Brand.rCard),
-        border: Border.all(color: Brand.orange.withOpacity(.3)),
+        border: Border.all(color: Brand.orange.withValues(alpha: .3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,9 +184,9 @@ class _ExerciseCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
               decoration: BoxDecoration(
-                color: Brand.blue.withOpacity(.12),
+                color: Brand.blue.withValues(alpha: .12),
                 borderRadius: BorderRadius.circular(Brand.rChip),
-                border: Border.all(color: Brand.blue.withOpacity(.25)),
+                border: Border.all(color: Brand.blue.withValues(alpha: .25)),
               ),
               child: Text(
                 '${done.length} / ${exercises.length}',
@@ -226,7 +226,7 @@ class _ExerciseRow extends StatelessWidget {
             width: 24, height: 24,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Brand.blue.withOpacity(.12),
+              color: Brand.blue.withValues(alpha: .12),
               borderRadius: BorderRadius.circular(7),
             ),
             child: Text(

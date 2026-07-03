@@ -424,7 +424,7 @@ class _Footer extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: Brand.lime,
             foregroundColor: Brand.bgVoid,
-            disabledBackgroundColor: Brand.lime.withOpacity(.4),
+            disabledBackgroundColor: Brand.lime.withValues(alpha: .4),
             padding: const EdgeInsets.symmetric(vertical: Brand.s16),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(Brand.rButton)),
@@ -502,7 +502,7 @@ class _SelectTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(
               horizontal: Brand.s16, vertical: Brand.s16),
           decoration: BoxDecoration(
-            color: selected ? Brand.lime.withOpacity(.08) : Brand.bgCard,
+            color: selected ? Brand.lime.withValues(alpha: .08) : Brand.bgCard,
             borderRadius: BorderRadius.circular(Brand.rCard),
             border: Border.all(
                 color: selected ? Brand.lime : Brand.border,
@@ -514,11 +514,11 @@ class _SelectTile extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 color:
-                    selected ? Brand.lime.withOpacity(.15) : Brand.bgSurface,
+                    selected ? Brand.lime.withValues(alpha: .15) : Brand.bgSurface,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                     color: selected
-                        ? Brand.lime.withOpacity(.4)
+                        ? Brand.lime.withValues(alpha: .4)
                         : Brand.border),
               ),
               child: Icon(icon,
@@ -628,10 +628,10 @@ class _RoundBtn extends StatelessWidget {
         width: 52,
         height: 52,
         decoration: BoxDecoration(
-          color: enabled ? Brand.lime.withOpacity(.12) : Brand.bgSurface,
+          color: enabled ? Brand.lime.withValues(alpha: .12) : Brand.bgSurface,
           shape: BoxShape.circle,
           border: Border.all(
-              color: enabled ? Brand.lime.withOpacity(.4) : Brand.border),
+              color: enabled ? Brand.lime.withValues(alpha: .4) : Brand.border),
         ),
         child: Icon(icon,
             size: 24, color: enabled ? Brand.lime : Brand.grey2),
@@ -661,7 +661,7 @@ class _DaysPicker extends StatelessWidget {
             width: 44,
             height: 56,
             decoration: BoxDecoration(
-              color: sel ? Brand.lime.withOpacity(.12) : Brand.bgCard,
+              color: sel ? Brand.lime.withValues(alpha: .12) : Brand.bgCard,
               borderRadius: BorderRadius.circular(Brand.rChip),
               border: Border.all(
                   color: sel ? Brand.lime : Brand.border2,
@@ -710,7 +710,7 @@ class _Recap extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: Brand.cardGradient(),
             borderRadius: BorderRadius.circular(Brand.rCard),
-            border: Border.all(color: Brand.lime.withOpacity(.25)),
+            border: Border.all(color: Brand.lime.withValues(alpha: .25)),
           ),
           child: Row(
             children: [

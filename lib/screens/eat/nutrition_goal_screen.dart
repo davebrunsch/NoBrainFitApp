@@ -159,7 +159,7 @@ class _GoalTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: Brand.s16, vertical: Brand.s16),
         decoration: BoxDecoration(
-          color: selected ? Brand.lime.withOpacity(.1) : Brand.bgCard,
+          color: selected ? Brand.lime.withValues(alpha: .1) : Brand.bgCard,
           borderRadius: BorderRadius.circular(Brand.rCard),
           border: Border.all(color: selected ? Brand.lime : Brand.border, width: selected ? 1.5 : 1),
         ),

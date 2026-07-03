@@ -82,10 +82,10 @@ abstract final class Brand {
   static const double rSheet  = 24;
 
   // ── Accent helpers (un seul accent : le Lume) ─────────────────
-  static Color lumeAlpha(double opacity)   => lume.withOpacity(opacity);
-  static Color limeAlpha(double opacity)   => lume.withOpacity(opacity);
-  static Color blueAlpha(double opacity)   => lume.withOpacity(opacity);
-  static Color orangeAlpha(double opacity) => lume.withOpacity(opacity);
+  static Color lumeAlpha(double opacity)   => lume.withValues(alpha: opacity);
+  static Color limeAlpha(double opacity)   => lume.withValues(alpha: opacity);
+  static Color blueAlpha(double opacity)   => lume.withValues(alpha: opacity);
+  static Color orangeAlpha(double opacity) => lume.withValues(alpha: opacity);
 
   // ── Visual richness ──────────────────────────────────────────
   /// Subtle top-to-bottom card gradient — adds depth without noise.
@@ -93,7 +93,7 @@ abstract final class Brand {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          Color.alphaBlend(Colors.white.withOpacity(.018), base),
+          Color.alphaBlend(Colors.white.withValues(alpha: .018), base),
           base,
         ],
       );
@@ -102,7 +102,7 @@ abstract final class Brand {
   static LinearGradient accentTile(Color accent) => LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [accent.withOpacity(.18), accent.withOpacity(.06)],
+        colors: [accent.withValues(alpha: .18), accent.withValues(alpha: .06)],
       );
 
   /// Steel tile gradient — fond neutre des icônes au repos.
@@ -110,13 +110,13 @@ abstract final class Brand {
   static LinearGradient steelTile() => LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color.alphaBlend(Colors.white.withOpacity(.05), bgCardHi), bgCardHi],
+        colors: [Color.alphaBlend(Colors.white.withValues(alpha: .05), bgCardHi), bgCardHi],
       );
 
   /// Soft accent glow for elevated / focused surfaces.
   static List<BoxShadow> accentGlow(Color accent, {double opacity = .14, double blur = 22, double spread = -6}) => [
         BoxShadow(
-          color: accent.withOpacity(opacity),
+          color: accent.withValues(alpha: opacity),
           blurRadius: blur,
           spreadRadius: spread,
           offset: const Offset(0, 6),

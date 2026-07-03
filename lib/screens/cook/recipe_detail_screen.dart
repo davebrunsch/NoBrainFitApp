@@ -147,9 +147,9 @@ class _Tag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(.12),
+        color: color.withValues(alpha: .12),
         borderRadius: BorderRadius.circular(Brand.rChip),
-        border: Border.all(color: color.withOpacity(.25)),
+        border: Border.all(color: color.withValues(alpha: .25)),
       ),
       child: Text(text, style: Brand.mono(size: 11, weight: FontWeight.w700, color: color)),
     );
@@ -177,7 +177,7 @@ class _Section extends StatelessWidget {
                 if (numbered)
                   Container(
                     width: 22, height: 22, alignment: Alignment.center,
-                    decoration: BoxDecoration(color: accent.withOpacity(.12), borderRadius: BorderRadius.circular(6)),
+                    decoration: BoxDecoration(color: accent.withValues(alpha: .12), borderRadius: BorderRadius.circular(6)),
                     child: Text('${e.key + 1}', style: Brand.mono(size: 11, weight: FontWeight.w700, color: accent)),
                   )
                 else
@@ -214,7 +214,7 @@ class _ErrorBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(Brand.s16),
-      decoration: BoxDecoration(color: Brand.bgCard, borderRadius: BorderRadius.circular(Brand.rCard), border: Border.all(color: Brand.orange.withOpacity(.3))),
+      decoration: BoxDecoration(color: Brand.bgCard, borderRadius: BorderRadius.circular(Brand.rCard), border: Border.all(color: Brand.orange.withValues(alpha: .3))),
       child: Text(message, style: const TextStyle(fontSize: 13, color: Brand.grey1)),
     );
   }

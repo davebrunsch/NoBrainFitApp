@@ -295,7 +295,7 @@ class _ToggleBtn extends StatelessWidget {
           duration: const Duration(milliseconds: 150),
           padding: const EdgeInsets.symmetric(vertical: Brand.s16),
           decoration: BoxDecoration(
-            color: selected ? accent.withOpacity(.1) : Brand.bgCard,
+            color: selected ? accent.withValues(alpha: .1) : Brand.bgCard,
             borderRadius: BorderRadius.circular(Brand.rCard),
             border: Border.all(color: selected ? accent : Brand.border, width: selected ? 1.5 : 1),
           ),
@@ -349,14 +349,14 @@ class _InfoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(Brand.s12),
       decoration: BoxDecoration(
-        color: color.withOpacity(.07),
+        color: color.withValues(alpha: .07),
         borderRadius: BorderRadius.circular(Brand.rChip),
-        border: Border.all(color: color.withOpacity(.2)),
+        border: Border.all(color: color.withValues(alpha: .2)),
       ),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Icon(icon, size: 16, color: color),
         const SizedBox(width: Brand.s8),
-        Expanded(child: Text(text, style: TextStyle(fontSize: 12, color: color.withOpacity(.85), height: 1.6))),
+        Expanded(child: Text(text, style: TextStyle(fontSize: 12, color: color.withValues(alpha: .85), height: 1.6))),
       ]),
     );
   }
@@ -473,7 +473,7 @@ class _ServerAuthCardState extends State<_ServerAuthCard> {
         decoration: BoxDecoration(
           color: Brand.bgCard,
           borderRadius: BorderRadius.circular(Brand.rChip),
-          border: Border.all(color: Brand.lime.withOpacity(.25)),
+          border: Border.all(color: Brand.lime.withValues(alpha: .25)),
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
@@ -487,7 +487,7 @@ class _ServerAuthCardState extends State<_ServerAuthCard> {
             ),
             GestureDetector(
               onTap: widget.onLogout,
-              child: Text('Déconnexion', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Brand.orange.withOpacity(.9))),
+              child: Text('Déconnexion', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Brand.orange.withValues(alpha: .9))),
             ),
           ]),
           const SizedBox(height: Brand.s12),
@@ -616,7 +616,7 @@ class _ProfileCard extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: Brand.bgCard,
                 borderRadius: BorderRadius.circular(Brand.rCard),
-                border: Border.all(color: Brand.lime.withOpacity(.25)),
+                border: Border.all(color: Brand.lime.withValues(alpha: .25)),
               ),
               child: Row(children: [
                 const Icon(Icons.assignment_outlined,
@@ -666,9 +666,9 @@ class _ProfileCard extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: Brand.s12, vertical: 7),
                   decoration: BoxDecoration(
-                    color: Brand.lime.withOpacity(.1),
+                    color: Brand.lime.withValues(alpha: .1),
                     borderRadius: BorderRadius.circular(Brand.rChip),
-                    border: Border.all(color: Brand.lime.withOpacity(.3)),
+                    border: Border.all(color: Brand.lime.withValues(alpha: .3)),
                   ),
                   child: const Text('Modifier',
                       style: TextStyle(
@@ -773,7 +773,7 @@ class _TrainingPrefsCardState extends State<_TrainingPrefsCard> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
               decoration: BoxDecoration(
-                color: sel ? Brand.blue.withOpacity(.12) : Brand.bgCardHi,
+                color: sel ? Brand.blue.withValues(alpha: .12) : Brand.bgCardHi,
                 borderRadius: BorderRadius.circular(Brand.rChip),
                 border: Border.all(color: sel ? Brand.blue : Brand.border2),
               ),

@@ -52,7 +52,7 @@ class AppTheme {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Brand.rButton)),
             padding: const EdgeInsets.symmetric(vertical: 15),
             elevation: 0,
-            overlayColor: Brand.bgVoid.withOpacity(.08),
+            overlayColor: Brand.bgVoid.withValues(alpha: .08),
           ),
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(

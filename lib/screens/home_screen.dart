@@ -379,7 +379,7 @@ class _ActionRowState extends State<_ActionRow> {
             decoration: BoxDecoration(
               gradient: Brand.cardGradient(_pressed ? Brand.bgCardHi : Brand.bgCard),
               borderRadius: BorderRadius.circular(Brand.rRow),
-              border: Border.all(color: _pressed ? widget.accent.withOpacity(.35) : Brand.border),
+              border: Border.all(color: _pressed ? widget.accent.withValues(alpha: .35) : Brand.border),
               boxShadow: _pressed ? Brand.accentGlow(widget.accent, opacity: .18) : null,
             ),
             padding: const EdgeInsets.symmetric(horizontal: Brand.s20),
@@ -391,7 +391,7 @@ class _ActionRowState extends State<_ActionRow> {
                     // Icône en acier au repos ; le Lume ne marque que l'état actif.
                     gradient: _pressed ? Brand.accentTile(widget.accent) : Brand.steelTile(),
                     borderRadius: BorderRadius.circular(Brand.rCard),
-                    border: Border.all(color: _pressed ? widget.accent.withOpacity(.4) : Brand.border2),
+                    border: Border.all(color: _pressed ? widget.accent.withValues(alpha: .4) : Brand.border2),
                   ),
                   child: Icon(widget.icon, size: 22, color: _pressed ? widget.accent : Brand.titane),
                 ),
@@ -470,9 +470,9 @@ class _QuickSheet extends StatelessWidget {
               Container(
                 width: 36, height: 36,
                 decoration: BoxDecoration(
-                  color: accent.withOpacity(.10),
+                  color: accent.withValues(alpha: .10),
                   borderRadius: BorderRadius.circular(Brand.rCard),
-                  border: Border.all(color: accent.withOpacity(.2)),
+                  border: Border.all(color: accent.withValues(alpha: .2)),
                 ),
                 child: Icon(icon, size: 18, color: accent),
               ),
@@ -555,7 +555,7 @@ class _QuickOptionState extends State<_QuickOption> {
                 Container(
                   width: 36, height: 36,
                   decoration: BoxDecoration(
-                    color: widget.accent.withOpacity(.08),
+                    color: widget.accent.withValues(alpha: .08),
                     borderRadius: BorderRadius.circular(Brand.rButton),
                   ),
                   child: Icon(widget.pick.icon, size: 18, color: widget.accent),

@@ -202,7 +202,7 @@ class _TabBtn extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: Brand.s12),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: selected ? Brand.blue.withOpacity(.1) : Brand.bgCard,
+            color: selected ? Brand.blue.withValues(alpha: .1) : Brand.bgCard,
             borderRadius: BorderRadius.circular(Brand.rChip),
             border: Border.all(color: selected ? Brand.blue : Brand.border, width: selected ? 1.5 : 1),
           ),

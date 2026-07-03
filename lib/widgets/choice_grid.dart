@@ -66,7 +66,7 @@ class _OptionRow extends StatelessWidget {
         duration: const Duration(milliseconds: 140),
         padding: const EdgeInsets.symmetric(horizontal: Brand.s16, vertical: Brand.s16),
         decoration: BoxDecoration(
-          color: selected ? accent.withOpacity(.08) : Brand.bgCard,
+          color: selected ? accent.withValues(alpha: .08) : Brand.bgCard,
           borderRadius: BorderRadius.circular(Brand.rCard),
           border: Border.all(color: selected ? accent : Brand.border),
         ),
@@ -76,9 +76,9 @@ class _OptionRow extends StatelessWidget {
               duration: const Duration(milliseconds: 140),
               width: 38, height: 38,
               decoration: BoxDecoration(
-                color: selected ? accent.withOpacity(.15) : Brand.bgSurface,
+                color: selected ? accent.withValues(alpha: .15) : Brand.bgSurface,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: selected ? accent.withOpacity(.4) : Brand.border),
+                border: Border.all(color: selected ? accent.withValues(alpha: .4) : Brand.border),
               ),
               child: Icon(choice.icon, size: 20, color: selected ? accent : Brand.titane),
             ),

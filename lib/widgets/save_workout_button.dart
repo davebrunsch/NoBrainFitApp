@@ -38,9 +38,9 @@ class _SaveWorkoutButtonState extends State<SaveWorkoutButton> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         decoration: BoxDecoration(
-          color: _saved ? widget.accent.withOpacity(.12) : Brand.bgCard,
+          color: _saved ? widget.accent.withValues(alpha: .12) : Brand.bgCard,
           borderRadius: BorderRadius.circular(Brand.rButton),
-          border: Border.all(color: _saved ? widget.accent.withOpacity(.4) : Brand.border2),
+          border: Border.all(color: _saved ? widget.accent.withValues(alpha: .4) : Brand.border2),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(_saved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,

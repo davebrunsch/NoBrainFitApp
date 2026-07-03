@@ -278,9 +278,9 @@ class _NutritionTipBanner extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.all(Brand.s12),
             decoration: BoxDecoration(
-              color: Brand.lime.withOpacity(.08),
+              color: Brand.lime.withValues(alpha: .08),
               borderRadius: BorderRadius.circular(Brand.rChip),
-              border: Border.all(color: Brand.lime.withOpacity(.2)),
+              border: Border.all(color: Brand.lime.withValues(alpha: .2)),
             ),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Icon(Icons.auto_awesome_rounded, size: 16, color: Brand.lime),

@@ -119,7 +119,7 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: sel ? Brand.lime.withOpacity(.12) : Brand.bgCard,
+                          color: sel ? Brand.lime.withValues(alpha: .12) : Brand.bgCard,
                           borderRadius: BorderRadius.circular(Brand.rChip),
                           border: Border.all(color: sel ? Brand.lime : Brand.border2),
                         ),
@@ -154,7 +154,7 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
                           ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Brand.lime))
                           : const Icon(Icons.auto_awesome_rounded, size: 16, color: Brand.lime),
                       label: Text(_estimating ? 'Estimation…' : 'Estimer avec l\'IA', style: const TextStyle(color: Brand.lime)),
-                      style: OutlinedButton.styleFrom(side: BorderSide(color: Brand.lime.withOpacity(.4)), padding: const EdgeInsets.symmetric(vertical: 13)),
+                      style: OutlinedButton.styleFrom(side: BorderSide(color: Brand.lime.withValues(alpha: .4)), padding: const EdgeInsets.symmetric(vertical: 13)),
                     ),
                   ),
                   if (_error != null) ...[

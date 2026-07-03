@@ -146,7 +146,7 @@ class _ErrorCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Brand.bgCard,
         borderRadius: BorderRadius.circular(Brand.rCard),
-        border: Border.all(color: Brand.orange.withOpacity(.3)),
+        border: Border.all(color: Brand.orange.withValues(alpha: .3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,9 +244,9 @@ class _GoalBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: Brand.blue.withOpacity(.10),
+        color: Brand.blue.withValues(alpha: .10),
         borderRadius: BorderRadius.circular(Brand.rTag),
-        border: Border.all(color: Brand.blue.withOpacity(.20)),
+        border: Border.all(color: Brand.blue.withValues(alpha: .20)),
       ),
       child: Text(
         goal,
@@ -265,9 +265,9 @@ class _ProgressBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: BoxDecoration(
-        color: Brand.blue.withOpacity(.12),
+        color: Brand.blue.withValues(alpha: .12),
         borderRadius: BorderRadius.circular(Brand.rChip),
-        border: Border.all(color: Brand.blue.withOpacity(.25)),
+        border: Border.all(color: Brand.blue.withValues(alpha: .25)),
       ),
       child: Text(
         '$done / $total',
@@ -301,7 +301,7 @@ class _ExerciseRow extends StatelessWidget {
             width: 24, height: 24,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Brand.blue.withOpacity(.12),
+              color: Brand.blue.withValues(alpha: .12),
               borderRadius: BorderRadius.circular(7),
             ),
             child: Text(
