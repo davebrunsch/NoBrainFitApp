@@ -1,0 +1,8 @@
+{
+  "name": "NoBrainFit",
+  "description": "Radically simple fitness and nutrition app: zero reflection, immediate results. Instant AI workouts, meal planning, and shopping lists.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
